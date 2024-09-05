@@ -26,7 +26,7 @@ export const GameContextProvider = ({
 
   console.log({ gameState })
 
-  const { turn, myColor, fen, status } = gameState
+  const { turn, myColor, fen, status, whitePlayer, blackPlayer } = gameState
   const onMove = useCallback(
     (move: { from: string; to: string; promotion: string }) => {
       if (turn !== myColor) {
@@ -36,7 +36,7 @@ export const GameContextProvider = ({
         // will throw an "Illegal move" error if the move is invalid
         const _move = chess.move(move)
         const _status = getStatus(chess)
-        console.log({ _move, _status })
+        console.log({ _move, _status, pgn: chess.pgn() })
         dispatch({
           type: GameActions.SET_MOVE,
           payload: { fen: chess.fen(), status: _status },
@@ -44,14 +44,16 @@ export const GameContextProvider = ({
 
         sendJsonMessage({
           type: "move",
-          gameId,
-          move: {
-            ..._move,
-            number: chess.moveNumber(),
+          payload: {
+            gameId,
+            move: {
+              ..._move,
+              number: chess.moveNumber(),
+            },
+            pgn: chess.pgn(),
+            status: _status,
+            playerId,
           },
-          pgn: chess.pgn(),
-          status: _status,
-          playerId,
         })
         return true
       } catch (err) {
@@ -69,16 +71,19 @@ export const GameContextProvider = ({
     if (lastJsonMessage !== null) {
       switch (lastJsonMessage.type) {
         case "game-found": {
-          const { game } = lastJsonMessage
+          const game = lastJsonMessage.payload
+          console.log({ GameFoundPGN: game.pgn })
           chess.loadPgn(game.pgn)
           dispatch({
             type: GameActions.SET_GAME,
-            payload: lastJsonMessage.game,
+            payload: game,
           })
           break
         }
         case "game-created": {
-          const { gameId, whitePlayerId } = lastJsonMessage
+          const { gameId, whitePlayerId, pgn } = lastJsonMessage.payload
+          console.log({ gameCreatedPgn: pgn })
+          chess.loadPgn(pgn)
           dispatch({
             type: GameActions.CREATE_GAME,
             payload: { whitePlayerId: whitePlayerId },
@@ -87,8 +92,8 @@ export const GameContextProvider = ({
           break
         }
         case "move": {
-          const { fen } = lastJsonMessage
-          chess.load(fen)
+          const { pgn, fen } = lastJsonMessage.payload
+          chess.loadPgn(pgn)
           dispatch({
             type: GameActions.SET_MOVE,
             payload: { fen, status: getStatus(chess) },
@@ -101,9 +106,9 @@ export const GameContextProvider = ({
 
   useEffect(() => {
     if (gameId === "new") {
-      sendJsonMessage({ type: "join-game", playerId })
+      sendJsonMessage({ type: "join-game", payload: { playerId } })
     } else if (status === GameStatus.NOT_STARTED) {
-      sendJsonMessage({ type: "get-game", gameId, playerId })
+      sendJsonMessage({ type: "get-game", payload: { gameId, playerId } })
     } else if (
       ![
         GameStatus.PLAYING,
@@ -119,8 +124,8 @@ export const GameContextProvider = ({
   }, [gameId, playerId, sendJsonMessage, status, dispatch])
 
   const value = useMemo(
-    () => ({ status, fen, turn, myColor, onMove }),
-    [status, fen, turn, onMove, myColor]
+    () => ({ status, fen, turn, myColor, whitePlayer, blackPlayer, onMove }),
+    [status, fen, turn, onMove, myColor, whitePlayer, blackPlayer]
   )
 
   if ([GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)) {

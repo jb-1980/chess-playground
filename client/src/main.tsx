@@ -12,6 +12,19 @@ import { LoginRoute } from "./routes/login/route"
 import { SignupRoute } from "./routes/signup/route"
 import { GamesIdRoute } from "./routes/_games.$gameId/route"
 import { LogoutRoute } from "./routes/logout/route"
+import { ThemeProvider } from "@emotion/react"
+import { createTheme } from "@mui/material"
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#4e7837",
+    },
+    secondary: {
+      main: "#4b4847",
+    },
+  },
+})
 
 const rootElement = document.getElementById("root")
 
@@ -28,6 +41,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider theme={theme}>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </React.StrictMode>
 )

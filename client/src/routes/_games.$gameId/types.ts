@@ -27,13 +27,12 @@ export type Game = {
     createdAt: string
   }[]
   pgn: string
-  whitePlayer: {
-    _id: string
-    username: string
-  }
-  blackPlayer: {
-    _id: string
-    username: string
-  }
+  whitePlayer: User
+  blackPlayer: User
   status: GameStatus
+}
+
+export type User = {
+  id: string
+  username: string
 }

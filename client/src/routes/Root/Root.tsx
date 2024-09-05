@@ -1,12 +1,10 @@
 import { Link, NavLink, Outlet } from "react-router-dom"
 import AccountCircle from "@mui/icons-material/AccountCircle"
-
 import "./styles.css"
 import { UserProvider, useUserContext } from "./context"
 import {
   AppBar,
   Button,
-  createTheme,
   Menu,
   MenuItem,
   Stack,
@@ -14,29 +12,15 @@ import {
   Typography,
 } from "@mui/material"
 import { useState } from "react"
-import { ThemeProvider } from "@emotion/react"
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#4e7837",
-    },
-    secondary: {
-      main: "#4b4847",
-    },
-  },
-})
 
 export const Root = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <UserProvider>
-        <MainHeader />
-        <main>
-          <Outlet />
-        </main>
-      </UserProvider>
-    </ThemeProvider>
+    <UserProvider>
+      <MainHeader />
+      <main>
+        <Outlet />
+      </main>
+    </UserProvider>
   )
 }
 

@@ -6,6 +6,8 @@ import {
   UserDocument,
 } from "../repository/user"
 import { signToken } from "../lib/jwt"
+import { AsyncResult, Result } from "../lib/result"
+import { makeUserDto } from "../domain/user"
 
 const RegisterUserSchema = z.object({
   username: z.string(),
@@ -23,34 +25,27 @@ export const handle_registerUser = async (
     return res.status(400).json(parsedBody.error)
   }
 
-  try {
-    const user = await command_RegisterUser(parsedBody.data)
+  const userResult = await command_RegisterUser(parsedBody.data)
+
+  if (userResult.success) {
     return res.status(200).json({
-      token: signToken(user),
+      token: signToken(userResult.data),
     })
-  } catch (error) {
-    if (error instanceof Error) {
-      return res.status(500).json({ error: error.message })
-    }
-    return res.status(500).json({ error: "Unknown server error" })
   }
+
+  return res.status(500).json({ error: userResult.message })
 }
 
 export const command_RegisterUser = async (args: {
   username: string
   password: string
-}) => {
+}): AsyncResult<ParsedUserDocument, "FAILED_TO_REGISTER_USER"> => {
   const { username, password } = args
-  const user = await createUser(username, password)
+  const userResult = await createUser(username, password)
 
-  return makeUserDto(user)
-}
-
-const makeUserDto = (
-  user: UserDocument
-): Pick<ParsedUserDocument, "id" | "username"> => {
-  return {
-    id: user._id.toString(),
-    username: user.username,
+  if (userResult.success) {
+    return Result.Success(makeUserDto(userResult.data))
   }
+
+  return Result.Fail("FAILED_TO_REGISTER_USER")
 }

@@ -6,35 +6,47 @@ import useWebsocket from "react-use-websocket"
 type ResponseMessage =
   | {
       type: "game-found"
-      game: Game
+      payload: Game
     }
   | {
       type: "game-created"
-      gameId: string
-      whitePlayerId: string
+      payload: {
+        gameId: string
+        whitePlayerId: string
+        pgn: string
+      }
     }
   | {
       type: "move"
-      fen: string
+      payload: {
+        fen: string
+        pgn: string
+      }
     }
 
 type RequestMessage =
   | {
       type: "move"
-      gameId: string
-      playerId: string
-      move: Move & { number: number }
-      status: GameStatus
-      pgn: string
+      payload: {
+        gameId: string
+        playerId: string
+        move: Move & { number: number }
+        status: GameStatus
+        pgn: string
+      }
     }
   | {
       type: "join-game"
-      playerId: string
+      payload: {
+        playerId: string
+      }
     }
   | {
       type: "get-game"
-      gameId: string
-      playerId: string
+      payload: {
+        gameId: string
+        playerId: string
+      }
     }
 export const useGameSocket = () => {
   const {

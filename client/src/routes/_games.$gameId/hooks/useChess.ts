@@ -1,6 +1,6 @@
 import { Color, WHITE } from "chess.js"
 import { match } from "ts-pattern"
-import { Game, GameStatus } from "../types"
+import { Game, GameStatus, User } from "../types"
 import { useReducer } from "react"
 
 type State = {
@@ -16,6 +16,8 @@ type State = {
   myColor: Color
   /** The id of the local player */
   playerId: string
+  whitePlayer: User | null
+  blackPlayer: User | null
 }
 
 export enum GameActions {
@@ -48,8 +50,8 @@ type Action =
 const reducer = (state: State, action: Action): State =>
   match(action)
     .with({ type: GameActions.SET_GAME }, ({ payload }) => {
-      const { whitePlayer, moves, status } = payload
-      const color = whitePlayer._id === state.playerId ? "w" : ("b" as Color)
+      const { whitePlayer, blackPlayer, moves, status } = payload
+      const color = whitePlayer.id === state.playerId ? "w" : ("b" as Color)
       const lastMove = moves[moves.length - 1]
       const fen = lastMove
         ? lastMove.fen
@@ -62,6 +64,8 @@ const reducer = (state: State, action: Action): State =>
         fen,
         status,
         turn,
+        whitePlayer,
+        blackPlayer,
       }
     })
     .with({ type: GameActions.CREATE_GAME }, ({ payload }) => {
@@ -106,6 +110,8 @@ const getInitialState = (playerId: string): State => ({
   turn: WHITE,
   myColor: WHITE,
   playerId,
+  whitePlayer: null,
+  blackPlayer: null,
 })
 
 export const useChess = (playerId: string) =>

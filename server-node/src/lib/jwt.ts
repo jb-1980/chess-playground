@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import { ParsedUserDocument } from "../repository/user"
+import { User, userSchema } from "../domain/user"
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -9,17 +9,20 @@ if (!JWT_SECRET) {
   )
 }
 
-export const signToken = (
-  payload: Pick<ParsedUserDocument, "id" | "username">
-) => {
+export const signToken = (payload: User): string => {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: "24h",
   })
 }
 
-export const verifyToken = (token: string) => {
-  return jwt.verify(token, JWT_SECRET) as Pick<
-    ParsedUserDocument,
-    "id" | "username"
-  >
+export const verifyToken = (token: string): User => {
+  const verifiedToken = jwt.verify(token, JWT_SECRET)
+  const parsedUser = userSchema.safeParse(verifiedToken)
+  if (!parsedUser.success) {
+    console.error(parsedUser.error)
+    throw new Error(
+      "While token is valid, the payload is not of the expected shape"
+    )
+  }
+  return parsedUser.data
 }
