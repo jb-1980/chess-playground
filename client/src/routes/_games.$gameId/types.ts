@@ -1,4 +1,4 @@
-import { Color, PieceSymbol } from "chess.js"
+import { Move } from "chess.js"
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -12,20 +12,8 @@ export enum GameStatus {
 }
 
 export type Game = {
-  moves: {
-    /** A SAN string of the move */
-    move: string
-    /** The move number */
-    number: number
-    /** The player who made the move */
-    player: Color
-    /** The piece the pawn was promoted to */
-    promotion: PieceSymbol
-    /** The FEN string after the move */
-    fen: string
-    /** The time the move was made */
-    createdAt: string
-  }[]
+  id: string
+  moves: Move[]
   pgn: string
   whitePlayer: User
   blackPlayer: User
@@ -35,4 +23,5 @@ export type Game = {
 export type User = {
   id: string
   username: string
+  rank: number
 }

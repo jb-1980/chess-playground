@@ -3,21 +3,32 @@ import { useCallback } from "react"
 import { Game, GameStatus } from "../types"
 import useWebsocket from "react-use-websocket"
 
+export enum ResponseMessageType {
+  FETCH_GAME_RESPONSE = "fetch-game-response",
+  JOIN_GAME_RESPONSE = "join-game-response",
+  MOVE_RESPONSE = "move-response",
+  ERROR = "error",
+}
+
+export enum RequestMessageTypes {
+  MOVE = "move",
+  JOIN_GAME = "join-game",
+  GET_GAME = "get-game",
+}
+
 type ResponseMessage =
   | {
-      type: "game-found"
+      type: ResponseMessageType.FETCH_GAME_RESPONSE
       payload: Game
     }
   | {
-      type: "game-created"
+      type: ResponseMessageType.JOIN_GAME_RESPONSE
       payload: {
         gameId: string
-        whitePlayerId: string
-        pgn: string
       }
     }
   | {
-      type: "move"
+      type: ResponseMessageType.MOVE_RESPONSE
       payload: {
         fen: string
         pgn: string
@@ -26,7 +37,7 @@ type ResponseMessage =
 
 type RequestMessage =
   | {
-      type: "move"
+      type: RequestMessageTypes.MOVE
       payload: {
         gameId: string
         playerId: string
@@ -36,13 +47,13 @@ type RequestMessage =
       }
     }
   | {
-      type: "join-game"
+      type: RequestMessageTypes.JOIN_GAME
       payload: {
         playerId: string
       }
     }
   | {
-      type: "get-game"
+      type: RequestMessageTypes.GET_GAME
       payload: {
         gameId: string
         playerId: string

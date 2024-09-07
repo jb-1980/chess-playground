@@ -1,4 +1,4 @@
-import { Color, WHITE } from "chess.js"
+import { Color, DEFAULT_POSITION, WHITE } from "chess.js"
 import { match } from "ts-pattern"
 import { Game, GameStatus, User } from "../types"
 import { useReducer } from "react"
@@ -23,8 +23,7 @@ type State = {
 export enum GameActions {
   SET_MOVE = "SET_MOVE",
   JOIN_GAME = "JOIN_GAME",
-  CREATE_GAME = "CREATE_GAME",
-  SET_GAME = "SET_GAME",
+  FETCH_GAME = "FETCH_GAME",
 }
 
 type Action =
@@ -36,11 +35,7 @@ type Action =
       }
     }
   | {
-      type: GameActions.CREATE_GAME
-      payload: { whitePlayerId: string }
-    }
-  | {
-      type: GameActions.SET_GAME
+      type: GameActions.FETCH_GAME
       payload: Game
     }
   | {
@@ -49,13 +44,11 @@ type Action =
 
 const reducer = (state: State, action: Action): State =>
   match(action)
-    .with({ type: GameActions.SET_GAME }, ({ payload }) => {
+    .with({ type: GameActions.FETCH_GAME }, ({ payload }) => {
       const { whitePlayer, blackPlayer, moves, status } = payload
       const color = whitePlayer.id === state.playerId ? "w" : ("b" as Color)
       const lastMove = moves[moves.length - 1]
-      const fen = lastMove
-        ? lastMove.fen
-        : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+      const fen = lastMove ? lastMove.after : DEFAULT_POSITION
       const turn = fen.split(" ")[1] as Color
       console.log({ color, fen, status, turn })
       return {
@@ -68,19 +61,10 @@ const reducer = (state: State, action: Action): State =>
         blackPlayer,
       }
     })
-    .with({ type: GameActions.CREATE_GAME }, ({ payload }) => {
-      const { whitePlayerId } = payload
-
-      // create game
-      return {
-        ...state,
-        myColor:
-          whitePlayerId === state.playerId ? ("w" as Color) : ("b" as Color),
-        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        status: GameStatus.PLAYING,
-        turn: WHITE as Color,
-      }
-    })
+    .with({ type: GameActions.JOIN_GAME }, () => ({
+      ...state,
+      status: GameStatus.JOINING,
+    }))
     .with({ type: GameActions.SET_MOVE }, ({ payload }) => {
       const { fen, status } = payload
       const turn: Color = state.turn === "w" ? "b" : "w"
@@ -98,10 +82,6 @@ const reducer = (state: State, action: Action): State =>
         throw err
       }
     })
-    .with({ type: GameActions.JOIN_GAME }, () => ({
-      ...state,
-      status: GameStatus.JOINING,
-    }))
     .exhaustive()
 
 const getInitialState = (playerId: string): State => ({

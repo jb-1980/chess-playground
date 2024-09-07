@@ -6,7 +6,11 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useUserContext } from "../../Root/context"
 import { GameActions, useChess } from "../hooks/useChess"
 import { GameStatus } from "../types"
-import { useGameSocket } from "../hooks/useHandleMessage"
+import {
+  RequestMessageTypes,
+  ResponseMessageType,
+  useGameSocket,
+} from "../hooks/useHandleMessage"
 
 export const GameContext = createContext<GameContextValues | undefined>(
   undefined
@@ -43,7 +47,7 @@ export const GameContextProvider = ({
         })
 
         sendJsonMessage({
-          type: "move",
+          type: RequestMessageTypes.MOVE,
           payload: {
             gameId,
             move: {
@@ -70,28 +74,25 @@ export const GameContextProvider = ({
   useEffect(() => {
     if (lastJsonMessage !== null) {
       switch (lastJsonMessage.type) {
-        case "game-found": {
+        case ResponseMessageType.FETCH_GAME_RESPONSE: {
           const game = lastJsonMessage.payload
           console.log({ GameFoundPGN: game.pgn })
           chess.loadPgn(game.pgn)
           dispatch({
-            type: GameActions.SET_GAME,
+            type: GameActions.FETCH_GAME,
             payload: game,
           })
+          if (game.id !== gameId) {
+            navigate(`/games/${game.id}`)
+          }
           break
         }
-        case "game-created": {
-          const { gameId, whitePlayerId, pgn } = lastJsonMessage.payload
-          console.log({ gameCreatedPgn: pgn })
-          chess.loadPgn(pgn)
-          dispatch({
-            type: GameActions.CREATE_GAME,
-            payload: { whitePlayerId: whitePlayerId },
-          })
+        case ResponseMessageType.JOIN_GAME_RESPONSE: {
+          const { gameId } = lastJsonMessage.payload
           navigate(`/games/${gameId}`)
           break
         }
-        case "move": {
+        case ResponseMessageType.MOVE_RESPONSE: {
           const { pgn, fen } = lastJsonMessage.payload
           chess.loadPgn(pgn)
           dispatch({
@@ -105,21 +106,17 @@ export const GameContextProvider = ({
   }, [lastJsonMessage, navigate, chess, playerId, dispatch])
 
   useEffect(() => {
-    if (gameId === "new") {
-      sendJsonMessage({ type: "join-game", payload: { playerId } })
-    } else if (status === GameStatus.NOT_STARTED) {
-      sendJsonMessage({ type: "get-game", payload: { gameId, playerId } })
-    } else if (
-      ![
-        GameStatus.PLAYING,
-        GameStatus.CHECKMATE,
-        GameStatus.STALEMATE,
-        GameStatus.THREE_MOVE_REPETITION,
-        GameStatus.INSUFFICIENT_MATERIAL,
-        GameStatus.FIFTY_MOVE_RULE,
-      ].includes(status)
-    ) {
+    if (gameId === "new" && status === GameStatus.NOT_STARTED) {
       dispatch({ type: GameActions.JOIN_GAME })
+      sendJsonMessage({
+        type: RequestMessageTypes.JOIN_GAME,
+        payload: { playerId },
+      })
+    } else if (status === GameStatus.JOINING) {
+      sendJsonMessage({
+        type: RequestMessageTypes.GET_GAME,
+        payload: { gameId, playerId },
+      })
     }
   }, [gameId, playerId, sendJsonMessage, status, dispatch])
 
@@ -129,7 +126,7 @@ export const GameContextProvider = ({
   )
 
   if ([GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)) {
-    return <div>Loading...</div>
+    return <div>Joining...</div>
   }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

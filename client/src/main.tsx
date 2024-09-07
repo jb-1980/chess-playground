@@ -14,6 +14,8 @@ import { GamesIdRoute } from "./routes/_games.$gameId/route"
 import { LogoutRoute } from "./routes/logout/route"
 import { ThemeProvider } from "@emotion/react"
 import { createTheme } from "@mui/material"
+import { GamesRoute } from "./routes/games/route"
+import { QueryClientProvier } from "./lib/react-query"
 
 const theme = createTheme({
   palette: {
@@ -33,7 +35,7 @@ if (!rootElement) {
 }
 
 const router = createBrowserRouter([
-  RootRoute([GamesIdRoute(), IndexRoute()]),
+  RootRoute([GamesRoute(), GamesIdRoute(), IndexRoute()]),
   LoginRoute(),
   SignupRoute(),
   LogoutRoute(),
@@ -42,7 +44,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <RouterProvider router={router} />
+      <QueryClientProvier>
+        <RouterProvider router={router} />
+      </QueryClientProvier>
     </ThemeProvider>
   </React.StrictMode>
 )

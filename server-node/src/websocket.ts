@@ -14,7 +14,7 @@ import { match } from "ts-pattern"
 import { command_CreateGame } from "./commands/create-game"
 import { isFailure } from "./lib/result"
 import { makeUserDto, User } from "./domain/user"
-import { moveSchema } from "./domain/game"
+import { Game, makeGameDTO, moveSchema } from "./domain/game"
 
 export const webSocketServer = new WebSocketServer({
   clientTracking: false,
@@ -59,22 +59,28 @@ export const handleUpgrade = (
   })
 }
 
+enum RequestMessageTypes {
+  MOVE = "move",
+  JOIN_GAME = "join-game",
+  GET_GAME = "get-game",
+}
+
 const messageSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("join-game"),
+    type: z.literal(RequestMessageTypes.JOIN_GAME),
     payload: z.object({
       playerId: z.string(),
     }),
   }),
   z.object({
-    type: z.literal("get-game"),
+    type: z.literal(RequestMessageTypes.GET_GAME),
     payload: z.object({
       gameId: z.string(),
       playerId: z.string(),
     }),
   }),
   z.object({
-    type: z.literal("move"),
+    type: z.literal(RequestMessageTypes.MOVE),
     payload: z.object({
       gameId: z.string(),
       playerId: z.string(),
@@ -101,7 +107,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
   }
 
   match(parsedMessage.data)
-    .with({ type: "join-game" }, async ({ payload }) => {
+    .with({ type: RequestMessageTypes.JOIN_GAME }, async ({ payload }) => {
       const { playerId } = payload
       const alreadyWaiting = Queue.find(
         (player) => player.playerId === playerId
@@ -140,16 +146,14 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
             )
           }
 
-          const { gameId, whitePlayer } = createGameResult.data
+          const { gameId } = createGameResult.data
           Games.set(gameId, {
             white: waitingPlayer.socket,
             black: ws,
           })
           const response = JSON.stringify(
-            makeGameCreatedMessage({
+            makeJoinGameResponseMessage({
               gameId,
-              whitePlayerId: whitePlayer.id,
-              pgn: "",
             })
           )
           ws.send(response)
@@ -159,7 +163,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
       }
       return
     })
-    .with({ type: "get-game" }, async ({ payload }) => {
+    .with({ type: RequestMessageTypes.GET_GAME }, async ({ payload }) => {
       const { gameId, playerId } = payload
 
       const gameResult = await getGameById(gameId)
@@ -178,7 +182,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
       }
 
       const gameSockets = Games.get(gameId)
-      const response = JSON.stringify(makeGameFoundMessage(game))
+      const response = JSON.stringify(makeGameFoundResponseMessage(game))
 
       const color =
         game.whitePlayer._id.toString() === playerId ? "white" : "black"
@@ -203,7 +207,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
       gameSockets.white?.send(response)
       return
     })
-    .with({ type: "move" }, async ({ payload }) => {
+    .with({ type: RequestMessageTypes.MOVE }, async ({ payload }) => {
       const { gameId, playerId, move, status, pgn } = payload
       let gameSockets = Games.get(gameId)
 
@@ -245,7 +249,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
       }
 
       gameSockets[otherPlayer]?.send(
-        JSON.stringify(makeMoveMessage({ fen: move.after, pgn }))
+        JSON.stringify(makeMoveResponseMessage({ fen: move.after, pgn }))
       )
 
       return
@@ -253,68 +257,71 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
     .exhaustive()
 }
 
-type GameFoundMessage = {
-  type: "game-found"
-  payload: Omit<GameDocument, "whitePlayer" | "blackPlayer"> & {
-    whitePlayer: User
-    blackPlayer: User
-  }
+enum MessageResponseType {
+  FETCH_GAME_RESPONSE = "fetch-game-response",
+  JOIN_GAME_RESPONSE = "join-game-response",
+  MOVE_RESPONSE = "move-response",
+  ERROR = "error",
 }
-type GameCreatedMessage = {
-  type: "game-created"
+
+type FetchGameResponseMessage = {
+  type: MessageResponseType.FETCH_GAME_RESPONSE
+  payload: Game
+}
+type JoinGameResponseMessage = {
+  type: MessageResponseType.JOIN_GAME_RESPONSE
   payload: {
     gameId: string
-    pgn: string
-    whitePlayerId: string
   }
 }
-type MoveMessage = {
-  type: "move"
+type MoveResponseMessage = {
+  type: MessageResponseType.MOVE_RESPONSE
   payload: {
     fen: string
     pgn: string
   }
 }
-type ErrorMessage = {
-  type: "error"
+type ErrorResponseMessage = {
+  type: MessageResponseType.ERROR
   payload: {
     message: string
     error: unknown
   }
 }
 
-const makeErrorMessage = (message: string, error: unknown): ErrorMessage => ({
-  type: "error",
+const makeErrorMessage = (
+  message: string,
+  error: unknown
+): ErrorResponseMessage => ({
+  type: MessageResponseType.ERROR,
   payload: {
     message,
     error,
   },
 })
 
-const makeGameFoundMessage = (payload: GameDocument): GameFoundMessage => {
+const makeGameFoundResponseMessage = (
+  payload: GameDocument
+): FetchGameResponseMessage => {
   return {
-    type: "game-found",
-    payload: {
-      ...payload,
-      whitePlayer: makeUserDto(payload.whitePlayer),
-      blackPlayer: makeUserDto(payload.blackPlayer),
-    },
+    type: MessageResponseType.FETCH_GAME_RESPONSE,
+    payload: makeGameDTO(payload),
   }
 }
 
-const makeGameCreatedMessage = (payload: {
+const makeJoinGameResponseMessage = (payload: {
   gameId: string
-  whitePlayerId: string
-  pgn: string
-}): GameCreatedMessage => ({
-  type: "game-created",
-  payload,
+}): JoinGameResponseMessage => ({
+  type: MessageResponseType.JOIN_GAME_RESPONSE,
+  payload: {
+    gameId: payload.gameId,
+  },
 })
 
-const makeMoveMessage = (payload: {
+const makeMoveResponseMessage = (payload: {
   fen: string
   pgn: string
-}): MoveMessage => ({
-  type: "move",
+}): MoveResponseMessage => ({
+  type: MessageResponseType.MOVE_RESPONSE,
   payload,
 })

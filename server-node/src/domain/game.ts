@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { makeUserDto, User, userSchema } from "./user"
+import { GameDocument } from "../repository/game"
 
 // prettier-ignore
 export const Square = z.enum([
@@ -43,3 +45,33 @@ export const moveSchema = z.object({
 })
 
 export type Move = z.infer<typeof moveSchema>
+
+export enum GameStatus {
+  NOT_STARTED = "NOT_STARTED",
+  JOINING = "JOINING",
+  PLAYING = "PLAYING",
+  CHECKMATE = "CHECKMATE",
+  STALEMATE = "STALEMATE",
+  THREE_MOVE_REPETITION = "THREE_MOVE_REPETITION",
+  INSUFFICIENT_MATERIAL = "INSUFFICIENT_MATERIAL",
+  FIFTY_MOVE_RULE = "FIFTY_MOVE_RULE",
+}
+
+export const gameSchema = z.object({
+  id: z.string(),
+  moves: z.array(moveSchema),
+  pgn: z.string(),
+  whitePlayer: userSchema,
+  blackPlayer: userSchema,
+  status: z.nativeEnum(GameStatus),
+})
+export type Game = z.infer<typeof gameSchema>
+
+export const makeGameDTO = (game: GameDocument): Game => ({
+  id: game._id.toHexString(),
+  moves: game.moves,
+  pgn: game.pgn,
+  whitePlayer: makeUserDto(game.whitePlayer),
+  blackPlayer: makeUserDto(game.blackPlayer),
+  status: game.status,
+})

@@ -86,6 +86,7 @@ export const createGame = async (
 export const getGameById = async (
   id: string
 ): AsyncResult<GameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> => {
+  console.log({ gameId: id })
   try {
     const game = await Game.findOne({ _id: new ObjectId(id) })
     return Result.Success(game)
@@ -121,5 +122,22 @@ export const addMoveToGame = async (args: {
   } catch (error) {
     console.error(error)
     return Result.Fail("DB_ERROR_ADDING_MOVE_TO_GAME", error)
+  }
+}
+
+export const getGamesForPlayerId = async (
+  playerId: string
+): AsyncResult<GameDocument[], "DB_ERR_GET_GAMES_FOR_USER_ID"> => {
+  try {
+    const games = await Game.find({
+      $or: [
+        { "whitePlayer._id": new ObjectId(playerId) },
+        { "blackPlayer._id": new ObjectId(playerId) },
+      ],
+    }).toArray()
+    return Result.Success(games)
+  } catch (error) {
+    console.error(error)
+    return Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID", error)
   }
 }
