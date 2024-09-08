@@ -23,5 +23,5 @@ export type Game = {
 export type User = {
   id: string
   username: string
-  rank: number
+  rating: number
 }

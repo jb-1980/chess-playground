@@ -2,21 +2,11 @@ import { ObjectId } from "mongodb"
 import { MongoCollection } from "./collection"
 import { AsyncResult, Result } from "../lib/result"
 import { UserDocument } from "./user"
-import { User } from "../domain/user"
-import { Move } from "../domain/game"
+import { GameStatus, Move } from "../domain/game"
+import { calculateNewRatings } from "../lib/chess"
+import DataLoader from "dataloader"
 
-export enum GameStatus {
-  PLAYING = "PLAYING",
-  CHECKMATE = "CHECKMATE",
-  STALEMATE = "STALEMATE",
-  THREE_MOVE_REPETITION = "THREE_MOVE_REPETITION",
-  INSUFFICIENT_MATERIAL = "INSUFFICIENT_MATERIAL",
-  FIFTY_MOVE_RULE = "FIFTY_MOVE_RULE",
-}
-
-export type GameUser = Omit<User, "id"> & {
-  _id: ObjectId
-}
+type GameUser = Pick<UserDocument, "_id" | "username" | "rating" | "avatarUrl">
 
 export type GameDocument = {
   _id: ObjectId
@@ -25,119 +15,196 @@ export type GameDocument = {
   whitePlayer: GameUser
   blackPlayer: GameUser
   status: GameStatus
+  createdAt: Date
+  outcome: {
+    winner: string | null
+    draw: boolean
+  }
+  outcomes: {
+    whiteWins: {
+      whiteRating: number
+      blackRating: number
+    }
+    blackWins: {
+      whiteRating: number
+      blackRating: number
+    }
+    draw: {
+      whiteRating: number
+      blackRating: number
+    }
+  }
 }
 
 const Game = MongoCollection<GameDocument>("games")
 
-const toGameUserFromUser = (user: UserDocument): GameUser => ({
+const toGameUserFromUserDocument = (user: UserDocument): GameUser => ({
   _id: user._id,
   username: user.username,
   rating: user.rating,
   avatarUrl: user.avatarUrl,
 })
 
-const initializePgn = (
-  whitePlayer: GameUser,
-  blackPlayer: GameUser
-): string => {
-  return `[Event "Live Chess"]
-[Site "chess-app"]
-[White "${whitePlayer.username}"]
-[Black "${blackPlayer.username}"]
-[UTCDate "${new Date().toISOString().split("T")[0]}"]
-[UTCTime "${new Date().toISOString().split("T")[1].split(".")[0]}"]
-[WhiteElo "${whitePlayer.rating}"]
-[BlackElo "${blackPlayer.rating}"]
-[Result "*"]
-`
-}
+export class GameLoader {
+  private _batchGames = new DataLoader<string, GameDocument | null>(
+    async (ids) => {
+      const games = await Game.find({
+        _id: { $in: ids.map((id) => new ObjectId(id)) },
+      }).toArray()
 
-export const createGame = async (
-  whiteUser: UserDocument,
-  blackUser: UserDocument
-): AsyncResult<
-  {
-    gameId: string
-    pgn: string
-  },
-  "DB_ERR_FAILED_TO_CREATE_GAME"
-> => {
-  const whitePlayer = toGameUserFromUser(whiteUser)
-  const blackPlayer = toGameUserFromUser(blackUser)
-  const pgn = initializePgn(whitePlayer, blackPlayer)
-  try {
-    const response = await Game.insertOne({
-      whitePlayer,
-      blackPlayer,
-      moves: [],
-      pgn,
-      status: GameStatus.PLAYING,
-    })
-    return Result.Success({
-      gameId: response.insertedId.toString(),
-      pgn,
-    })
-  } catch (error) {
-    console.error(error)
-    return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
+      const gamesMap = games.reduce((map, game) => {
+        map[game._id.toString()] = game
+        return map
+      }, {} as Record<string, GameDocument>)
+
+      return ids.map((id) => gamesMap[id] || null)
+    }
+  )
+
+  private _batchGamesForPlayer = new DataLoader<string, GameDocument[]>(
+    async (ids) => {
+      const games = await Game.find({
+        $or: [
+          { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+          { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+        ],
+      }).toArray()
+
+      const gamesMap = games.reduce((map, game) => {
+        const whitePlayerId = game.whitePlayer._id.toString()
+        const blackPlayerId = game.blackPlayer._id.toString()
+        map[whitePlayerId] = map[whitePlayerId] || []
+        map[blackPlayerId] = map[blackPlayerId] || []
+        map[whitePlayerId].push(game)
+        map[blackPlayerId].push(game)
+        return map
+      }, {} as Record<string, GameDocument[]>)
+
+      return ids.map((id) => gamesMap[id] || [])
+    }
+  )
+
+  async getGameById(
+    id: string
+  ): AsyncResult<GameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> {
+    try {
+      const game = await this._batchGames.load(id)
+      return Result.Success(game)
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERROR_WHILE_GETTING_GAME", error)
+    }
+  }
+
+  async getGamesForPlayerId(
+    playerId: string
+  ): AsyncResult<GameDocument[], "DB_ERR_GET_GAMES_FOR_USER_ID"> {
+    try {
+      const games = await this._batchGamesForPlayer.load(playerId)
+      return Result.Success(games)
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID", error)
+    }
   }
 }
 
-export const getGameById = async (
-  id: string
-): AsyncResult<GameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> => {
-  console.log({ gameId: id })
-  try {
-    const game = await Game.findOne({ _id: new ObjectId(id) })
-    return Result.Success(game)
-  } catch (error) {
-    console.error(error)
-    return Result.Fail("DB_ERROR_WHILE_GETTING_GAME", error)
-  }
-}
-
-export const addMoveToGame = async (args: {
-  gameId: string
-  move: Move
-  status: GameStatus
-  pgn: string
-}): AsyncResult<GameDocument | null, "DB_ERROR_ADDING_MOVE_TO_GAME"> => {
-  const { gameId, move, status, pgn } = args
-  try {
-    await Game.updateOne(
-      { _id: new ObjectId(gameId) },
-      {
-        $push: {
-          moves: {
-            ...move,
-            createdAt: new Date(),
-          },
-        },
-        $set: { status, pgn },
-      }
+export class GameMutator {
+  public async createGame(
+    whiteUser: UserDocument,
+    blackUser: UserDocument
+  ): AsyncResult<string, "DB_ERR_FAILED_TO_CREATE_GAME"> {
+    const whitePlayer = toGameUserFromUserDocument(whiteUser)
+    const blackPlayer = toGameUserFromUserDocument(blackUser)
+    const whiteWinsOutcome = calculateNewRatings(
+      whitePlayer.rating,
+      blackPlayer.rating,
+      1
     )
-
-    const game = await Game.findOne({ _id: new ObjectId(gameId) })
-    return Result.Success(game)
-  } catch (error) {
-    console.error(error)
-    return Result.Fail("DB_ERROR_ADDING_MOVE_TO_GAME", error)
+    const blackWinsOutcome = calculateNewRatings(
+      whitePlayer.rating,
+      blackPlayer.rating,
+      0
+    )
+    const drawOutcome = calculateNewRatings(
+      whitePlayer.rating,
+      blackPlayer.rating,
+      0.5
+    )
+    try {
+      const response = await Game.insertOne({
+        whitePlayer,
+        blackPlayer,
+        moves: [],
+        pgn: "",
+        status: GameStatus.PLAYING,
+        createdAt: new Date(),
+        outcome: {
+          winner: null,
+          draw: false,
+        },
+        outcomes: {
+          whiteWins: whiteWinsOutcome,
+          blackWins: blackWinsOutcome,
+          draw: drawOutcome,
+        },
+      })
+      return Result.Success(response.insertedId.toString())
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
+    }
   }
-}
 
-export const getGamesForPlayerId = async (
-  playerId: string
-): AsyncResult<GameDocument[], "DB_ERR_GET_GAMES_FOR_USER_ID"> => {
-  try {
-    const games = await Game.find({
-      $or: [
-        { "whitePlayer._id": new ObjectId(playerId) },
-        { "blackPlayer._id": new ObjectId(playerId) },
-      ],
-    }).toArray()
-    return Result.Success(games)
-  } catch (error) {
-    console.error(error)
-    return Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID", error)
+  public async addMoveToGame(args: {
+    gameId: string
+    move: Move
+    status: GameStatus
+    pgn: string
+  }): AsyncResult<boolean, "DB_ERROR_ADDING_MOVE_TO_GAME" | "INVALID_MOVE"> {
+    const { gameId, move, status, pgn } = args
+    try {
+      const { acknowledged } = await Game.updateOne(
+        { _id: new ObjectId(gameId) },
+        {
+          $push: {
+            moves: {
+              ...move,
+              createdAt: new Date(),
+            },
+          },
+          $set: { status, pgn },
+        }
+      )
+
+      return Result.Success(acknowledged)
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERROR_ADDING_MOVE_TO_GAME", error)
+    }
+  }
+
+  public async setOutcome(
+    gameId: string,
+    winner: string | null,
+    draw: boolean
+  ): AsyncResult<boolean, "DB_ERR_SET_OUTCOME"> {
+    try {
+      const { acknowledged } = await Game.updateOne(
+        { _id: new ObjectId(gameId) },
+        {
+          $set: {
+            outcome: {
+              winner,
+              draw,
+            },
+          },
+        }
+      )
+      return Result.Success(acknowledged)
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERR_SET_OUTCOME", error)
+    }
   }
 }

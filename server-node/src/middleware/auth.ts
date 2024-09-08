@@ -1,0 +1,57 @@
+import jwt from "jsonwebtoken"
+import { User, userSchema } from "../domain/user"
+import { NextFunction, Request, Response } from "express"
+
+const JWT_SECRET = process.env.JWT_SECRET
+
+if (!JWT_SECRET) {
+  throw new Error(
+    "Please define the JWT_SECRET environment variable inside .env"
+  )
+}
+
+export const signToken = (payload: User): string => {
+  userSchema.parse(payload)
+
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: "24h",
+  })
+}
+
+export const verifyToken = (token: string): User => {
+  const verifiedToken = jwt.verify(token, JWT_SECRET)
+  const parsedUser = userSchema.safeParse(verifiedToken)
+  if (!parsedUser.success) {
+    console.error(parsedUser.error)
+    throw new Error("MALFORMED_TOKEN_ERROR")
+  }
+  return parsedUser.data
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: User
+    }
+  }
+}
+
+export const authenticationMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const tokenHeader = req.headers.authorization
+  if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+    return res.sendStatus(401)
+  }
+  const token = tokenHeader?.split(" ")[1]
+  try {
+    req.user = verifyToken(token)
+    console.log("req.user", req.user)
+    next()
+  } catch (error) {
+    console.error(error)
+    return res.status(401).json({ error: "INVALID_TOKEN" })
+  }
+}

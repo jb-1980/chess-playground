@@ -35,7 +35,7 @@ if (!rootElement) {
 }
 
 const router = createBrowserRouter([
-  RootRoute([GamesRoute(), GamesIdRoute(), IndexRoute()]),
+  RootRoute([GamesIdRoute(), GamesRoute(), IndexRoute()]),
   LoginRoute(),
   SignupRoute(),
   LogoutRoute(),

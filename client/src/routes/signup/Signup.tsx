@@ -20,7 +20,7 @@ export const Signup = () => {
   const [password, setPassword] = useState("")
 
   const handleSignup = () => {
-    fetch(`http://${hostname}:5000/api/register-user`, {
+    fetch(`http://${hostname}:5000/register-user`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

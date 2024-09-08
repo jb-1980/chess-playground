@@ -15,6 +15,7 @@ export const useGetGames = (playerId: string) => {
           body: JSON.stringify({ playerId }),
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       )

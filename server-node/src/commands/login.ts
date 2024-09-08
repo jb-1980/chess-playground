@@ -1,10 +1,10 @@
 import { Request, Response } from "express"
 import { z, ZodError } from "zod"
-import { getUser } from "../repository/user"
 import bcrypt from "bcrypt"
-import { signToken } from "../lib/jwt"
+import { signToken } from "../middleware/auth"
 import { AsyncResult, isFailure, Result } from "../lib/result"
 import { makeUserDto } from "../domain/user"
+import { Context } from "../middleware/context"
 
 const RegisterUserSchema = z.object({
   username: z.string(),
@@ -22,19 +22,22 @@ export const handle_LoginUser = async (
     return res.status(400).json(parsedBody.error)
   }
 
-  const tokenResult = await command_LoginUser(parsedBody.data)
+  const tokenResult = await command_LoginUser(parsedBody.data, req.context)
   if (isFailure(tokenResult)) {
     return res.status(400).json({ error: tokenResult.message })
   }
   return res.status(200).json({ token: tokenResult.data })
 }
 
-export const command_LoginUser = async (args: {
-  username: string
-  password: string
-}): AsyncResult<string, "BAD_CREDENTIALS" | "DB_ERR_FAILED_TO_GET_USER"> => {
+export const command_LoginUser = async (
+  args: {
+    username: string
+    password: string
+  },
+  { Loader }: Context
+): AsyncResult<string, "BAD_CREDENTIALS" | "DB_ERR_FAILED_TO_GET_USER"> => {
   const { username, password } = args
-  const userResult = await getUser(username)
+  const userResult = await Loader.UserLoader.getUser(username)
 
   if (!userResult.success) {
     return userResult

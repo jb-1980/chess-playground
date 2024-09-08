@@ -1,13 +1,9 @@
 import { Request, Response } from "express"
 import { z, ZodError } from "zod"
-import {
-  createUser,
-  ParsedUserDocument,
-  UserDocument,
-} from "../repository/user"
-import { signToken } from "../lib/jwt"
+import { signToken } from "../middleware/auth"
 import { AsyncResult, Result } from "../lib/result"
-import { makeUserDto } from "../domain/user"
+import { makeUserDto, User } from "../domain/user"
+import { Context } from "../middleware/context"
 
 const RegisterUserSchema = z.object({
   username: z.string(),
@@ -25,7 +21,7 @@ export const handle_registerUser = async (
     return res.status(400).json(parsedBody.error)
   }
 
-  const userResult = await command_RegisterUser(parsedBody.data)
+  const userResult = await command_RegisterUser(parsedBody.data, req.context)
 
   if (userResult.success) {
     return res.status(200).json({
@@ -36,12 +32,15 @@ export const handle_registerUser = async (
   return res.status(500).json({ error: userResult.message })
 }
 
-export const command_RegisterUser = async (args: {
-  username: string
-  password: string
-}): AsyncResult<ParsedUserDocument, "FAILED_TO_REGISTER_USER"> => {
+export const command_RegisterUser = async (
+  args: {
+    username: string
+    password: string
+  },
+  { Mutator }: Context
+): AsyncResult<User, "FAILED_TO_REGISTER_USER"> => {
   const { username, password } = args
-  const userResult = await createUser(username, password)
+  const userResult = await Mutator.UserMutator.createUser(username, password)
 
   if (userResult.success) {
     return Result.Success(makeUserDto(userResult.data))

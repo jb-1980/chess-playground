@@ -24,6 +24,14 @@ export const Games = () => {
   if (error) {
     return <div>Error: {error.message}</div>
   }
+  function getResultFromPGN(pgn: string) {
+    const regex = /\[Result "(.*)"\]/
+    const match = pgn.match(regex)
+    if (!match) {
+      return [null, null]
+    }
+    return match[1].split("-")
+  }
 
   return (
     <Container>
@@ -40,29 +48,49 @@ export const Games = () => {
           </TableHead>
           <TableBody>
             {data?.map((game) => {
+              const result = getResultFromPGN(game.pgn)
               return (
                 <TableRow
                   key={game.id}
                   component={Link}
                   to={`/games/${game.id}/review`}
+                  style={{ textDecoration: "none" }}
                 >
                   <TableCell>
                     <div>
-                      <div>
-                        {game.whitePlayer.username} ({game.whitePlayer.rank})
-                      </div>
-                      <div>
-                        {game.blackPlayer.username} ({game.blackPlayer.rank})
-                      </div>
+                      <Typography variant="subtitle2">
+                        <div
+                          style={{
+                            display: "inline-block",
+                            width: 7,
+                            height: 7,
+                            background: "#fff",
+                            border: "1px solid #000",
+                          }}
+                        />{" "}
+                        {game.whitePlayer.username} ({game.whitePlayer.rating})
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        <div
+                          style={{
+                            display: "inline-block",
+                            width: 7,
+                            height: 7,
+                            background: "#000",
+                            border: "1px solid #000",
+                          }}
+                        />{" "}
+                        {game.blackPlayer.username} ({game.blackPlayer.rating})
+                      </Typography>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div>1</div>
-                      <div>0</div>
+                      <Typography variant="subtitle2">{result[0]}</Typography>
+                      <Typography variant="subtitle2">{result[1]}</Typography>
                     </div>
                   </TableCell>
-                  <TableCell>{game.moves.length}</TableCell>
+                  <TableCell>{Math.floor(game.moves.length / 2)}</TableCell>
                   <TableCell>{new Date().toISOString().slice(0, 10)}</TableCell>
                 </TableRow>
               )

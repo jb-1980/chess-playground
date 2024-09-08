@@ -16,7 +16,7 @@ export const Login = () => {
   const [password, setPassword] = useState("")
 
   const handleLogin = () => {
-    fetch(`http://${window.location.hostname}:5000/api/login`, {
+    fetch(`http://${window.location.hostname}:5000/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

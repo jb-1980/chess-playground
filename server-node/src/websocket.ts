@@ -1,25 +1,25 @@
-import { RawData, WebSocketServer, type WebSocket } from "ws"
-import { getUsersByIds } from "./repository/user"
-import {
-  addMoveToGame,
-  createGame,
-  GameDocument,
-  GameStatus,
-  getGameById,
-} from "./repository/game"
+import { RawData, WebSocketServer, WebSocket } from "ws"
+import { GameDocument } from "./repository/game"
 import { IncomingMessage } from "node:http"
 import internal from "node:stream"
 import { z } from "zod"
 import { match } from "ts-pattern"
 import { command_CreateGame } from "./commands/create-game"
 import { isFailure } from "./lib/result"
-import { makeUserDto, User } from "./domain/user"
-import { Game, makeGameDTO, moveSchema } from "./domain/game"
+import { Game, GameStatus, makeGameDTO, moveSchema } from "./domain/game"
+import { createPgnFromMoves, getStatus, validateMove } from "./lib/chess"
+import { Context, createContext } from "./middleware/context"
+import { verifyToken } from "./middleware/auth"
+import { User } from "./domain/user"
 
 export const webSocketServer = new WebSocketServer({
   clientTracking: false,
   noServer: true,
 })
+
+interface ExtWebSocket extends WebSocket {
+  context: Context
+}
 
 const Queue: {
   playerId: string
@@ -30,7 +30,7 @@ const Games = new Map<
   { white: WebSocket | null; black: WebSocket | null }
 >()
 
-webSocketServer.on("connection", (ws) => {
+webSocketServer.on("connection", (ws: ExtWebSocket) => {
   ws.on("error", (err) => {})
 
   ws.on("message", async (message) => {
@@ -45,6 +45,7 @@ webSocketServer.on("connection", (ws) => {
 function onSocketError(err: Error) {
   console.error(err)
 }
+
 export const handleUpgrade = (
   req: IncomingMessage,
   socket: internal.Duplex,
@@ -54,8 +55,28 @@ export const handleUpgrade = (
 
   socket.removeListener("error", onSocketError)
 
+  const tokenString = req.headers["sec-websocket-protocol"]
+  if (!tokenString) {
+    socket.write("HTTP/1.1 401 Missing Authentication\r\n\r\n")
+    socket.destroy()
+    return
+  }
+
+  let user: User
+  try {
+    const token = tokenString.split(" ")[1]
+    user = verifyToken(token)
+  } catch (err) {
+    console.error(err)
+    socket.write("HTTP/1.1 401 Bad Credentials\r\n\r\n")
+    socket.destroy()
+    return
+  }
+
   webSocketServer.handleUpgrade(req, socket, head, (ws) => {
-    webSocketServer.emit("connection", ws, req)
+    const wsWithExt = ws as ExtWebSocket
+    wsWithExt.context = createContext(user)
+    webSocketServer.emit("connection", wsWithExt)
   })
 }
 
@@ -63,6 +84,11 @@ enum RequestMessageTypes {
   MOVE = "move",
   JOIN_GAME = "join-game",
   GET_GAME = "get-game",
+  TIMEOUT = "timeout",
+  RESIGN = "resign",
+  DRAW = "draw",
+  OFFER_DRAW = "offer-draw",
+  ABANDON = "abandon",
 }
 
 const messageSchema = z.discriminatedUnion("type", [
@@ -89,9 +115,36 @@ const messageSchema = z.discriminatedUnion("type", [
       pgn: z.string(),
     }),
   }),
+  // z.object({
+  //   type: z.literal(RequestMessageTypes.TIMEOUT),
+  //   payload: z.object({
+  //     gameId: z.string(),
+  //     playerId: z.string(),
+  //   }),
+  // }),
+  // z.object({
+  //   type: z.literal(RequestMessageTypes.RESIGN),
+  //   payload: z.object({
+  //     gameId: z.string(),
+  //     playerId: z.string(),
+  //   }),
+  // }),
+  // z.object({
+  //   type: z.literal(RequestMessageTypes.DRAW),
+  //   payload: z.object({
+  //     gameId: z.string(),
+  //   }),
+  // }),
+  // z.object({
+  //   type: z.literal(RequestMessageTypes.OFFER_DRAW),
+  //   payload: z.object({
+  //     gameId: z.string(),
+  //     playerId: z.string(),
+  //   }),
+  // }),
 ])
 
-const messageHandler = (ws: WebSocket, data: RawData) => {
+const messageHandler = (ws: ExtWebSocket, data: RawData) => {
   const message = JSON.parse(data.toString())
   const parsedMessage = messageSchema.safeParse(message)
   if (!parsedMessage.success) {
@@ -106,6 +159,8 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
     )
   }
 
+  const context = ws.context
+  console.dir({ parsedMessage }, { depth: null, colors: true })
   match(parsedMessage.data)
     .with({ type: RequestMessageTypes.JOIN_GAME }, async ({ payload }) => {
       const { playerId } = payload
@@ -125,10 +180,10 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
         const waitingPlayer = Queue.shift()
 
         if (waitingPlayer) {
-          const createGameResult = await command_CreateGame([
-            waitingPlayer.playerId,
-            newPlayerId,
-          ])
+          const createGameResult = await command_CreateGame(
+            [waitingPlayer.playerId, newPlayerId],
+            context
+          )
 
           if (isFailure(createGameResult)) {
             Queue.unshift(waitingPlayer)
@@ -166,7 +221,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
     .with({ type: RequestMessageTypes.GET_GAME }, async ({ payload }) => {
       const { gameId, playerId } = payload
 
-      const gameResult = await getGameById(gameId)
+      const gameResult = await context.Loader.GameLoader.getGameById(gameId)
       if (isFailure(gameResult)) {
         ws.send(
           JSON.stringify(
@@ -208,10 +263,55 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
       return
     })
     .with({ type: RequestMessageTypes.MOVE }, async ({ payload }) => {
-      const { gameId, playerId, move, status, pgn } = payload
+      const { gameId, playerId, move } = payload
       let gameSockets = Games.get(gameId)
 
-      const addMoveResult = await addMoveToGame({
+      const isValidMove = validateMove(move.before, move.san)
+      if (!isValidMove) {
+        ws.send(JSON.stringify(makeErrorMessage("Invalid move", { move })))
+        return
+      }
+
+      const status = getStatus(move.after)
+
+      const gameResult = await context.Loader.GameLoader.getGameById(gameId)
+      if (isFailure(gameResult)) {
+        ws.send(
+          JSON.stringify(
+            makeErrorMessage("Failed to get game", gameResult.message)
+          )
+        )
+        return
+      }
+
+      const game = gameResult.data
+      if (!game) {
+        ws.send(JSON.stringify(makeErrorMessage("Game not found", null)))
+        return
+      }
+
+      const headers: { [key: string]: string } = {
+        Event: "Live Chess",
+        Site: "chess-app",
+        White: game.whitePlayer.username,
+        Black: game.blackPlayer.username,
+        UTCDate: game.createdAt.toISOString().split("T")[0],
+        UTCTime: game.createdAt.toISOString().split("T")[1].split(".")[0],
+        WhiteElo: game.whitePlayer.rating.toString(),
+        BlackElo: game.blackPlayer.rating.toString(),
+        Result: "*",
+      }
+      if (status === GameStatus.CHECKMATE) {
+        headers.Result = move.color === "w" ? "1-0" : "0-1"
+      } else if (status === GameStatus.STALEMATE) {
+        headers.Result = "1/2-1/2"
+      }
+      const pgn = createPgnFromMoves(
+        [...game.moves, move].map((m) => m.san),
+        headers
+      )
+
+      const addMoveResult = await context.Mutator.GameMutator.addMoveToGame({
         gameId,
         move,
         status,
@@ -230,11 +330,50 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
         return
       }
 
-      const game = addMoveResult.data
+      const gameOverOutcomes = [
+        GameStatus.CHECKMATE,
+        GameStatus.STALEMATE,
+        GameStatus.THREE_MOVE_REPETITION,
+        GameStatus.INSUFFICIENT_MATERIAL,
+        GameStatus.FIFTY_MOVE_RULE,
+      ]
+      if (gameOverOutcomes.includes(status)) {
+        const newRatings = {
+          whiteRating: game.whitePlayer.rating,
+          blackRating: game.blackPlayer.rating,
+        }
+        const outcome = {
+          winner: status === GameStatus.CHECKMATE ? move.color : null,
+          draw: status !== GameStatus.CHECKMATE,
+        }
+        const whiteWins = move.color === "w"
+        if (status === GameStatus.CHECKMATE) {
+          newRatings.whiteRating = whiteWins
+            ? game.outcomes.whiteWins.whiteRating
+            : game.outcomes.blackWins.whiteRating
+          newRatings.blackRating = whiteWins
+            ? game.outcomes.whiteWins.blackRating
+            : game.outcomes.blackWins.blackRating
+        } else {
+          newRatings.whiteRating = game.outcomes.draw.whiteRating
+          newRatings.blackRating = game.outcomes.draw.blackRating
+        }
 
-      if (!game) {
-        ws.send(JSON.stringify(makeErrorMessage("Game not found", null)))
-        return
+        const {
+          Mutator: { UserMutator, GameMutator },
+        } = context
+
+        await Promise.all([
+          GameMutator.setOutcome(gameId, outcome.winner, outcome.draw),
+          UserMutator.updateUserRating(
+            game.whitePlayer._id,
+            newRatings.whiteRating
+          ),
+          UserMutator.updateUserRating(
+            game.blackPlayer._id,
+            newRatings.blackRating
+          ),
+        ])
       }
 
       const otherPlayer =
@@ -254,6 +393,7 @@ const messageHandler = (ws: WebSocket, data: RawData) => {
 
       return
     })
+
     .exhaustive()
 }
 

@@ -1,22 +1,21 @@
-import { getUsersByIds } from "../repository/user"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { createGame } from "../repository/game"
 import { makeUserDto, User } from "../domain/user"
+import { Context } from "../middleware/context"
 
 export const command_CreateGame = async (
-  playerIds: [string, string]
+  playerIds: [string, string],
+  { Mutator, Loader }: Context
 ): AsyncResult<
   {
     gameId: string
     whitePlayer: User
     blackPlayer: User
-    pgn: string
   },
   | "DB_ERR_FAILED_TO_GET_USERS_BY_IDS"
   | "USERS_NOT_FOUND"
   | "DB_ERR_FAILED_TO_CREATE_GAME"
 > => {
-  const usersResult = await getUsersByIds(playerIds)
+  const usersResult = await Loader.UserLoader.getUsersByIds(playerIds)
   if (isFailure(usersResult)) {
     return usersResult
   }
@@ -31,14 +30,16 @@ export const command_CreateGame = async (
     return Result.Fail("USERS_NOT_FOUND")
   }
 
-  const createGameResult = await createGame(whitePlayer, blackPlayer)
+  const createGameResult = await Mutator.GameMutator.createGame(
+    whitePlayer,
+    blackPlayer
+  )
 
   if (createGameResult.success) {
     return Result.Success({
-      gameId: createGameResult.data.gameId,
+      gameId: createGameResult.data,
       whitePlayer: makeUserDto(whitePlayer),
       blackPlayer: makeUserDto(blackPlayer),
-      pgn: createGameResult.data.pgn,
     })
   }
 

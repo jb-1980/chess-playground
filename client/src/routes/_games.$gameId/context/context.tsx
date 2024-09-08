@@ -73,6 +73,7 @@ export const GameContextProvider = ({
 
   useEffect(() => {
     if (lastJsonMessage !== null) {
+      console.log({ lastJsonMessage })
       switch (lastJsonMessage.type) {
         case ResponseMessageType.FETCH_GAME_RESPONSE: {
           const game = lastJsonMessage.payload
@@ -103,7 +104,7 @@ export const GameContextProvider = ({
         }
       }
     }
-  }, [lastJsonMessage, navigate, chess, playerId, dispatch])
+  }, [lastJsonMessage, navigate, chess, playerId, dispatch, gameId])
 
   useEffect(() => {
     if (gameId === "new" && status === GameStatus.NOT_STARTED) {
@@ -112,7 +113,7 @@ export const GameContextProvider = ({
         type: RequestMessageTypes.JOIN_GAME,
         payload: { playerId },
       })
-    } else if (status === GameStatus.JOINING) {
+    } else if (gameId !== "new" && status === GameStatus.JOINING) {
       sendJsonMessage({
         type: RequestMessageTypes.GET_GAME,
         payload: { gameId, playerId },
