@@ -1,26 +1,20 @@
-import { createContext } from "react"
-import { decodeToken, retrieveToken } from "../../../lib/token"
+import { createContext, useMemo } from "react"
+import { decodeToken, retrieveToken, User } from "../../../lib/token"
 import { Navigate } from "react-router-dom"
 
-type UserContextValues = {
-  id: string
-  username: string
-  token: string
-}
-
-export const UserContext = createContext<UserContextValues | null>(null)
+export const UserContext = createContext<User | null>(null)
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const token = retrieveToken()
-  if (!token) {
+  const user = useMemo(() => {
+    const token = retrieveToken()
+    if (!token) {
+      return null
+    }
+    return decodeToken(token)
+  }, [])
+
+  if (!user) {
     return <Navigate to="/login" />
   }
-  const user = decodeToken(token)
-
-  const value = {
-    token,
-    ...user,
-  }
-
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>
 }

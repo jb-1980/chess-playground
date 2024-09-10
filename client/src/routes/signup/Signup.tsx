@@ -19,7 +19,19 @@ export const Signup = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
+  const [error, setError] = useState<string | null>(null)
+
   const handleSignup = () => {
+    if (!username || !password) {
+      setError("Username and password are required")
+      return
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters")
+      return
+    }
+
     fetch(`http://${hostname}:5000/register-user`, {
       method: "POST",
       headers: {
@@ -31,13 +43,29 @@ export const Signup = () => {
       }),
       credentials: "include",
     })
+      .then(async (res) => {
+        if (!res.ok) {
+          const status = res.status
+          if (status === 400) {
+            throw new Error("Incorrect username or password")
+          } else if (status === 500) {
+            throw new Error("Unknown server error")
+          }
+        }
+        return res
+      })
       .then((res) => res.json())
       .then((data) => {
         storeToken(data.token)
         navigate("/")
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.log(err)
+        if (err instanceof Error) {
+          setError(err.message)
+          return
+        }
+        setError("Unknown error")
       })
   }
 
@@ -56,6 +84,11 @@ export const Signup = () => {
           <Typography align="center" variant="h3">
             Sign Up
           </Typography>
+          {error && (
+            <Typography variant="subtitle2" color="error">
+              {error}
+            </Typography>
+          )}
           <TextField
             label="Username"
             placeholder="Enter username"
@@ -70,6 +103,7 @@ export const Signup = () => {
             placeholder="Enter password"
             type="password"
             variant="outlined"
+            autoComplete="current-password"
             fullWidth
             required
             value={password}

@@ -8,7 +8,7 @@ import { Context } from "../middleware/context"
 
 const RegisterUserSchema = z.object({
   username: z.string(),
-  password: z.string().min(8),
+  password: z.string(),
 })
 
 export const handle_LoginUser = async (
@@ -24,7 +24,7 @@ export const handle_LoginUser = async (
 
   const tokenResult = await command_LoginUser(parsedBody.data, req.context)
   if (isFailure(tokenResult)) {
-    return res.status(400).json({ error: tokenResult.message })
+    return res.status(401).json({ error: tokenResult.message })
   }
   return res.status(200).json({ token: tokenResult.data })
 }

@@ -2,6 +2,7 @@ import { Button, Link, Stack, TextField, Typography } from "@mui/material"
 import Paper from "@mui/material/Paper/Paper"
 import { useNavigate } from "react-router-dom"
 import { storeToken } from "../../lib/token"
+import { useState } from "react"
 
 export const Login = () => {
   const navigate = useNavigate()
@@ -10,6 +11,8 @@ export const Login = () => {
     maxWidth: 300,
   }
   const btnstyle = { margin: "8px 0" }
+
+  const [error, setError] = useState<string | null>(null)
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,13 +33,28 @@ export const Login = () => {
       }),
       credentials: "include",
     })
+      .then((res) => {
+        if (!res.ok) {
+          const status = res.status
+          if (status === 401) {
+            throw new Error("Invalid credentials")
+          }
+          throw new Error("Invalid login")
+        }
+        return res
+      })
       .then((res) => res.json())
       .then((data) => {
         storeToken(data.token)
         navigate("/")
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.log(err)
+        if (err instanceof Error) {
+          setError(err.message)
+          return
+        }
+        setError("Unknown error")
       })
   }
 
@@ -56,12 +74,18 @@ export const Login = () => {
             <Typography align="center" variant="h3">
               Sign In
             </Typography>
+            {error && (
+              <Typography variant="subtitle2" color="error">
+                {error}
+              </Typography>
+            )}
             <TextField
               label="Username"
               placeholder="Enter username"
               variant="outlined"
               fullWidth
               required
+              autoComplete="username"
               name="username"
             />
             <TextField
@@ -69,6 +93,7 @@ export const Login = () => {
               placeholder="Enter password"
               type="password"
               variant="outlined"
+              autoComplete="current-password"
               fullWidth
               required
               name="password"
