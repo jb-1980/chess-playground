@@ -23,24 +23,13 @@ interface ExtWebSocket extends WebSocket {
 
 const Queue: {
   playerId: string
-  socket: WebSocket
+  socket: ExtWebSocket
 }[] = []
+const PlayersInActiveGames = new Set<string>()
 const Games = new Map<
   string,
-  { white: WebSocket | null; black: WebSocket | null }
+  { white: ExtWebSocket | null; black: ExtWebSocket | null }
 >()
-
-webSocketServer.on("connection", (ws: ExtWebSocket) => {
-  ws.on("error", (err) => {})
-
-  ws.on("message", async (message) => {
-    messageHandler(ws, message)
-  })
-
-  ws.on("close", () => {
-    console.log("client disconnected")
-  })
-})
 
 function onSocketError(err: Error) {
   console.error(err)
@@ -79,6 +68,45 @@ export const handleUpgrade = (
     webSocketServer.emit("connection", wsWithExt)
   })
 }
+
+webSocketServer.on("connection", (ws: ExtWebSocket) => {
+  ws.on("error", (err) => {})
+
+  ws.on("message", async (message) => {
+    messageHandler(ws, message)
+  })
+
+  ws.on("close", () => {
+    console.info("client disconnected")
+    const user = ws.context.user
+    if (!user) {
+      return
+    }
+    const playerId = user.id
+    const queueIndex = Queue.findIndex((player) => player.playerId === playerId)
+    if (queueIndex !== -1) {
+      Queue.splice(queueIndex, 1)
+    }
+    const gameIds = Array.from(Games.keys())
+    for (const gameId of gameIds) {
+      const game = Games.get(gameId)
+      if (!game) {
+        continue
+      }
+      if (game.white?.context.user?.id === playerId) {
+        game.white = null
+      }
+      if (game.black?.context.user?.id === playerId) {
+        game.black = null
+      }
+      if (game.white === null && game.black === null) {
+        Games.delete(gameId)
+      } else {
+        Games.set(gameId, game)
+      }
+    }
+  })
+})
 
 enum RequestMessageTypes {
   MOVE = "move",
@@ -160,14 +188,30 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
   }
 
   const context = ws.context
-  console.dir({ parsedMessage }, { depth: null, colors: true })
+  const user = context.user
+  if (!user) {
+    return ws.send(
+      JSON.stringify(
+        makeErrorMessage("Unauthorized", "User not found in context")
+      )
+    )
+  }
+
   match(parsedMessage.data)
     .with({ type: RequestMessageTypes.JOIN_GAME }, async ({ payload }) => {
       const { playerId } = payload
-      const alreadyWaiting = Queue.find(
-        (player) => player.playerId === playerId
-      )
+
+      if (PlayersInActiveGames.has(playerId)) {
+        return ws.send(
+          JSON.stringify(
+            makeErrorMessage("Player is already in an active game", null)
+          )
+        )
+      }
+      // check if this user has already joined the queue
+      const alreadyWaiting = Queue.find((player) => player.playerId === user.id)
       if (!alreadyWaiting) {
+        // there is no one in the queue, so add this user to the queue and return
         if (Queue.length === 0) {
           Queue.push({
             playerId,
@@ -180,6 +224,8 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
         const waitingPlayer = Queue.shift()
 
         if (waitingPlayer) {
+          PlayersInActiveGames.add(waitingPlayer.playerId)
+          PlayersInActiveGames.add(newPlayerId)
           const createGameResult = await command_CreateGame(
             [waitingPlayer.playerId, newPlayerId],
             context
@@ -191,6 +237,8 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
               playerId: newPlayerId,
               socket: ws,
             })
+            PlayersInActiveGames.delete(waitingPlayer.playerId)
+            PlayersInActiveGames.delete(newPlayerId)
             return ws.send(
               JSON.stringify(
                 makeErrorMessage(
@@ -211,6 +259,7 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
               gameId,
             })
           )
+
           ws.send(response)
           waitingPlayer.socket.send(response)
           return
@@ -220,8 +269,12 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
     })
     .with({ type: RequestMessageTypes.GET_GAME }, async ({ payload }) => {
       const { gameId, playerId } = payload
+      const gameSockets = Games.get(gameId)
 
-      const gameResult = await context.Loader.GameLoader.getGameById(gameId)
+      const gameResult = await context.Loader.GameLoader.getGameById(
+        gameId,
+        true
+      )
       if (isFailure(gameResult)) {
         ws.send(
           JSON.stringify(
@@ -236,7 +289,6 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
         return
       }
 
-      const gameSockets = Games.get(gameId)
       const response = JSON.stringify(makeGameFoundResponseMessage(game))
 
       const color =
@@ -274,7 +326,10 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
 
       const status = getStatus(move.after)
 
-      const gameResult = await context.Loader.GameLoader.getGameById(gameId)
+      const gameResult = await context.Loader.GameLoader.getGameById(
+        gameId,
+        true
+      )
       if (isFailure(gameResult)) {
         ws.send(
           JSON.stringify(
@@ -330,6 +385,17 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
         return
       }
 
+      const otherPlayer =
+        game.whitePlayer._id.toString() === playerId ? "black" : "white"
+
+      if (!gameSockets) {
+        Games.set(gameId, {
+          white: otherPlayer === "black" ? ws : null,
+          black: otherPlayer === "white" ? ws : null,
+        })
+        return
+      }
+
       const gameOverOutcomes = [
         GameStatus.CHECKMATE,
         GameStatus.STALEMATE,
@@ -374,17 +440,10 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
             newRatings.blackRating
           ),
         ])
-      }
 
-      const otherPlayer =
-        game.whitePlayer._id.toString() === playerId ? "black" : "white"
-
-      if (!gameSockets) {
-        Games.set(gameId, {
-          white: otherPlayer === "black" ? ws : null,
-          black: otherPlayer === "white" ? ws : null,
-        })
-        return
+        PlayersInActiveGames.delete(game.whitePlayer._id.toString())
+        PlayersInActiveGames.delete(game.blackPlayer._id.toString())
+        Games.delete(gameId)
       }
 
       gameSockets[otherPlayer]?.send(

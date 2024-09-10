@@ -46,15 +46,18 @@ export const createPgnFromMoves = (
   headers: { [key: string]: string }
 ): string => {
   const chess = new Chess()
-  moves.forEach((move) => {
-    console.log({ move })
-    chess.move(move)
-  })
+  try {
+    for (const move of moves) {
+      console.log({ move })
+      chess.move(move)
+    }
+  } catch (e) {
+    console.error(e)
+  }
 
   for (const [key, value] of Object.entries(headers)) {
     chess.header(key, value)
   }
-  console.log(chess.header())
   return chess.pgn()
 }
 

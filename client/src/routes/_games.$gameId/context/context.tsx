@@ -72,6 +72,7 @@ export const GameContextProvider = ({
   )
 
   useEffect(() => {
+    console.log({ outside: lastJsonMessage })
     if (lastJsonMessage !== null) {
       console.log({ lastJsonMessage })
       switch (lastJsonMessage.type) {
@@ -102,18 +103,38 @@ export const GameContextProvider = ({
           })
           break
         }
+        case ResponseMessageType.ERROR: {
+          console.error(lastJsonMessage.payload.message)
+          break
+        }
+        case ResponseMessageType.PING: {
+          sendJsonMessage({ type: RequestMessageTypes.PONG })
+          break
+        }
       }
     }
-  }, [lastJsonMessage, navigate, chess, playerId, dispatch, gameId])
+  }, [
+    lastJsonMessage,
+    navigate,
+    chess,
+    playerId,
+    dispatch,
+    gameId,
+    sendJsonMessage,
+  ])
 
   useEffect(() => {
+    console.log({ gameId, status })
     if (gameId === "new" && status === GameStatus.NOT_STARTED) {
       dispatch({ type: GameActions.JOIN_GAME })
       sendJsonMessage({
         type: RequestMessageTypes.JOIN_GAME,
         payload: { playerId },
       })
-    } else if (gameId !== "new" && status === GameStatus.JOINING) {
+    } else if (
+      gameId !== "new" &&
+      [GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)
+    ) {
       sendJsonMessage({
         type: RequestMessageTypes.GET_GAME,
         payload: { gameId, playerId },
@@ -121,10 +142,21 @@ export const GameContextProvider = ({
     }
   }, [gameId, playerId, sendJsonMessage, status, dispatch])
 
-  const value = useMemo(
-    () => ({ status, fen, turn, myColor, whitePlayer, blackPlayer, onMove }),
-    [status, fen, turn, onMove, myColor, whitePlayer, blackPlayer]
-  )
+  const value = useMemo(() => {
+    const startNewGame = () => {
+      dispatch({ type: GameActions.RESET })
+    }
+    return {
+      status,
+      fen,
+      turn,
+      myColor,
+      whitePlayer,
+      blackPlayer,
+      onMove,
+      startNewGame,
+    }
+  }, [dispatch, status, fen, turn, onMove, myColor, whitePlayer, blackPlayer])
 
   if ([GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)) {
     return <div>Joining...</div>

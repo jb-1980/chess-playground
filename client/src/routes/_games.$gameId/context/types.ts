@@ -9,4 +9,5 @@ export type GameContextValues = {
   whitePlayer: User | null
   blackPlayer: User | null
   onMove: (args: { from: string; to: string; promotion: string }) => void
+  startNewGame: () => void
 }

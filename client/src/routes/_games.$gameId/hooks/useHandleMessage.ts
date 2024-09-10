@@ -9,12 +9,14 @@ export enum ResponseMessageType {
   JOIN_GAME_RESPONSE = "join-game-response",
   MOVE_RESPONSE = "move-response",
   ERROR = "error",
+  PING = "ping",
 }
 
 export enum RequestMessageTypes {
   MOVE = "move",
   JOIN_GAME = "join-game",
   GET_GAME = "get-game",
+  PONG = "pong",
 }
 
 type ResponseMessage =
@@ -34,6 +36,15 @@ type ResponseMessage =
         fen: string
         pgn: string
       }
+    }
+  | {
+      type: ResponseMessageType.ERROR
+      payload: {
+        message: string
+      }
+    }
+  | {
+      type: ResponseMessageType.PING
     }
 
 type RequestMessage =
@@ -60,16 +71,21 @@ type RequestMessage =
         playerId: string
       }
     }
+  | {
+      type: RequestMessageTypes.PONG
+    }
 export const useGameSocket = () => {
   const token = retrieveToken()
   const {
     sendJsonMessage: _sendJsonMessage,
     lastJsonMessage,
+    lastMessage,
     readyState,
   } = useWebsocket<ResponseMessage>("ws://localhost:5000", {
     protocols: ["Bearer", token ?? ""],
   })
 
+  console.log({ lastMessage })
   const sendJsonMessage = useCallback(
     (message: RequestMessage) => {
       _sendJsonMessage(message)

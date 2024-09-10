@@ -6,7 +6,7 @@ import { match } from "ts-pattern"
 import { Link } from "react-router-dom"
 
 export const GameOverDialog = () => {
-  const { status, turn } = useGameContext()
+  const { status, turn, startNewGame } = useGameContext()
   const open = ![
     GameStatus.PLAYING,
     GameStatus.NOT_STARTED,
@@ -61,7 +61,12 @@ export const GameOverDialog = () => {
           </>
         ))
         .otherwise(() => "Game Over")}
-      <Button variant="contained" component={Link} to="/games/new">
+      <Button
+        variant="contained"
+        component={Link}
+        to="/games/new"
+        onClick={() => startNewGame()}
+      >
         New Game
       </Button>
     </Dialog>

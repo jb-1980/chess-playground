@@ -5,6 +5,7 @@ import { UserDocument } from "./user"
 import { GameStatus, Move } from "../domain/game"
 import { calculateNewRatings } from "../lib/chess"
 import DataLoader from "dataloader"
+import { clear } from "node:console"
 
 type GameUser = Pick<UserDocument, "_id" | "username" | "rating" | "avatarUrl">
 
@@ -85,9 +86,13 @@ export class GameLoader {
   )
 
   async getGameById(
-    id: string
+    id: string,
+    clearCache = false
   ): AsyncResult<GameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> {
     try {
+      if (clearCache) {
+        this._batchGames.clear(id)
+      }
       const game = await this._batchGames.load(id)
       return Result.Success(game)
     } catch (error) {

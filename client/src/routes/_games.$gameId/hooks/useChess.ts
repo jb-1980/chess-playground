@@ -24,6 +24,7 @@ export enum GameActions {
   SET_MOVE = "SET_MOVE",
   JOIN_GAME = "JOIN_GAME",
   FETCH_GAME = "FETCH_GAME",
+  RESET = "RESET",
 }
 
 type Action =
@@ -40,6 +41,9 @@ type Action =
     }
   | {
       type: GameActions.JOIN_GAME
+    }
+  | {
+      type: GameActions.RESET
     }
 
 const reducer = (state: State, action: Action): State =>
@@ -82,6 +86,7 @@ const reducer = (state: State, action: Action): State =>
         throw err
       }
     })
+    .with({ type: GameActions.RESET }, () => getInitialState(state.playerId))
     .exhaustive()
 
 const getInitialState = (playerId: string): State => ({
