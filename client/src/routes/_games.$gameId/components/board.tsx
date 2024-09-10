@@ -35,6 +35,11 @@ export const Board = () => {
             ? blackPlayer?.username ?? ""
             : whitePlayer?.username ?? ""
         }
+        rating={
+          boardOrientation === "white"
+            ? blackPlayer?.rating ?? 0
+            : whitePlayer?.rating ?? 0
+        }
       />
       <Chessboard
         customDarkSquareStyle={{ backgroundColor: "#4e7837" }}
@@ -49,6 +54,11 @@ export const Board = () => {
           boardOrientation === "white"
             ? whitePlayer?.username ?? ""
             : blackPlayer?.username ?? ""
+        }
+        rating={
+          boardOrientation === "white"
+            ? whitePlayer?.rating ?? 0
+            : blackPlayer?.rating ?? 0
         }
       />
     </div>
