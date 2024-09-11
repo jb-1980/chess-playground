@@ -27,6 +27,7 @@ app.use(express.json())
 app.use(corsSetting)
 app.use(router)
 
-server.listen(5000, "0.0.0.0", () => {
-  console.log("server running at http://0.0.0.0:5000")
+const PORT = Number(process.env.PORT) || 5000
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`server running at http://0.0.0.0:${PORT}`)
 })
