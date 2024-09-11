@@ -18,6 +18,7 @@ export const handle_LoginUser = async (
   const requestBody = req.body
   const parsedBody = RegisterUserSchema.safeParse(requestBody)
 
+  console.log("parsedBody", parsedBody)
   if (!parsedBody.success) {
     return res.status(400).json(parsedBody.error)
   }
@@ -39,6 +40,7 @@ export const command_LoginUser = async (
   const { username, password } = args
   const userResult = await Loader.UserLoader.getUser(username)
 
+  console.log("user", userResult)
   if (!userResult.success) {
     return userResult
   }

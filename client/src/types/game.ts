@@ -1,4 +1,5 @@
 import { Move } from "chess.js"
+import { User } from "./user"
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -18,10 +19,4 @@ export type Game = {
   whitePlayer: User
   blackPlayer: User
   status: GameStatus
-}
-
-export type User = {
-  id: string
-  username: string
-  rating: number
 }

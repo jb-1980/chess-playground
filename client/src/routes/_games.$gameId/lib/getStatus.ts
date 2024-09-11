@@ -1,5 +1,5 @@
 import { Chess } from "chess.js"
-import { GameStatus } from "../types"
+import { GameStatus } from "../../../types/game"
 
 export const getStatus = (chess: Chess): GameStatus => {
   if (chess.isGameOver()) {

@@ -38,7 +38,7 @@ declare global {
 // create express context middleware
 export const contextMiddleware = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   req.context = createContext(req.user)

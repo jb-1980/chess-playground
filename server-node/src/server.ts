@@ -8,6 +8,8 @@ import { handleUpgrade } from "./websocket"
 import { handle_GetGames } from "./queries/get-games"
 import { contextMiddleware } from "./middleware/context"
 import { authenticationMiddleware } from "./middleware/auth"
+import { handle_GetGameById } from "./queries/get-game-by-id"
+import { router } from "./routes"
 
 const app = express()
 const server = createServer(app)
@@ -23,11 +25,8 @@ const corsSetting = cors({
 })
 app.use(express.json())
 app.use(corsSetting)
-app.post("/register-user", contextMiddleware, handle_registerUser)
-app.post("/login", contextMiddleware, handle_LoginUser)
-app.use("/api", authenticationMiddleware, contextMiddleware)
-app.post("/api/games", handle_GetGames)
+app.use(router)
 
 server.listen(5000, "0.0.0.0", () => {
-  console.log("server running at http://localhost:5000")
+  console.log("server running at http://0.0.0.0:5000")
 })

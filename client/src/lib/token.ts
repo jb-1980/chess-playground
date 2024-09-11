@@ -1,10 +1,5 @@
 import { jwtDecode } from "jwt-decode"
-
-export type User = {
-  id: string
-  username: string
-  rating: number
-}
+import { User } from "../types/user"
 
 /** Will validate a token to ensure a valid JWT, and if so will store it in
  * local storage. Otherwise, it will throw a InvalidTokenError.

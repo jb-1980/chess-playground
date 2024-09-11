@@ -1,9 +1,9 @@
 import { Button, Dialog, Typography } from "@mui/material"
 import { WHITE } from "chess.js"
 import { useGameContext } from "../context"
-import { GameStatus } from "../types"
 import { match } from "ts-pattern"
 import { Link } from "react-router-dom"
+import { GameStatus } from "../../../types/game"
 
 export const GameOverDialog = () => {
   const { status, turn, startNewGame } = useGameContext()

@@ -5,12 +5,12 @@ import type { GameContextValues } from "./types"
 import { useNavigate, useParams } from "react-router-dom"
 import { useUserContext } from "../../Root/context"
 import { GameActions, useChess } from "../hooks/useChess"
-import { GameStatus } from "../types"
 import {
   RequestMessageTypes,
   ResponseMessageType,
   useGameSocket,
 } from "../hooks/useHandleMessage"
+import { GameStatus } from "../../../types/game"
 
 export const GameContext = createContext<GameContextValues | undefined>(
   undefined

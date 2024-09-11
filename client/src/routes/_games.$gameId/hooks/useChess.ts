@@ -1,7 +1,8 @@
 import { Color, DEFAULT_POSITION, WHITE } from "chess.js"
 import { match } from "ts-pattern"
-import { Game, GameStatus, User } from "../types"
 import { useReducer } from "react"
+import { Game, GameStatus } from "../../../types/game"
+import { User } from "../../../types/user"
 
 type State = {
   /** A singleton of the Chess class */

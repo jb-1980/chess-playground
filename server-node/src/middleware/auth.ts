@@ -48,7 +48,6 @@ export const authenticationMiddleware = (
   const token = tokenHeader?.split(" ")[1]
   try {
     req.user = verifyToken(token)
-    console.log("req.user", req.user)
     next()
   } catch (error) {
     console.error(error)

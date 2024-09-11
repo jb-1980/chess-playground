@@ -1,5 +1,6 @@
 import { Color } from "chess.js"
-import { GameStatus, User } from "../types"
+import { GameStatus } from "../../../types/game"
+import { User } from "../../../types/user"
 
 export type GameContextValues = {
   status: GameStatus

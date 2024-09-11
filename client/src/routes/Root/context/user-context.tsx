@@ -1,6 +1,7 @@
 import { createContext, useMemo } from "react"
-import { decodeToken, retrieveToken, User } from "../../../lib/token"
+import { decodeToken, retrieveToken } from "../../../lib/token"
 import { Navigate } from "react-router-dom"
+import { User } from "../../../types/user"
 
 export const UserContext = createContext<User | null>(null)
 

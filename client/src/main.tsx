@@ -16,6 +16,7 @@ import { ThemeProvider } from "@emotion/react"
 import { createTheme } from "@mui/material"
 import { GamesRoute } from "./routes/games/route"
 import { QueryClientProvier } from "./lib/react-query"
+import { GameReviewRoute } from "./routes/_games._$gameId.review/route"
 
 const theme = createTheme({
   palette: {
@@ -35,7 +36,7 @@ if (!rootElement) {
 }
 
 const router = createBrowserRouter([
-  RootRoute([GamesIdRoute(), GamesRoute(), IndexRoute()]),
+  RootRoute([GamesIdRoute(), GamesRoute(), GameReviewRoute(), IndexRoute()]),
   LoginRoute(),
   SignupRoute(),
   LogoutRoute(),
