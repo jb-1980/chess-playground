@@ -3,7 +3,7 @@ import { GameBoard } from "../../components/GameBoard"
 import { useMemo, useState } from "react"
 import { Game } from "../../types/game"
 import { useUserContext } from "../Root/context"
-import { BLACK, DEFAULT_POSITION, Move, WHITE } from "chess.js"
+import { BLACK, DEFAULT_POSITION, WHITE } from "chess.js"
 import {
   Card,
   IconButton,
@@ -11,7 +11,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
   Typography,
 } from "@mui/material"
@@ -19,6 +18,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
 import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft"
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight"
+import { getFancySan } from "./lib/get-fancy-san"
 
 export const GameReview = () => {
   const { data: game, isLoading, isError } = useGetGame()
@@ -69,49 +69,26 @@ const MovesCard = (props: {
     }[] = []
     game.moves.forEach((move, index, _moves) => {
       if (index % 2 === 0) {
-        let whiteSan = <Typography>{move.san}</Typography>
-        let blackSan = <Typography>{_moves[index + 1]?.san}</Typography>
-        if (["Q", "K", "R", "B", "N"].includes(_moves[index + 1]?.san[0])) {
-          blackSan = (
-            <Typography>
-              <span style={{ fontSize: "120%", fontWeight: "500" }}>
-                {
-                  _moves[index + 1]?.san
-                    .replace("Q", "♛")
-                    .replace("K", "♚")
-                    .replace("R", "♜")
-                    .replace("B", "♝")
-                    .replace("N", "♞")[0]
-                }
-              </span>
-              {_moves[index + 1]?.san.slice(1)}
-            </Typography>
-          )
-        }
-        if (["Q", "K", "R", "B", "N"].includes(move.san[0])) {
-          whiteSan = (
-            <Typography>
-              <span style={{ fontSize: "120%", fontWeight: "500" }}>
-                {
-                  move.san
-                    .replace("Q", "♕")
-                    .replace("K", "♔")
-                    .replace("R", "♖")
-                    .replace("B", "♗")
-                    .replace("N", "♘")[0]
-                }
-              </span>
-              {move.san.slice(1)}
-            </Typography>
-          )
-        }
+        const whiteSan = getFancySan(move.san, WHITE)
+        const blackSan = getFancySan(_moves[index + 1]?.san, BLACK)
+
         moves.push({
           white: {
-            san: whiteSan,
+            san: (
+              <Typography>
+                <span style={{ fontSize: "120%" }}>{whiteSan[0]}</span>
+                {whiteSan[1]}
+              </Typography>
+            ),
             index,
           },
           black: {
-            san: blackSan,
+            san: (
+              <Typography>
+                <span style={{ fontSize: "120%" }}>{blackSan[0]}</span>
+                {blackSan[1]}
+              </Typography>
+            ),
             index: index + 1,
           },
         })

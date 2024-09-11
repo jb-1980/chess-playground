@@ -1,23 +1,43 @@
-import { Button, Dialog, Typography } from "@mui/material"
+import { Button, Dialog, IconButton, Stack, Typography } from "@mui/material"
 import { WHITE } from "chess.js"
 import { useGameContext } from "../context"
 import { match } from "ts-pattern"
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { GameStatus } from "../../../types/game"
+import { useState } from "react"
+import CloseIcon from "@mui/icons-material/Close"
 
 export const GameOverDialog = () => {
+  const { gameId } = useParams()
   const { status, turn, startNewGame } = useGameContext()
-  const open = ![
-    GameStatus.PLAYING,
-    GameStatus.NOT_STARTED,
-    GameStatus.JOINING,
+  const [dismissed, setDismissed] = useState(false)
+  const gameOver = [
+    GameStatus.CHECKMATE,
+    GameStatus.STALEMATE,
+    GameStatus.THREE_MOVE_REPETITION,
+    GameStatus.INSUFFICIENT_MATERIAL,
+    GameStatus.FIFTY_MOVE_RULE,
   ].includes(status)
+
   const winner = turn === WHITE ? "Black" : "White"
   return (
     <Dialog
-      open={open}
-      PaperProps={{ style: { padding: 20, textAlign: "center" } }}
+      open={gameOver && !dismissed}
+      PaperProps={{ style: { padding: 20, textAlign: "center", width: 300 } }}
+      onClose={() => setDismissed(true)}
     >
+      <IconButton
+        aria-label="close"
+        onClick={() => setDismissed(true)}
+        sx={(theme) => ({
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: theme.palette.grey[500],
+        })}
+      >
+        <CloseIcon />
+      </IconButton>
       {match(status)
         .with(GameStatus.CHECKMATE, () => (
           <>
@@ -61,14 +81,36 @@ export const GameOverDialog = () => {
           </>
         ))
         .otherwise(() => "Game Over")}
-      <Button
-        variant="contained"
-        component={Link}
-        to="/games/new"
-        onClick={() => startNewGame()}
-      >
-        New Game
-      </Button>
+      <Stack spacing={2} justifyContent="center">
+        <Stack spacing={2} direction="row" justifyContent="center">
+          <Button
+            variant="contained"
+            component={Link}
+            to={`/games/${gameId}/review`}
+            onClick={() => startNewGame()}
+            style={{ flex: 1 }}
+          >
+            Review
+          </Button>
+          <Button
+            variant="contained"
+            component={Link}
+            to="/games"
+            onClick={() => startNewGame()}
+            style={{ flex: 1 }}
+          >
+            My Games
+          </Button>
+        </Stack>
+        <Button
+          variant="contained"
+          component={Link}
+          to="/games/new"
+          onClick={() => startNewGame()}
+        >
+          New Game
+        </Button>
+      </Stack>
     </Dialog>
   )
 }
