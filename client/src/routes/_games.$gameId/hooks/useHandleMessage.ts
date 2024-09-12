@@ -1,8 +1,8 @@
 import { Move } from "chess.js"
 import { useCallback } from "react"
-import { Game, GameStatus } from "../types"
 import useWebsocket from "react-use-websocket"
 import { retrieveToken } from "../../../lib/token"
+import { Game, GameStatus } from "../../../types/game"
 
 export enum ResponseMessageType {
   FETCH_GAME_RESPONSE = "fetch-game-response",
@@ -81,7 +81,7 @@ export const useGameSocket = () => {
     lastJsonMessage,
     lastMessage,
     readyState,
-  } = useWebsocket<ResponseMessage>("ws://localhost:5000", {
+  } = useWebsocket<ResponseMessage>(import.meta.env.VITE_WEBSOCKET_URL, {
     protocols: ["Bearer", token ?? ""],
   })
 

@@ -22,7 +22,7 @@ export const Login = () => {
     const username = formData.get("username") as string
     const password = formData.get("password") as string
 
-    fetch(`http://${window.location.hostname}:5000/login`, {
+    fetch(`${import.meta.env.VITE_API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

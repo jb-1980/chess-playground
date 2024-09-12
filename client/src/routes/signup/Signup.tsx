@@ -32,7 +32,7 @@ export const Signup = () => {
       return
     }
 
-    fetch(`http://${hostname}:5000/register-user`, {
+    fetch(`${import.meta.env.VITE_API_URL}/register-user`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
