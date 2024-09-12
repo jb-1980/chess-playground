@@ -11,6 +11,8 @@ import {
   useGameSocket,
 } from "../hooks/useHandleMessage"
 import { GameStatus } from "../../../types/game"
+import { Loader } from "../../../components/Loader"
+import { Box, Stack, Typography } from "@mui/material"
 
 export const GameContext = createContext<GameContextValues | undefined>(
   undefined
@@ -159,7 +161,21 @@ export const GameContextProvider = ({
   }, [dispatch, status, fen, turn, onMove, myColor, whitePlayer, blackPlayer])
 
   if ([GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)) {
-    return <div>Joining...</div>
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "calc(100vh - 96px)",
+        }}
+      >
+        <Stack spacing={2} justifyContent="center" alignItems="center">
+          <Loader />
+          <Typography variant="h6">Finding opponent...</Typography>
+        </Stack>
+      </Box>
+    )
   }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

@@ -5,6 +5,7 @@ import { Game } from "../../types/game"
 import { useUserContext } from "../Root/context"
 import { BLACK, DEFAULT_POSITION, WHITE } from "chess.js"
 import {
+  Box,
   Card,
   IconButton,
   Stack,
@@ -19,11 +20,28 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight"
 import { getFancySan } from "./lib/get-fancy-san"
+import { Loader } from "../../components/Loader"
 
 export const GameReview = () => {
   const { data: game, isLoading, isError } = useGetGame()
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading)
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "calc(100vh - 96px)",
+        }}
+      >
+        <Stack spacing={2} justifyContent="center" alignItems="center">
+          <Loader />
+          <Typography variant="h6">Loading game...</Typography>
+        </Stack>
+      </Box>
+    )
   if (isError) return <div>Error</div>
 
   if (!game) return <div>Game not found</div>

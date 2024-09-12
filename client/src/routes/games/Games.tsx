@@ -2,8 +2,10 @@ import { Link } from "react-router-dom"
 import { useUserContext } from "../Root/context"
 import { useGetGames } from "./hooks/useGetGames"
 import {
+  Box,
   Container,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -12,13 +14,29 @@ import {
   TableRow,
   Typography,
 } from "@mui/material"
+import { Loader } from "../../components/Loader"
 
 export const Games = () => {
   const user = useUserContext()
   const { data, isLoading, error } = useGetGames(user.id)
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "calc(100vh - 96px)",
+        }}
+      >
+        <Stack spacing={2} justifyContent="center" alignItems="center">
+          <Loader />
+          <Typography variant="h6">Loading games...</Typography>
+        </Stack>
+      </Box>
+    )
   }
 
   if (error) {
