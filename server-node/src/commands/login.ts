@@ -38,7 +38,7 @@ export const command_LoginUser = async (
   { Loader }: Context
 ): AsyncResult<string, "BAD_CREDENTIALS" | "DB_ERR_FAILED_TO_GET_USER"> => {
   const { username, password } = args
-  const userResult = await Loader.UserLoader.getUser(username)
+  const userResult = await Loader.UserLoader.getUserByUsername(username)
 
   console.log("user", userResult)
   if (!userResult.success) {

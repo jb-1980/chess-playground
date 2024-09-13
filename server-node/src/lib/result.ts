@@ -38,6 +38,39 @@ export type Failure<E> = {
 }
 
 /**
+ * Obtain the data of an outcome that can be good or an operation that can succeed.
+ * @example
+ *  type Data = // => 1
+ *    | DataType<Success<1>>
+ *    | DataType<Result<1, 0>>
+ *    | DataType<Promise<Success<1>>>
+ *    | DataType<AsyncResult<1, 0>>
+ *    | DataType<() => Result<1, 0>> // Failable
+ *    | DataType<() => AsyncResult<1, 0>> // AsyncFailable
+ *    | DataType<() => () => Result<1, 0>> // FailableWith
+ *    | DataType<() => () => AsyncResult<1, 0>> // AsyncFailableWith
+ */
+export type DataType<O> = O extends Success<infer T>
+  ? T
+  : O extends AsyncResult<infer T, unknown>
+  ? T
+  : never
+
+/**
+ * Obtain the good outcome of an operation that can fail.
+ * @example
+ *  type Success = // => Success<1>
+ *    | SuccessType<Result<1, 0>>
+ *    | SuccessType<Promise<Success<1>>>
+ *    | SuccessType<AsyncResult<1, 0>>
+ *    | SuccessType<() => Result<1, 0>> // Failable
+ *    | SuccessType<() => AsyncResult<1, 0>> // AsyncFailable
+ *    | SuccessType<() => () => Result<1, 0>> // FailableWith
+ *    | SuccessType<() => () => AsyncResult<1, 0>> // AsyncFailableWith
+ */
+export type SuccessType<O> = Success<DataType<O>>
+
+/**
  * Obtain the error of an outcome that can be bad or an operation that can fail.
  * @example
  *  type Error = // => 0

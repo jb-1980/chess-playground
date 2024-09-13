@@ -1,8 +1,3 @@
-import type {
-  Collection as TCollection,
-  CollectionOptions,
-  Document,
-} from "mongodb"
 import { MongoClient } from "mongodb"
 
 const { MONGO_CONNECTION_STRING } = process.env

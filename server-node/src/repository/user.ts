@@ -47,7 +47,7 @@ export class UserLoader {
     }
   )
 
-  public async getUser(
+  public async getUserByUsername(
     username: string
   ): AsyncResult<UserDocument | null, "DB_ERR_FAILED_TO_GET_USER"> {
     try {

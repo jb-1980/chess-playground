@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { makeUserDto, User, userSchema } from "./user"
+import { makeUserDto, userSchema } from "./user"
 import { GameDocument } from "../repository/game"
 
 // prettier-ignore
@@ -17,11 +17,11 @@ export const Square = z.enum([
 export declare const DEFAULT_POSITION =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-enum Color {
+export enum Color {
   WHITE = "w",
   BLACK = "b",
 }
-enum Piece {
+export enum Piece {
   PAWN = "p",
   KNIGHT = "n",
   BISHOP = "b",

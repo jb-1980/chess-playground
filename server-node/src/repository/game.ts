@@ -37,7 +37,7 @@ export type GameDocument = {
   }
 }
 
-const Game = MongoCollection<GameDocument>("games")
+export const Games = MongoCollection<GameDocument>("games")
 
 const toGameUserFromUserDocument = (user: UserDocument): GameUser => ({
   _id: user._id,
@@ -49,7 +49,7 @@ const toGameUserFromUserDocument = (user: UserDocument): GameUser => ({
 export class GameLoader {
   private _batchGames = new DataLoader<string, GameDocument | null>(
     async (ids) => {
-      const games = await Game.find({
+      const games = await Games.find({
         _id: { $in: ids.map((id) => new ObjectId(id)) },
       }).toArray()
 
@@ -64,7 +64,7 @@ export class GameLoader {
 
   private _batchGamesForPlayer = new DataLoader<string, GameDocument[]>(
     async (ids) => {
-      const games = await Game.find({
+      const games = await Games.find({
         $or: [
           { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
           { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
@@ -137,7 +137,7 @@ export class GameMutator {
       0.5
     )
     try {
-      const response = await Game.insertOne({
+      const response = await Games.insertOne({
         whitePlayer,
         blackPlayer,
         moves: [],
@@ -169,7 +169,7 @@ export class GameMutator {
   }): AsyncResult<boolean, "DB_ERROR_ADDING_MOVE_TO_GAME" | "INVALID_MOVE"> {
     const { gameId, move, status, pgn } = args
     try {
-      const { acknowledged } = await Game.updateOne(
+      const { acknowledged } = await Games.updateOne(
         { _id: new ObjectId(gameId) },
         {
           $push: {
@@ -179,6 +179,9 @@ export class GameMutator {
             },
           },
           $set: { status, pgn },
+        },
+        {
+          ignoreUndefined: true,
         }
       )
 
@@ -195,7 +198,7 @@ export class GameMutator {
     draw: boolean
   ): AsyncResult<boolean, "DB_ERR_SET_OUTCOME"> {
     try {
-      const { acknowledged } = await Game.updateOne(
+      const { acknowledged } = await Games.updateOne(
         { _id: new ObjectId(gameId) },
         {
           $set: {
