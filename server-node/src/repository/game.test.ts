@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { isSuccess, SuccessType } from "../lib/result"
 import { resetDb } from "../test-utils/reset-db"
-import { GameLoader, GameMutator } from "./game"
+import { GameLoader, GameMutator, Games } from "./game"
 import { seedGame, getTestMoveValues } from "./test-utils/seed-game"
 import { ObjectId } from "mongodb"
 import { getTestUser } from "./test-utils/seed-user"

@@ -61,7 +61,7 @@ const config: Config = {
   // forceCoverageMatch: [],
 
   // A path to a module which exports an async function that is triggered once before all test suites
-  // globalSetup: undefined,
+  globalSetup: "<rootDir>/src/test-utils/setup.ts",
 
   // A path to a module which exports an async function that is triggered once after all test suites
   globalTeardown: "<rootDir>/src/test-utils/teardown.ts",
@@ -102,7 +102,7 @@ const config: Config = {
   // notifyMode: "failure-change",
 
   // A preset that is used as a base for Jest's configuration
-  preset: "@shelf/jest-mongodb",
+  // preset: undefined,
 
   // Run tests from one or more projects
   // projects: undefined,
@@ -161,9 +161,7 @@ const config: Config = {
   // ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-  // testPathIgnorePatterns: [
-  //   "/node_modules/"
-  // ],
+  testPathIgnorePatterns: ["/node_modules/", "/build/"],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
   // testRegex: [],
@@ -192,7 +190,7 @@ const config: Config = {
   // verbose: undefined,
 
   // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
-  // watchPathIgnorePatterns: [],
+  watchPathIgnorePatterns: ["globalConfig.json"],
 
   // Whether to use watchman for file crawling
   // watchman: true,

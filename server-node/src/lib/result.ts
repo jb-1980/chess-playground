@@ -70,6 +70,7 @@ export type DataType<O> = O extends Success<infer T>
  */
 export type SuccessType<O> = Success<DataType<O>>
 
+export type FailureType<O> = Failure<ErrorType<O>>
 /**
  * Obtain the error of an outcome that can be bad or an operation that can fail.
  * @example
