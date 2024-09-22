@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environments
+.env
+.venv
+venv/
+env/
+ENV/
+chess-venv/
+
+# Temporary files
+*.log
+*.pot
+*.bak
+*.swp
+*~
+
+# IDE-specific files
+.idea/
+.vscode/

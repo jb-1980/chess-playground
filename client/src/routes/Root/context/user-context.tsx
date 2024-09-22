@@ -17,5 +17,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   if (!user) {
     return <Navigate to="/login" />
   }
+
+  if (user.exp < Date.now() / 1000) {
+    return <Navigate to="/logout" />
+  }
   return <UserContext.Provider value={user}>{children}</UserContext.Provider>
 }

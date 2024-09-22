@@ -1,6 +1,12 @@
 import { jwtDecode } from "jwt-decode"
 import { User } from "../types/user"
 
+type JWT = User & {
+  sub: string
+  iat: number
+  exp: number
+}
+
 /** Will validate a token to ensure a valid JWT, and if so will store it in
  * local storage. Otherwise, it will throw a InvalidTokenError.
  */
@@ -20,6 +26,6 @@ export const removeToken = () => {
   localStorage.removeItem("token")
 }
 
-export const decodeToken = (token: string): User => {
-  return jwtDecode<User>(token)
+export const decodeToken = (token: string): JWT => {
+  return jwtDecode<JWT>(token)
 }

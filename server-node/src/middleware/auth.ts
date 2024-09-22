@@ -13,13 +13,22 @@ if (!JWT_SECRET) {
 export const signToken = (payload: User): string => {
   userSchema.parse(payload)
 
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: "24h",
-  })
+  return jwt.sign(
+    {
+      ...payload,
+      sub: payload.id,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "10s",
+    }
+  )
 }
 
 export const verifyToken = (token: string): User => {
-  const verifiedToken = jwt.verify(token, JWT_SECRET)
+  const verifiedToken = jwt.verify(token, JWT_SECRET, {
+    ignoreExpiration: false,
+  })
   const parsedUser = userSchema.safeParse(verifiedToken)
   if (!parsedUser.success) {
     console.error(parsedUser.error)
