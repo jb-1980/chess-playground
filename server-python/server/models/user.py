@@ -1,22 +1,14 @@
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 import bcrypt
 from bson import ObjectId
 from flask_jwt_extended import create_access_token
 from pymongo.collection import Collection
 
+from server.domain.user import User
 from server.models import mongoDB
-
-UserDocument = TypedDict(
-    "UserDocument",
-    {
-        "_id": NotRequired[ObjectId],
-        "username": str,
-        "passwordHash": str,
-        "rating": int,
-        "avatarUrl": str,
-    },
-)
+from server.models.game_types import GameUser
+from server.models.user_types import UserDocument
 
 
 class UserLoader:
@@ -72,3 +64,23 @@ class UserMutator:
             {"_id": ObjectId(user_id)}, {"$set": {"rating": new_rating}}
         )
         return result.modified_count == 1
+
+
+UserInput = TypedDict(
+    "UserInput",
+    {
+        "_id": ObjectId,
+        "username": str,
+        "rating": int,
+        "avatarUrl": str,
+    },
+)
+
+
+def make_user_dto(user: UserDocument | UserInput | GameUser) -> User:
+    return {
+        "id": str(user["_id"]),
+        "username": user["username"],
+        "rating": user["rating"],
+        "avatarUrl": user.get("avatarUrl"),
+    }

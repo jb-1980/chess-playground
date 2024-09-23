@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
 from server.routes import routes
+from server.websocket import sock
 
 if not JWT_SECRET:
     raise Exception("JWT_SECRET not set")
@@ -19,6 +20,7 @@ JWTManager(app)
 CORS(app, origins=WHITELIST_URLS.split(","), supports_credentials=True)
 
 app.register_blueprint(routes)
+sock.init_app(app)
 print(app.url_map)
 
 if __name__ == "__main__":

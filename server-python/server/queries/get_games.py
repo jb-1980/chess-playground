@@ -1,8 +1,8 @@
 from flask import jsonify, make_response, request
 from pydantic import BaseModel
 
-from server.domain.game import Game, make_game_dto
-from server.models.game import GameLoader
+from server.domain.game import Game
+from server.models.game import GameLoader, make_game_dto
 
 
 def query_get_games_for_player_id(playerId: str) -> list[Game]:

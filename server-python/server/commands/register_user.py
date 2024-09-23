@@ -4,8 +4,7 @@ from flask import jsonify, make_response, request
 from flask_jwt_extended import create_access_token
 from pydantic import BaseModel
 
-from server.domain.user import make_user_dto
-from server.models.user import UserMutator
+from server.models.user import UserMutator, make_user_dto
 
 
 def command_register_user(username: str, password: str) -> str:
