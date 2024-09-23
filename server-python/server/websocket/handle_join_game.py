@@ -1,22 +1,15 @@
 import json
 
 from server.commands.create_game import command_create_game
-from server.websocket.domain import (
-    GameRooms,
-    JoinGameMessage,
-    PlayersInActiveGames,
-    Queue,
-    WebSocket,
-    make_error_message,
-)
+from server.websocket.domain import GameRooms, PlayersInActiveGames, Queue, WebSocket
+from server.websocket.handle_error import handle_error
+from server.websocket.request_message_types import JoinGameMessage
 
 
 def handle_join_game(message: JoinGameMessage, ws: WebSocket) -> None:
-    player_id = message["payload"]["playerId"]
+    player_id = message.payload.playerId
     if player_id in PlayersInActiveGames:
-        return ws.send(
-            json.dumps(make_error_message("Player is already in an active game"))
-        )
+        return handle_error("Player is already in an active game", ws)
 
     already_waiting = next(
         (player for player in Queue if player["playerId"] == player_id), None
