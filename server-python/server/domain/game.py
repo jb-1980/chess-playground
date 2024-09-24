@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
+from pydantic import BaseModel
 from server.domain.user import User
 
 Move = TypedDict(
@@ -10,25 +11,22 @@ Move = TypedDict(
         "from": str,
         "to": str,
         "piece": str,
-        "captured": str,
-        "promotion": str,
+        "captured": NotRequired[str],
+        "promotion": NotRequired[str],
         "flags": str,
         "san": str,
         "lan": str,
         "before": str,
         "after": str,
-        "createdAt": datetime,
+        "createdAt": NotRequired[datetime],
     },
 )
 
-Game = TypedDict(
-    "Game",
-    {
-        "id": str,
-        "moves": list[Move],
-        "pgn": str,
-        "whitePlayer": User,
-        "blackPlayer": User,
-        "status": str,
-    },
-)
+
+class Game(BaseModel):
+    id: str
+    moves: list[Move]
+    pgn: str
+    whitePlayer: User
+    blackPlayer: User
+    status: str

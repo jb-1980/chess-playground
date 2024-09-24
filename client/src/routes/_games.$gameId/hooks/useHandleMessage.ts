@@ -85,7 +85,7 @@ export const useGameSocket = () => {
     protocols: ["Bearer", token ?? ""],
   })
 
-  console.log({ lastMessage })
+  console.log({ lastMessage, readyState })
   const sendJsonMessage = useCallback(
     (message: RequestMessage) => {
       _sendJsonMessage(message)

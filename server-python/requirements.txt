@@ -6,6 +6,8 @@ dnspython==2.6.1
 Flask==3.0.3
 Flask-Cors==5.0.0
 Flask-JWT-Extended==4.6.0
+flask-sock==0.7.0
+h11==0.14.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
@@ -16,7 +18,10 @@ pydantic_core==2.23.4
 PyJWT==2.9.0
 pymongo==4.9.1
 python-dotenv==1.0.1
+result==0.17.0
 ruff==0.6.7
+simple-websocket==1.0.0
 types-Flask-Cors==5.0.0.20240902
 typing_extensions==4.12.2
 Werkzeug==3.0.4
+wsproto==1.2.0

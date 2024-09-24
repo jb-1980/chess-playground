@@ -2,6 +2,7 @@ import json
 from typing import Literal, TypedDict
 
 from server.websocket.domain import WebSocket
+from server.websocket.response_message_types import ResponseMessageTypes
 
 
 class ErrorMessagePayload(TypedDict):
@@ -9,13 +10,13 @@ class ErrorMessagePayload(TypedDict):
 
 
 class ErrorMessage(TypedDict):
-    type: Literal["error"]
+    type: Literal[ResponseMessageTypes.ERROR]
     payload: ErrorMessagePayload
 
 
 def make_error_message(message: str) -> ErrorMessage:
     return {
-        "type": "error",
+        "type": ResponseMessageTypes.ERROR,
         "payload": {
             "message": message,
         },

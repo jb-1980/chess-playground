@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import NotRequired, TypedDict
 
 from bson import ObjectId
+from server.domain.game import Move
 
 
 class GameUser(TypedDict):
@@ -10,24 +11,6 @@ class GameUser(TypedDict):
     rating: int
     avatarUrl: str | None
 
-
-Move = TypedDict(
-    "Move",
-    {
-        "color": str,
-        "from": str,
-        "to": str,
-        "piece": str,
-        "captured": str,
-        "promotion": str,
-        "flags": str,
-        "san": str,
-        "lan": str,
-        "before": str,
-        "after": str,
-        "createdAt": datetime,
-    },
-)
 
 Outcome = TypedDict(
     "Outcome",

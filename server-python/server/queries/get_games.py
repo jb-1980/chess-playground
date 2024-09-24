@@ -1,13 +1,17 @@
 from flask import jsonify, make_response, request
 from pydantic import BaseModel
+from result import is_ok
 
 from server.domain.game import Game
 from server.models.game import GameLoader, make_game_dto
 
 
 def query_get_games_for_player_id(playerId: str) -> list[Game]:
-    games = GameLoader().get_games_for_player_id(playerId)
-    return [make_game_dto(g) for g in games]
+    gamesResult = GameLoader().get_games_for_player_id(playerId)
+    if is_ok(gamesResult):
+        games = gamesResult.ok_value
+        return [make_game_dto(g) for g in games]
+    return []
 
 
 class Payload(BaseModel):

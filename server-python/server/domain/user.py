@@ -1,11 +1,10 @@
-from typing import Optional, TypedDict
+from typing import Optional
 
-User = TypedDict(
-    "User",
-    {
-        "id": str,
-        "username": str,
-        "rating": int,
-        "avatarUrl": Optional[str],
-    },
-)
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    id: str
+    username: str
+    rating: int
+    avatarUrl: Optional[str]

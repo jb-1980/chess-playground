@@ -2,6 +2,7 @@ from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from server.domain.game import Move
 
 
 class RequestMessageTypes(StrEnum):
@@ -37,7 +38,7 @@ class GetGameMessage(BaseModel):
 class MovePayload(BaseModel):
     gameId: str
     playerId: str
-    move: dict
+    move: Move
     status: str
     pgn: str
 

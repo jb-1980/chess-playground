@@ -14,7 +14,9 @@ if not WHITELIST_URLS:
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET
-
+app.config["SOCK_SERVER_OPTIONS"] = {
+    "subprotocols": ["Bearer"],
+}
 JWTManager(app)
 
 CORS(app, origins=WHITELIST_URLS.split(","), supports_credentials=True)
