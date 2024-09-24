@@ -24,4 +24,5 @@ def handle_get_games():
     except Exception:
         return make_response(jsonify({"message": "Invalid payload"}), 400)
 
-    return make_response(jsonify(query_get_games_for_player_id(payload.playerId)), 200)
+    games = query_get_games_for_player_id(payload.playerId)
+    return make_response(jsonify([game.model_dump() for game in games]), 200)

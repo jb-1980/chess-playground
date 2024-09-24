@@ -20,15 +20,14 @@ def command_login_user(username: str, password: str) -> Result[str, str]:
         if not password_match:
             return Ok("BAD_CREDENTIALS")
 
-        parsedUser = make_user_dto(user)
+        parsed_user = make_user_dto(user)
         additional_claims = {
-            "id": parsedUser["id"],
-            "username": parsedUser["username"],
-            "rating": parsedUser["rating"],
-            "sub": None,
+            "id": parsed_user.id,
+            "username": parsed_user.username,
+            "rating": parsed_user.rating,
         }
         token = create_access_token(
-            parsedUser,
+            parsed_user.id,
             expires_delta=timedelta(days=1),
             additional_claims=additional_claims,
         )

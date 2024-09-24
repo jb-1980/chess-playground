@@ -13,8 +13,17 @@ def command_register_user(username: str, password: str) -> Result[str, str]:
 
     if is_ok(userResult):
         user = userResult.ok_value
-        parsedUser = make_user_dto(user)
-        token = create_access_token(parsedUser, expires_delta=timedelta(days=1))
+        parsed_user = make_user_dto(user)
+        additional_claims = {
+            "id": parsed_user.id,
+            "username": parsed_user.username,
+            "rating": parsed_user.rating,
+        }
+        token = create_access_token(
+            parsed_user.id,
+            expires_delta=timedelta(days=1),
+            additional_claims=additional_claims,
+        )
         return Ok(token)
     elif is_err(userResult):
         if userResult.err_value == "USER_ALREADY_EXISTS":
