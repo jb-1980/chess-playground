@@ -1,0 +1,26 @@
+enum GetGameErrorType {
+  GAME_NOT_FOUND
+  DB_ERROR_WHILE_GETTING_GAME
+  DB_ERR_GET_GAMES_FOR_USER_ID
+}
+
+type GetGameError {
+  message: GetGameErrorType!
+}
+
+union GetGameResult = GetGameError | Game
+
+type GetGamesForPlayerIdError {
+  message: GetGameErrorType!
+}
+
+type GetGamesForPlayer {
+  games: [Game!]!
+}
+
+union GetGamesForPlayerIdResult = GetGamesForPlayerIdError | GetGamesForPlayer
+
+extend type Query {
+  game(id: ID!): GetGameResult!
+  gamesForPlayerId(id: ID!): GetGamesForPlayerIdResult!
+}

@@ -1,23 +1,22 @@
 import { useQuery } from "@tanstack/react-query"
-import { useParams } from "react-router-dom"
-import { Game } from "../../../types/game"
+import { Game } from "../../../../types/game"
 
-export const useGetGame = () => {
-  const { gameId } = useParams()
+type GetGameResponseObject = Game[]
 
-  return useQuery<Game>({
-    queryKey: ["game", gameId],
+export const useGetGamesWithReactQuery = (playerId: string) => {
+  return useQuery<GetGameResponseObject>({
+    queryKey: ["games", playerId],
     queryFn: async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/queries/get-game-by-id`,
+        `${import.meta.env.VITE_API_URL}/api/queries/get-games`,
         {
           method: "POST",
-          body: JSON.stringify({ gameId }),
+          body: JSON.stringify({ playerId }),
           headers: {
             "Content-Type": "application/json",
             authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       )
       return response.json()
     },

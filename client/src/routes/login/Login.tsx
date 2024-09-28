@@ -2,7 +2,7 @@ import { Button, Link, Stack, TextField, Typography } from "@mui/material"
 import Paper from "@mui/material/Paper/Paper"
 import { useNavigate } from "react-router-dom"
 import { storeToken } from "../../lib/token"
-import { useState } from "react"
+import { useHandleLogin } from "./data/useHandleLogin"
 
 export const Login = () => {
   const navigate = useNavigate()
@@ -12,7 +12,7 @@ export const Login = () => {
   }
   const btnstyle = { margin: "8px 0" }
 
-  const [error, setError] = useState<string | null>(null)
+  const { mutate, isLoading, error } = useHandleLogin()
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -22,40 +22,11 @@ export const Login = () => {
     const username = formData.get("username") as string
     const password = formData.get("password") as string
 
-    fetch(`${import.meta.env.VITE_API_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-      credentials: "include",
+    mutate(username, password, (token) => {
+      console.log("token", token)
+      storeToken(token)
+      navigate("/dashboard")
     })
-      .then((res) => {
-        if (!res.ok) {
-          const status = res.status
-          if (status === 401) {
-            throw new Error("Invalid credentials")
-          }
-          throw new Error("Invalid login")
-        }
-        return res
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        storeToken(data.token)
-        navigate("/")
-      })
-      .catch((err: unknown) => {
-        console.log(err)
-        if (err instanceof Error) {
-          setError(err.message)
-          return
-        }
-        setError("Unknown error")
-      })
   }
 
   return (
@@ -105,6 +76,7 @@ export const Login = () => {
               style={btnstyle}
               fullWidth
               type="submit"
+              disabled={isLoading}
             >
               Sign in
             </Button>
@@ -117,5 +89,3 @@ export const Login = () => {
     </div>
   )
 }
-
-export default Login

@@ -4,35 +4,32 @@ import { getStatus } from "../lib/getStatus"
 import type { GameContextValues } from "./types"
 import { useNavigate, useParams } from "react-router-dom"
 import { useUserContext } from "../../Root/context"
-import { GameActions, useChess } from "../hooks/useChess"
-import {
-  RequestMessageTypes,
-  ResponseMessageType,
-  useGameSocket,
-} from "../hooks/useHandleMessage"
-import { GameStatus } from "../../../types/game"
-import { Loader } from "../../../components/Loader"
-import { Box, Stack, Typography } from "@mui/material"
+import { GameActions, getChessStateFromGame, useChess } from "../hooks/useChess"
+
+import { useObserveGame } from "../data/useObserveGame"
+import { useHandleMove } from "../data/useMove"
+import { Game } from "../../../types/game"
 
 export const GameContext = createContext<GameContextValues | undefined>(
-  undefined
+  undefined,
 )
 
 export const GameContextProvider = ({
   children,
+  game,
 }: {
   children: React.ReactNode
+  game: Game
 }) => {
-  const { sendJsonMessage, lastJsonMessage } = useGameSocket()
-  const gameId = useParams().gameId!
   const navigate = useNavigate()
+  const gameId = useParams().gameId!
   const { id: playerId } = useUserContext()
   const chess = useMemo(() => new Chess(), [])
-  const [gameState, dispatch] = useChess(playerId)
+  const [gameState, dispatch] = useChess(getChessStateFromGame(game, playerId))
 
-  console.log({ gameState })
+  const { mutate } = useHandleMove()
 
-  const { turn, myColor, fen, status, whitePlayer, blackPlayer } = gameState
+  const { turn, myColor } = gameState
   const onMove = useCallback(
     (move: { from: string; to: string; promotion: string }) => {
       if (turn !== myColor) {
@@ -48,19 +45,7 @@ export const GameContextProvider = ({
           payload: { fen: chess.fen(), status: _status },
         })
 
-        sendJsonMessage({
-          type: RequestMessageTypes.MOVE,
-          payload: {
-            gameId,
-            move: {
-              ..._move,
-              number: chess.moveNumber(),
-            },
-            pgn: chess.pgn(),
-            status: _status,
-            playerId,
-          },
-        })
+        mutate(gameId, _move)
         return true
       } catch (err) {
         console.log({ err })
@@ -70,113 +55,29 @@ export const GameContextProvider = ({
         throw err
       }
     },
-    [chess, gameId, sendJsonMessage, myColor, turn, dispatch, playerId]
+    [chess, gameId, mutate, myColor, turn, dispatch],
   )
 
-  useEffect(() => {
-    console.log({ outside: lastJsonMessage })
-    if (lastJsonMessage !== null) {
-      console.log({ lastJsonMessage })
-      switch (lastJsonMessage.type) {
-        case ResponseMessageType.FETCH_GAME_RESPONSE: {
-          const game = lastJsonMessage.payload
-          console.log({ GameFoundPGN: game.pgn })
-          chess.loadPgn(game.pgn)
-          dispatch({
-            type: GameActions.FETCH_GAME,
-            payload: game,
-          })
-          if (game.id !== gameId) {
-            navigate(`/games/${game.id}`)
-          }
-          break
-        }
-        case ResponseMessageType.JOIN_GAME_RESPONSE: {
-          const { gameId } = lastJsonMessage.payload
-          navigate(`/games/${gameId}`)
-          break
-        }
-        case ResponseMessageType.MOVE_RESPONSE: {
-          const { pgn, fen } = lastJsonMessage.payload
-          chess.loadPgn(pgn)
-          dispatch({
-            type: GameActions.SET_MOVE,
-            payload: { fen, status: getStatus(chess) },
-          })
-          break
-        }
-        case ResponseMessageType.ERROR: {
-          console.error(lastJsonMessage.payload.message)
-          break
-        }
-        case ResponseMessageType.PING: {
-          sendJsonMessage({ type: RequestMessageTypes.PONG })
-          break
-        }
-      }
-    }
-  }, [
-    lastJsonMessage,
-    navigate,
-    chess,
-    playerId,
-    dispatch,
-    gameId,
-    sendJsonMessage,
-  ])
+  const { msg } = useObserveGame(gameId)
 
   useEffect(() => {
-    console.log({ gameId, status })
-    if (gameId === "new" && status === GameStatus.NOT_STARTED) {
-      dispatch({ type: GameActions.JOIN_GAME })
-      sendJsonMessage({
-        type: RequestMessageTypes.JOIN_GAME,
-        payload: { playerId },
-      })
-    } else if (
-      gameId !== "new" &&
-      [GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)
-    ) {
-      sendJsonMessage({
-        type: RequestMessageTypes.GET_GAME,
-        payload: { gameId, playerId },
+    if (msg && msg.pgn) {
+      const game = msg
+      chess.loadPgn(game.pgn)
+      dispatch({
+        type: GameActions.FETCH_GAME,
+        payload: game,
       })
     }
-  }, [gameId, playerId, sendJsonMessage, status, dispatch])
+  }, [msg, dispatch, chess])
 
-  const value = useMemo(() => {
-    const startNewGame = () => {
-      dispatch({ type: GameActions.RESET })
-    }
-    return {
-      status,
-      fen,
-      turn,
-      myColor,
-      whitePlayer,
-      blackPlayer,
+  const value = useMemo(
+    () => ({
+      ...gameState,
       onMove,
-      startNewGame,
-    }
-  }, [dispatch, status, fen, turn, onMove, myColor, whitePlayer, blackPlayer])
-
-  if ([GameStatus.NOT_STARTED, GameStatus.JOINING].includes(status)) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "calc(100vh - 96px)",
-        }}
-      >
-        <Stack spacing={2} justifyContent="center" alignItems="center">
-          <Loader />
-          <Typography variant="h6">Finding opponent...</Typography>
-        </Stack>
-      </Box>
-    )
-  }
+    }),
+    [gameState, onMove, navigate],
+  )
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>
 }

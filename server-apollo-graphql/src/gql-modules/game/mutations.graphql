@@ -1,0 +1,54 @@
+input MoveInput {
+  "Color of the player making the move"
+  color: Color!
+  "Square the piece is moving from"
+  from: Square!
+  "Square the piece is moving to"
+  to: Square!
+  "Piece being moved"
+  piece: Piece!
+  "Piece being captured"
+  captured: Piece
+  "Piece being promoted to"
+  promotion: Piece
+  "Flags for the move"
+  flags: String!
+  "Standard Algebraic Notation"
+  san: String!
+  "Long Algebraic Notation"
+  lan: String!
+  "FEN before the move"
+  before: String!
+  "FEN after the move"
+  after: String!
+}
+
+enum MoveError {
+  "Move is invalid"
+  INVALID
+  "500 error when trying to get game from DB"
+  FAILED_TO_GET_GAME
+  "Failed to find a game with the given ID"
+  GAME_NOT_FOUND
+  "500 error when trying to update game with the new move in the DB"
+  FAILED_TO_ADD_MOVE
+  "Can only move pieces of your own color"
+  NOT_YOUR_MOVE
+}
+
+type MoveErrorResult {
+  "Error message"
+  message: MoveError!
+}
+
+type MoveSuccessResult {
+  "Game ID"
+  newPGN: String!
+}
+
+union MoveResult = MoveErrorResult | MoveSuccessResult
+
+extend type Mutation {
+  createGame(playerId: ID!): ID
+  move(gameId: ID!, move: MoveInput!): MoveResult
+}

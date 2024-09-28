@@ -1,0 +1,412 @@
+enum Color {
+  """
+  BLACK
+  """
+  b
+
+  """
+  WHITE
+  """
+  w
+}
+
+interface Error {
+  message: String!
+}
+
+type Game {
+  blackPlayer: GameUser!
+  id: ID!
+  moves: [Move!]!
+  pgn: String!
+  status: GameStatus!
+  whitePlayer: GameUser!
+}
+
+enum GameStatus {
+  ABANDONED
+  AGREED_DRAW
+  CHECKMATE
+  FIFTY_MOVE_RULE
+  INSUFFICIENT_MATERIAL
+  JOINING
+  NOT_STARTED
+  PLAYING
+  RESIGNATION
+  STALEMATE
+  THREE_MOVE_REPETITION
+  TIMEOUT
+}
+
+type GameUser {
+  avatarUrl: String
+  id: ID!
+  rating: Int!
+  username: String!
+}
+
+type GetGameError {
+  message: GetGameErrorType!
+}
+
+enum GetGameErrorType {
+  DB_ERROR_WHILE_GETTING_GAME
+  DB_ERR_GET_GAMES_FOR_USER_ID
+  GAME_NOT_FOUND
+}
+
+union GetGameResult = Game | GetGameError
+
+type GetGamesForPlayer {
+  games: [Game!]!
+}
+
+type GetGamesForPlayerIdError {
+  message: GetGameErrorType!
+}
+
+union GetGamesForPlayerIdResult = GetGamesForPlayer | GetGamesForPlayerIdError
+
+enum JoinGameError {
+  """
+  There was an error while creating the game for the players
+  """
+  ERROR_CREATING_GAME
+
+  """
+  The player has been waiting in the queue for too long
+  """
+  NO_MATCH_FOUND
+}
+
+type JoinGameErrorMsg {
+  """
+  Error message
+  """
+  message: JoinGameError!
+}
+
+type JoinGameMsg {
+  """
+  Game ID
+  """
+  gameId: ID!
+}
+
+union JoinMsg = JoinGameErrorMsg | JoinGameMsg
+
+scalar LocalDate
+
+type LoginError {
+  message: String!
+}
+
+union LoginResult = LoginError | LoginSuccess
+
+type LoginSuccess {
+  token: String!
+}
+
+type Move {
+  """
+  FEN after the move
+  """
+  after: String!
+
+  """
+  FEN before the move
+  """
+  before: String!
+
+  """
+  Piece being captured
+  """
+  captured: Piece
+
+  """
+  Color of the player making the move
+  """
+  color: Color!
+
+  """
+  Flags for the move
+  """
+  flags: String!
+
+  """
+  Square the piece is moving from
+  """
+  from: Square!
+
+  """
+  Long Algebraic Notation
+  """
+  lan: String!
+
+  """
+  Piece being moved
+  """
+  piece: Piece!
+
+  """
+  Piece being promoted to
+  """
+  promotion: Piece
+
+  """
+  Standard Algebraic Notation
+  """
+  san: String!
+
+  """
+  Square the piece is moving to
+  """
+  to: Square!
+}
+
+enum MoveError {
+  """
+  500 error when trying to update game with the new move in the DB
+  """
+  FAILED_TO_ADD_MOVE
+
+  """
+  500 error when trying to get game from DB
+  """
+  FAILED_TO_GET_GAME
+
+  """
+  Failed to find a game with the given ID
+  """
+  GAME_NOT_FOUND
+
+  """
+  Move is invalid
+  """
+  INVALID
+
+  """
+  Can only move pieces of your own color
+  """
+  NOT_YOUR_MOVE
+}
+
+type MoveErrorResult {
+  """
+  Error message
+  """
+  message: MoveError!
+}
+
+input MoveInput {
+  """
+  FEN after the move
+  """
+  after: String!
+
+  """
+  FEN before the move
+  """
+  before: String!
+
+  """
+  Piece being captured
+  """
+  captured: Piece
+
+  """
+  Color of the player making the move
+  """
+  color: Color!
+
+  """
+  Flags for the move
+  """
+  flags: String!
+
+  """
+  Square the piece is moving from
+  """
+  from: Square!
+
+  """
+  Long Algebraic Notation
+  """
+  lan: String!
+
+  """
+  Piece being moved
+  """
+  piece: Piece!
+
+  """
+  Piece being promoted to
+  """
+  promotion: Piece
+
+  """
+  Standard Algebraic Notation
+  """
+  san: String!
+
+  """
+  Square the piece is moving to
+  """
+  to: Square!
+}
+
+union MoveResult = MoveErrorResult | MoveSuccessResult
+
+type MoveSuccessResult {
+  """
+  Game ID
+  """
+  newPGN: String!
+}
+
+type Mutation {
+  createGame(playerId: ID!): ID
+  login(password: String!, username: String!): LoginResult!
+  move(gameId: ID!, move: MoveInput!): MoveResult
+  register(password: String!, username: String!): RegisterResult!
+}
+
+type ObserveGameMsg {
+  """
+  The pgn of the resulting move
+  """
+  game: Game!
+}
+
+enum Piece {
+  """
+  Bishop
+  """
+  b
+
+  """
+  King
+  """
+  k
+
+  """
+  Knight
+  """
+  n
+
+  """
+  Pawn
+  """
+  p
+
+  """
+  Queen
+  """
+  q
+
+  """
+  Rook
+  """
+  r
+}
+
+type Query {
+  game(id: ID!): GetGameResult!
+  gamesForPlayerId(id: ID!): GetGamesForPlayerIdResult!
+}
+
+type RegisterError {
+  message: String!
+}
+
+union RegisterResult = RegisterError | RegisterSuccess
+
+type RegisterSuccess {
+  token: String!
+}
+
+enum Square {
+  a1
+  a2
+  a3
+  a4
+  a5
+  a6
+  a7
+  a8
+  b1
+  b2
+  b3
+  b4
+  b5
+  b6
+  b7
+  b8
+  c1
+  c2
+  c3
+  c4
+  c5
+  c6
+  c7
+  c8
+  d1
+  d2
+  d3
+  d4
+  d5
+  d6
+  d7
+  d8
+  e1
+  e2
+  e3
+  e4
+  e5
+  e6
+  e7
+  e8
+  f1
+  f2
+  f3
+  f4
+  f5
+  f6
+  f7
+  f8
+  g1
+  g2
+  g3
+  g4
+  g5
+  g6
+  g7
+  g8
+  h1
+  h2
+  h3
+  h4
+  h5
+  h6
+  h7
+  h8
+}
+
+type Subscription {
+  """
+  Get into the queue to join a new game, responds with the game id
+  """
+  joinGame(playerId: ID!): JoinMsg!
+
+  """
+  Observe a game
+  """
+  observeGame(gameId: ID!): ObserveGameMsg!
+}
+
+type User {
+  avatarUrl: String
+  id: ID!
+  rating: Float!
+  username: String!
+}

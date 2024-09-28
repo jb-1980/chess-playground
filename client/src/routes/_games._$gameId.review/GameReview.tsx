@@ -1,4 +1,3 @@
-import { useGetGame } from "./api/useGetGame"
 import { GameBoard } from "../../components/GameBoard"
 import { useMemo, useState } from "react"
 import { Game } from "../../types/game"
@@ -21,9 +20,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight"
 import { getFancySan } from "./lib/get-fancy-san"
 import { Loader } from "../../components/Loader"
+import { useGetGame } from "./data/useGetGame"
+import { useParams } from "react-router-dom"
 
 export const GameReview = () => {
-  const { data: game, isLoading, isError } = useGetGame()
+  const gameId = useParams().gameId!
+  const { data: game, isLoading, error } = useGetGame(gameId)
 
   if (isLoading)
     return (
@@ -42,7 +44,7 @@ export const GameReview = () => {
         </Stack>
       </Box>
     )
-  if (isError) return <div>Error</div>
+  if (error) return <div>Error</div>
 
   if (!game) return <div>Game not found</div>
 

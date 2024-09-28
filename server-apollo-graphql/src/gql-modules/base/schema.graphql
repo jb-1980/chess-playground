@@ -1,0 +1,9 @@
+scalar LocalDate
+
+interface Error {
+  message: String!
+}
+
+type Query
+type Mutation
+type Subscription

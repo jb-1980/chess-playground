@@ -1,0 +1,10 @@
+subscription JoinGame($playerId: ID!) {
+  joinGame(playerId: $playerId) {
+    ... on JoinGameMsg {
+      gameId
+    }
+    ... on JoinGameErrorMsg {
+      message
+    }
+  }
+}

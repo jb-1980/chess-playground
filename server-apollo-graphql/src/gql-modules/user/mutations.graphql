@@ -1,0 +1,24 @@
+type LoginError {
+  message: String!
+}
+
+type LoginSuccess {
+  token: String!
+}
+
+union LoginResult = LoginSuccess | LoginError
+
+type RegisterError {
+  message: String!
+}
+
+type RegisterSuccess {
+  token: String!
+}
+
+union RegisterResult = RegisterSuccess | RegisterError
+
+extend type Mutation {
+  register(username: String!, password: String!): RegisterResult!
+  login(username: String!, password: String!): LoginResult!
+}

@@ -1,0 +1,6 @@
+type User {
+  id: ID!
+  username: String!
+  rating: Float!
+  avatarUrl: String
+}

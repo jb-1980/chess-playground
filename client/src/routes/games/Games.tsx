@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
 import { useUserContext } from "../Root/context"
-import { useGetGames } from "./hooks/useGetGames"
 import {
   Box,
   Container,
@@ -15,6 +14,7 @@ import {
   Typography,
 } from "@mui/material"
 import { Loader } from "../../components/Loader"
+import { useGetGames } from "./data/useGetGames"
 
 export const Games = () => {
   const user = useUserContext()
@@ -40,7 +40,7 @@ export const Games = () => {
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>
+    return <div>Error: {error}</div>
   }
   function getResultFromPGN(pgn: string) {
     const regex = /\[Result "(.*)"\]/

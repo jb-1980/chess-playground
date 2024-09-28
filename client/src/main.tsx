@@ -15,8 +15,9 @@ import { LogoutRoute } from "./routes/logout/route"
 import { ThemeProvider } from "@emotion/react"
 import { createTheme } from "@mui/material"
 import { GamesRoute } from "./routes/games/route"
-import { QueryClientProvier } from "./lib/react-query"
 import { GameReviewRoute } from "./routes/_games._$gameId.review/route"
+import { DatasourceProvider } from "./datasources/datasource-provider"
+import { GamesJoinRoute } from "./routes/_games.join/route"
 
 const theme = createTheme({
   palette: {
@@ -36,7 +37,13 @@ if (!rootElement) {
 }
 
 const router = createBrowserRouter([
-  RootRoute([GamesIdRoute(), GamesRoute(), GameReviewRoute(), IndexRoute()]),
+  RootRoute([
+    GamesIdRoute(),
+    GamesJoinRoute(),
+    GamesRoute(),
+    GameReviewRoute(),
+    IndexRoute(),
+  ]),
   LoginRoute(),
   SignupRoute(),
   LogoutRoute(),
@@ -45,9 +52,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <QueryClientProvier>
+      <DatasourceProvider>
         <RouterProvider router={router} />
-      </QueryClientProvier>
+      </DatasourceProvider>
     </ThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 )

@@ -8,7 +8,7 @@ type State = {
   /** A singleton of the Chess class */
   // chess: Chess
   /** The current game status */
-  status: GameStatus
+  status: keyof typeof GameStatus
   /** The current FEN string */
   fen: string | null
   /** The current turn */
@@ -32,7 +32,7 @@ type Action =
   | {
       type: GameActions.SET_MOVE
       payload: {
-        status: GameStatus
+        status: keyof typeof GameStatus
         fen: string
       }
     }
@@ -55,7 +55,6 @@ const reducer = (state: State, action: Action): State =>
       const lastMove = moves[moves.length - 1]
       const fen = lastMove ? lastMove.after : DEFAULT_POSITION
       const turn = fen.split(" ")[1] as Color
-      console.log({ color, fen, status, turn })
       return {
         ...state,
         myColor: color,
@@ -100,5 +99,22 @@ const getInitialState = (playerId: string): State => ({
   blackPlayer: null,
 })
 
-export const useChess = (playerId: string) =>
-  useReducer(reducer, getInitialState(playerId))
+export const getChessStateFromGame = (game: Game, playerId: string): State => {
+  const { whitePlayer, blackPlayer, moves, status } = game
+  const color = whitePlayer.id === playerId ? "w" : ("b" as Color)
+  const lastMove = moves[moves.length - 1]
+  const fen = lastMove ? lastMove.after : DEFAULT_POSITION
+  const turn = fen.split(" ")[1] as Color
+  return {
+    status,
+    fen,
+    turn,
+    myColor: color,
+    playerId,
+    whitePlayer,
+    blackPlayer,
+  }
+}
+
+export const useChess = (initialState: State) =>
+  useReducer(reducer, initialState)

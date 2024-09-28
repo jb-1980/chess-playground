@@ -1,7 +1,7 @@
 import { Button, Dialog, IconButton, Stack, Typography } from "@mui/material"
 import { WHITE } from "chess.js"
 import { useGameContext } from "../context"
-import { match } from "ts-pattern"
+import { match, P } from "ts-pattern"
 import { Link, useParams } from "react-router-dom"
 import { GameStatus } from "../../../types/game"
 import { useState } from "react"
@@ -9,15 +9,20 @@ import CloseIcon from "@mui/icons-material/Close"
 
 export const GameOverDialog = () => {
   const { gameId } = useParams()
-  const { status, turn, startNewGame } = useGameContext()
+  const { status, turn } = useGameContext()
   const [dismissed, setDismissed] = useState(false)
-  const gameOver = [
-    GameStatus.CHECKMATE,
-    GameStatus.STALEMATE,
-    GameStatus.THREE_MOVE_REPETITION,
-    GameStatus.INSUFFICIENT_MATERIAL,
-    GameStatus.FIFTY_MOVE_RULE,
-  ].includes(status)
+  const gameOver = match(status)
+    .with(
+      P.union(
+        GameStatus.CHECKMATE,
+        GameStatus.STALEMATE,
+        GameStatus.THREE_MOVE_REPETITION,
+        GameStatus.INSUFFICIENT_MATERIAL,
+        GameStatus.FIFTY_MOVE_RULE,
+      ),
+      () => true,
+    )
+    .otherwise(() => false)
 
   const winner = turn === WHITE ? "Black" : "White"
   return (
@@ -87,7 +92,6 @@ export const GameOverDialog = () => {
             variant="contained"
             component={Link}
             to={`/games/${gameId}/review`}
-            onClick={() => startNewGame()}
             style={{ flex: 1 }}
           >
             Review
@@ -96,18 +100,12 @@ export const GameOverDialog = () => {
             variant="contained"
             component={Link}
             to="/games"
-            onClick={() => startNewGame()}
             style={{ flex: 1 }}
           >
             My Games
           </Button>
         </Stack>
-        <Button
-          variant="contained"
-          component={Link}
-          to="/games/new"
-          onClick={() => startNewGame()}
-        >
+        <Button variant="contained" component={Link} to="/games/join">
           New Game
         </Button>
       </Stack>

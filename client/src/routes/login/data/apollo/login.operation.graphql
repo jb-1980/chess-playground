@@ -1,0 +1,10 @@
+mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    ... on LoginSuccess {
+      token
+    }
+    ... on LoginError {
+      message
+    }
+  }
+}

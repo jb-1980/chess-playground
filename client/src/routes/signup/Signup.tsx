@@ -1,15 +1,13 @@
 import { Button, Link, Stack, TextField, Typography } from "@mui/material"
 import Paper from "@mui/material/Paper/Paper"
 import { useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { storeToken } from "../../lib/token"
+import { useHandleSignup } from "./data/useHandleSignup"
 
 export const Signup = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const hostname = window.location.hostname
-  const port = window.location.port
-  console.log({ hostname, location, port })
+
   const paperStyle = {
     padding: 20,
     maxWidth: 300,
@@ -19,54 +17,14 @@ export const Signup = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const [error, setError] = useState<string | null>(null)
+  const { mutate, isLoading, error } = useHandleSignup()
 
-  const handleSignup = () => {
-    if (!username || !password) {
-      setError("Username and password are required")
-      return
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      return
-    }
-
-    fetch(`${import.meta.env.VITE_API_URL}/register-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-      credentials: "include",
+  console.log({ isLoading, error })
+  const handleSignup = async () => {
+    await mutate(username, password, (token) => {
+      storeToken(token)
+      navigate("/")
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          const status = res.status
-          if (status === 400) {
-            throw new Error("Incorrect username or password")
-          } else if (status === 500) {
-            throw new Error("Unknown server error")
-          }
-        }
-        return res
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        storeToken(data.token)
-        navigate("/")
-      })
-      .catch((err: unknown) => {
-        console.log(err)
-        if (err instanceof Error) {
-          setError(err.message)
-          return
-        }
-        setError("Unknown error")
-      })
   }
 
   return (
@@ -116,6 +74,7 @@ export const Signup = () => {
             style={btnstyle}
             fullWidth
             onClick={handleSignup}
+            disabled={isLoading}
           >
             Register
           </Button>

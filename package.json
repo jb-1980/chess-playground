@@ -3,10 +3,29 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gql:generate": "graphql-codegen",
+    "gql:generate:watch": "graphql-codegen --watch"
   },
   "keywords": [],
   "author": "joseph",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@eddeee888/gcg-typescript-resolver-files": "^0.10.4",
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/near-operation-file-preset": "^3.0.0",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.2",
+    "@parcel/watcher": "^2.4.1",
+    "@types/bcrypt": "^5.0.2",
+    "graphql-scalars": "^1.23.0",
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": false
+  }
 }

@@ -1,0 +1,89 @@
+# prettier-ignore
+enum Square {
+  a8, b8, c8, d8, e8, f8, g8, h8,
+  a7, b7, c7, d7, e7, f7, g7, h7,
+  a6, b6, c6, d6, e6, f6, g6, h6,
+  a5, b5, c5, d5, e5, f5, g5, h5,
+  a4, b4, c4, d4, e4, f4, g4, h4,
+  a3, b3, c3, d3, e3, f3, g3, h3,
+  a2, b2, c2, d2, e2, f2, g2, h2,
+  a1, b1, c1, d1, e1, f1, g1, h1,
+}
+
+enum Color {
+  "WHITE"
+  w
+  "BLACK"
+  b
+}
+
+enum Piece {
+  "Pawn"
+  p
+  "Knight"
+  n
+  "Bishop"
+  b
+  "Rook"
+  r
+  "Queen"
+  q
+  "King"
+  k
+}
+
+type Move {
+  "Color of the player making the move"
+  color: Color!
+  "Square the piece is moving from"
+  from: Square!
+  "Square the piece is moving to"
+  to: Square!
+  "Piece being moved"
+  piece: Piece!
+  "Piece being captured"
+  captured: Piece
+  "Piece being promoted to"
+  promotion: Piece
+  "Flags for the move"
+  flags: String!
+  "Standard Algebraic Notation"
+  san: String!
+  "Long Algebraic Notation"
+  lan: String!
+  "FEN before the move"
+  before: String!
+  "FEN after the move"
+  after: String!
+}
+
+enum GameStatus {
+  NOT_STARTED
+  JOINING
+  PLAYING
+  CHECKMATE
+  STALEMATE
+  THREE_MOVE_REPETITION
+  INSUFFICIENT_MATERIAL
+  FIFTY_MOVE_RULE
+  RESIGNATION
+  AGREED_DRAW
+  TIMEOUT
+  ABANDONED
+}
+
+type GameUser {
+  id: ID!
+  rating: Int!
+  username: String!
+  avatarUrl: String
+}
+
+type Game {
+  id: ID!
+  moves: [Move!]!
+  pgn: String!
+  whitePlayer: GameUser!
+  blackPlayer: GameUser!
+  status: GameStatus!
+}

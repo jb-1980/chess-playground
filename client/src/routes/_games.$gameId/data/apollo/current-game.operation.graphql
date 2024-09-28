@@ -1,0 +1,45 @@
+mutation Move($gameId: ID!, $move: MoveInput!) {
+  move(gameId: $gameId, move: $move) {
+    ... on MoveErrorResult {
+      message
+    }
+    ... on MoveSuccessResult {
+      newPGN
+    }
+  }
+}
+
+subscription ObserveGame($gameId: ID!) {
+  observeGame(gameId: $gameId) {
+    game {
+      id
+      moves {
+        color
+        from
+        to
+        piece
+        captured
+        promotion
+        flags
+        san
+        lan
+        before
+        after
+      }
+      pgn
+      whitePlayer {
+        id
+        rating
+        username
+        avatarUrl
+      }
+      blackPlayer {
+        id
+        rating
+        username
+        avatarUrl
+      }
+      status
+    }
+  }
+}

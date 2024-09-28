@@ -1,0 +1,30 @@
+enum JoinGameError {
+  "The player has been waiting in the queue for too long"
+  NO_MATCH_FOUND
+  "There was an error while creating the game for the players"
+  ERROR_CREATING_GAME
+}
+
+type JoinGameErrorMsg {
+  "Error message"
+  message: JoinGameError!
+}
+
+type JoinGameMsg {
+  "Game ID"
+  gameId: ID!
+}
+
+type ObserveGameMsg {
+  "The pgn of the resulting move"
+  game: Game!
+}
+
+union JoinMsg = JoinGameErrorMsg | JoinGameMsg
+
+extend type Subscription {
+  "Get into the queue to join a new game, responds with the game id"
+  joinGame(playerId: ID!): JoinMsg!
+  "Observe a game"
+  observeGame(gameId: ID!): ObserveGameMsg!
+}
