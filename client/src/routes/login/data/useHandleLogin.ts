@@ -70,7 +70,6 @@ export const useHandleLogin = (): {
     return { mutate, data, isLoading: opts.loading, error }
   }
 
-  console.log("Using react-query")
   const mutation = useLoginWithReactQuery()
 
   const mutate = async (

@@ -1,5 +1,5 @@
-import { Chess } from 'chess.js'
-import { GameStatus } from '../gql-modules/types.generated'
+import { Chess } from "chess.js"
+import { GameStatus } from "../gql-modules/types.generated"
 
 export const validateMove = (fen: string, move: string): boolean => {
   const chess = new Chess(fen)
@@ -48,11 +48,10 @@ export const createPgnFromMoves = (
   const chess = new Chess()
   try {
     for (const move of moves) {
-      console.log({ move })
       chess.move(move)
     }
   } catch (e) {
-    throw new Error('INVALID_MOVE')
+    throw new Error("INVALID_MOVE")
   }
 
   for (const [key, value] of Object.entries(headers)) {

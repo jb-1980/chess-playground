@@ -1,3 +1,5 @@
 import { Router } from "express"
+import { handle_Move } from "../commands/move"
 
-export const commandsRouter = Router()
+/** Routes at /api/commands/* */
+export const commandsRouter = Router().post("/move", handle_Move)

@@ -1,22 +1,22 @@
-import 'dotenv/config'
-import { createServer } from 'http'
-import { ApolloServer } from '@apollo/server'
-import { expressMiddleware } from '@apollo/server/express4'
-import cors from 'cors'
-import express from 'express'
+import "dotenv/config"
+import { createServer } from "http"
+import { ApolloServer } from "@apollo/server"
+import { expressMiddleware } from "@apollo/server/express4"
+import cors from "cors"
+import express from "express"
 
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
-import { WebSocketServer } from 'ws'
-import { useServer } from 'graphql-ws/lib/use/ws'
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
+import { WebSocketServer } from "ws"
+import { useServer } from "graphql-ws/lib/use/ws"
 
 import {
   apolloContextFunction,
   ApolloContextType,
-} from './server-config/context'
-import { typeDefs } from './server-config/type-defs.generated'
-import { resolvers } from './server-config/resolvers.generated'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { authenticationMiddleware } from './middleware/auth'
+} from "./server-config/context"
+import { typeDefs } from "./server-config/type-defs.generated"
+import { resolvers } from "./server-config/resolvers.generated"
+import { makeExecutableSchema } from "@graphql-tools/schema"
+import { authenticationMiddleware } from "./middleware/auth"
 
 const app = express()
 const httpServer = createServer(app)
@@ -25,7 +25,7 @@ const schema = makeExecutableSchema({ typeDefs, resolvers })
 
 const ws = new WebSocketServer({
   server: httpServer,
-  path: '/subscriptions',
+  path: "/subscriptions",
 })
 
 const serverCleanup = useServer(
@@ -56,7 +56,7 @@ const server = new ApolloServer<ApolloContextType>({
 await server.start()
 
 app.use(
-  '/graphql',
+  "/graphql",
   cors<cors.CorsRequest>(),
   express.json(),
   authenticationMiddleware,
@@ -68,5 +68,5 @@ app.use(
 )
 
 httpServer.listen({ port: 3001 }, () => {
-  console.log(`🚀 Server ready at http://localhost:3001/graphql`)
+  console.info(`🚀 Server ready at http://localhost:3001/graphql`)
 })

@@ -23,7 +23,6 @@ export const Login = () => {
     const password = formData.get("password") as string
 
     mutate(username, password, (token) => {
-      console.log("token", token)
       storeToken(token)
       navigate("/dashboard")
     })

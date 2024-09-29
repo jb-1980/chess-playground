@@ -43,16 +43,15 @@ export const getStatus = (fen: string): GameStatus => {
 
 export const createPgnFromMoves = (
   moves: string[],
-  headers: { [key: string]: string }
+  headers: { [key: string]: string },
 ): string => {
   const chess = new Chess()
   try {
     for (const move of moves) {
-      console.log({ move })
       chess.move(move)
     }
   } catch (e) {
-    console.error(e)
+    throw new Error("INVALID_MOVE")
   }
 
   for (const [key, value] of Object.entries(headers)) {
@@ -70,7 +69,7 @@ export const calculateNewRatings = (
   blackRating: number,
   /** 1 for White wins, 0 for Black wins, 0.5 for draw */
   outcome: 1 | 0 | 0.5,
-  K = 32
+  K = 32,
 ): {
   whiteRating: number
   blackRating: number
@@ -82,10 +81,10 @@ export const calculateNewRatings = (
   const blackProbability = getProbability(blackRating, whiteRating)
 
   const newWhiteRating = Math.round(
-    whiteRating + K * (outcome - whiteProbability)
+    whiteRating + K * (outcome - whiteProbability),
   )
   const newBlackRating = Math.round(
-    blackRating + K * (1 - outcome - blackProbability)
+    blackRating + K * (1 - outcome - blackProbability),
   )
   return {
     whiteRating: newWhiteRating,

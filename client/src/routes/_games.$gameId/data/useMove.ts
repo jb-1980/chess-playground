@@ -76,7 +76,6 @@ export const useHandleMove = (): {
     return { mutate, data, isLoading: opts.loading, error }
   }
 
-  console.log("Using react-query")
   const mutation = useMoveWithReactQuery()
 
   const mutate: MutationFn = async (gameId, move, onSuccess) => {

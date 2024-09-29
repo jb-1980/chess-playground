@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { Move } from "chess.js"
+import { retrieveToken } from "../../../../lib/token"
 
 type MoveResponseObject = {
   newPGN: string
@@ -12,6 +13,7 @@ export const useMoveWithReactQuery = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${retrieveToken()}`,
         },
         body: JSON.stringify(data),
         credentials: "include",

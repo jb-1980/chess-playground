@@ -86,7 +86,6 @@ export const useHandleSignup = (): {
     )
   }
 
-  console.log({ mutation, error: mutation.error })
   return {
     mutate,
     data: mutation.error ? null : mutation.data?.token,

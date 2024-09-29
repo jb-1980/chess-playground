@@ -10,5 +10,5 @@ server.on("upgrade", handleUpgrade)
 
 const PORT = Number(process.env.PORT) || 5000
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`server running at http://0.0.0.0:${PORT}`)
+  console.info(`server running at http://0.0.0.0:${PORT}`)
 })

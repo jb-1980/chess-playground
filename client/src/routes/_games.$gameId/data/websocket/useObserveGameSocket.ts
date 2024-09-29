@@ -4,13 +4,13 @@ import { useEffect, useState } from "react"
 import { Game } from "../../../../types/game"
 
 export enum ResponseMessageType {
-  FETCH_GAME_RESPONSE = "fetch-game-response",
+  MOVE_RESPONSE = "move-response",
   ERROR = "error",
 }
 
 type ResponseMessage =
   | {
-      type: ResponseMessageType.FETCH_GAME_RESPONSE
+      type: ResponseMessageType.MOVE_RESPONSE
       payload: Game
     }
   | {
@@ -20,7 +20,7 @@ type ResponseMessage =
       }
     }
 
-export const useObserveGameSocket = (playerId: string) => {
+export const useObserveGameSocket = (gameId: string) => {
   const token = retrieveToken()
   const { sendJsonMessage, lastJsonMessage, readyState } =
     useWebsocket<ResponseMessage>(import.meta.env.VITE_WEBSOCKET_URL, {
@@ -32,14 +32,13 @@ export const useObserveGameSocket = (playerId: string) => {
   useEffect(() => {
     if (readyState === ReadyState.OPEN && !messageSent) {
       sendJsonMessage({
-        type: "get-game",
+        type: "observe-game",
         payload: {
-          gameId: "string",
-          playerId: "string",
+          gameId,
         },
       })
       setMessageSent(true)
     }
-  }, [readyState, messageSent, playerId, sendJsonMessage])
+  }, [readyState, messageSent, gameId, sendJsonMessage])
   return { lastJsonMessage, readyState }
 }

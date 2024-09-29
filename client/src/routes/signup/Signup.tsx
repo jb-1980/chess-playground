@@ -19,7 +19,6 @@ export const Signup = () => {
 
   const { mutate, isLoading, error } = useHandleSignup()
 
-  console.log({ isLoading, error })
   const handleSignup = async () => {
     await mutate(username, password, (token) => {
       storeToken(token)

@@ -2,7 +2,7 @@ import { Chess } from "chess.js"
 import { createContext, useCallback, useEffect, useMemo } from "react"
 import { getStatus } from "../lib/getStatus"
 import type { GameContextValues } from "./types"
-import { useNavigate, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useUserContext } from "../../Root/context"
 import { GameActions, getChessStateFromGame, useChess } from "../hooks/useChess"
 
@@ -21,10 +21,13 @@ export const GameContextProvider = ({
   children: React.ReactNode
   game: Game
 }) => {
-  const navigate = useNavigate()
   const gameId = useParams().gameId!
   const { id: playerId } = useUserContext()
-  const chess = useMemo(() => new Chess(), [])
+  const chess = useMemo(() => {
+    const chess = new Chess()
+    chess.loadPgn(game.pgn)
+    return chess
+  }, [game.pgn])
   const [gameState, dispatch] = useChess(getChessStateFromGame(game, playerId))
 
   const { mutate } = useHandleMove()
@@ -39,7 +42,6 @@ export const GameContextProvider = ({
         // will throw an "Illegal move" error if the move is invalid
         const _move = chess.move(move)
         const _status = getStatus(chess)
-        console.log({ _move, _status, pgn: chess.pgn() })
         dispatch({
           type: GameActions.SET_MOVE,
           payload: { fen: chess.fen(), status: _status },
@@ -48,7 +50,7 @@ export const GameContextProvider = ({
         mutate(gameId, _move)
         return true
       } catch (err) {
-        console.log({ err })
+        console.error({ err })
         if (err instanceof Error && err.message === "Illegal move") {
           return false
         }
@@ -76,7 +78,7 @@ export const GameContextProvider = ({
       ...gameState,
       onMove,
     }),
-    [gameState, onMove, navigate],
+    [gameState, onMove],
   )
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

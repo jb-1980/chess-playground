@@ -45,10 +45,7 @@ export const useObserveGame = (
 
   const msg = match(lastJsonMessage)
     .with({ type: ResponseMessageType.ERROR }, () => null)
-    .with(
-      { type: ResponseMessageType.FETCH_GAME_RESPONSE },
-      ({ payload }) => payload,
-    )
+    .with({ type: ResponseMessageType.MOVE_RESPONSE }, ({ payload }) => payload)
     .otherwise(() => undefined)
 
   const error = match(lastJsonMessage)
