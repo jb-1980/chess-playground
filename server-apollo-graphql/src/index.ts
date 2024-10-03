@@ -31,9 +31,6 @@ const ws = new WebSocketServer({
 const serverCleanup = useServer(
   {
     schema,
-    context: (ctx, msg, args) => {
-      console.dir({ ctx, msg }, { depth: 6 })
-    },
   },
   ws,
 )
@@ -55,13 +52,18 @@ const server = new ApolloServer<ApolloContextType>({
 })
 await server.start()
 
+const whitelist = process.env.WHITELIST_URLS
+  ? process.env.WHITELIST_URLS.split(",")
+  : []
+
 app.use(
   "/graphql",
-  cors<cors.CorsRequest>(),
+  cors({
+    origin: whitelist,
+    credentials: true,
+  }),
   express.json(),
   authenticationMiddleware,
-  // expressMiddleware accepts the same arguments:
-  // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
     context: apolloContextFunction,
   }),

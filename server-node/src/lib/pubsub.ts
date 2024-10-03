@@ -49,7 +49,7 @@ export class SimplePubSub {
       return
     }
 
-    const websocketIds = subscribers.map((ws) => (ws as TaggedWebSocket).id)
+    const websocketIds = subscribers.map((ws) => ws.id)
     if (websocketIds.includes(ws.id)) {
       return
     }
@@ -64,7 +64,7 @@ export class SimplePubSub {
 
     this._topics.set(
       topic,
-      subscribers.filter((subscriber) => subscriber !== ws),
+      subscribers.filter((subscriber) => subscriber.id !== ws.id),
     )
   }
 }
