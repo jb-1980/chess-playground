@@ -137,6 +137,7 @@ const placeInQueue = (playerId: string) =>
   })
 
 export const joinGame: NonNullable<SubscriptionResolvers["joinGame"]> = {
+  // @ts-expect-error, the library is not typed correctly
   subscribe: (_parent, { playerId }, _ctx) => {
     const sub = pubsub.asyncIterator(`JOIN_GAME${playerId}`)
     placeInQueue(playerId)

@@ -1,4 +1,4 @@
-import type { ErrorMsgResolvers } from "./../../types.generated"
-export const ErrorMsg: ErrorMsgResolvers = {
+import type { ErrorResolvers } from "./../../types.generated"
+export const ErrorMsg: ErrorResolvers = {
   /* Implement ErrorMsg resolver logic here */
 }
