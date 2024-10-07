@@ -69,6 +69,8 @@ app.use(
   }),
 )
 
-httpServer.listen({ port: 3001 }, () => {
-  console.info(`🚀 Server ready at http://localhost:3001/graphql`)
+const port = process.env.PORT || 3001
+
+httpServer.listen({ port }, () => {
+  console.info(`🚀 Server ready at http://localhost:${3001}/graphql`)
 })
