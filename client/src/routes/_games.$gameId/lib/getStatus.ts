@@ -1,7 +1,7 @@
 import { Chess } from "chess.js"
 import { GameStatus } from "../../../types/game"
 
-export const getStatus = (chess: Chess): GameStatus => {
+export const getStatus = (chess: Chess): keyof typeof GameStatus => {
   if (chess.isGameOver()) {
     if (chess.isCheckmate()) {
       return GameStatus.CHECKMATE

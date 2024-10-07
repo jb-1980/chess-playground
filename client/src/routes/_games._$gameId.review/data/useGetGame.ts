@@ -1,7 +1,6 @@
 import { match } from "ts-pattern"
 import { Game } from "../../../types/game"
 import { useGetGameWithReactQuery } from "./react-query/useGetGameWithReactQuery"
-import { useParams } from "react-router-dom"
 import { useGameQuery } from "./apollo/get-game.operation"
 
 export enum GetGameError {

@@ -22,5 +22,5 @@ export type Game = {
   pgn: string
   whitePlayer: User
   blackPlayer: User
-  status: GameStatus
+  status: keyof typeof GameStatus
 }
