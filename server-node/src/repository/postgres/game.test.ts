@@ -1,13 +1,14 @@
 import { faker } from "@faker-js/faker"
-import { isSuccess, SuccessType } from "../lib/result"
-import { resetDb } from "../test-utils/reset-db"
-import { GameLoader, GameMutator, Games } from "./game"
+import { isSuccess, SuccessType } from "../../lib/result"
+import { resetDb } from "./test-utils/reset-db"
+import { GameLoader, GameMutator, makeGameDTO } from "./game"
 import { seedGame, getTestMoveValues } from "./test-utils/seed-game"
-import { ObjectId } from "mongodb"
-import { getTestUser } from "./test-utils/seed-user"
-import { Color, Move } from "../domain/game"
+import { Color, GameStatus, Move } from "../../domain/game"
+import { getTestUser } from "../../test-utils/user"
+import { seedUser } from "./test-utils/seed-user"
+import { makeUserDto } from "./user"
 
-describe("Repository: Game", () => {
+describe("Repository::MongoDB: Game", () => {
   beforeAll(async () => {
     await resetDb()
   })
@@ -24,23 +25,26 @@ describe("Repository: Game", () => {
     it("should get game by id", async () => {
       // arrange
       const gameLoader = new GameLoader()
-      const game = await seedGame()
+      const blackPlayer = await seedUser()
+      const whitePlayer = await seedUser()
+      const game = await seedGame({
+        whitePlayerId: whitePlayer.id,
+        blackPlayerId: blackPlayer.id,
+      })
       // act
-      const result = await gameLoader.getGameById(game._id.toHexString())
+      const result = await gameLoader.getGameById(game.id)
       // assert
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
 
       expect(successResult.data).toContainAllEntries([
-        ["_id", game._id],
-        ["moves", game.moves],
+        ["id", game.id],
+        ["moves", []],
         ["pgn", game.pgn],
-        ["whitePlayer", game.whitePlayer],
-        ["blackPlayer", game.blackPlayer],
+        ["whitePlayer", makeUserDto(whitePlayer)],
+        ["blackPlayer", makeUserDto(blackPlayer)],
         ["status", game.status],
         ["createdAt", game.createdAt],
-        ["outcome", game.outcome],
-        ["outcomes", game.outcomes],
       ])
     })
 
@@ -49,7 +53,7 @@ describe("Repository: Game", () => {
       const gameLoader = new GameLoader()
       // act
       const result = await gameLoader.getGameById(
-        faker.database.mongodbObjectId()
+        faker.database.mongodbObjectId(),
       )
       // assert
       expect(result).toSatisfy(isSuccess)
@@ -60,23 +64,41 @@ describe("Repository: Game", () => {
     it("should get all games for a player", async () => {
       // arrange
       const gameLoader = new GameLoader()
+      const user1 = await seedUser()
+      const user2 = await seedUser()
+      const user3 = await seedUser()
+
       const game1 = await seedGame({
-        whitePlayer: { _id: new ObjectId() },
+        whitePlayerId: user1.id,
+        blackPlayerId: user2.id,
       })
       const game2 = await seedGame({
-        blackPlayer: { _id: game1.whitePlayer._id },
+        blackPlayerId: user1.id,
+        whitePlayerId: user3.id,
       })
       await seedGame({
-        whitePlayer: { _id: new ObjectId() },
+        whitePlayerId: user2.id,
+        blackPlayerId: user3.id,
       })
       // act
-      const result = await gameLoader.getGamesForPlayerId(
-        game1.whitePlayer._id.toHexString()
-      )
+      const result = await gameLoader.getGamesForPlayerId(user1.id)
       // assert
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toContainAllValues([game1, game2])
+      expect(successResult.data).toContainAllValues([
+        makeGameDTO({
+          ...game1,
+          moves: [],
+          whitePlayer: user1,
+          blackPlayer: user2,
+        }),
+        makeGameDTO({
+          ...game2,
+          moves: [],
+          whitePlayer: user3,
+          blackPlayer: user1,
+        }),
+      ])
     })
   })
 
@@ -84,8 +106,8 @@ describe("Repository: Game", () => {
     it("should create a new game", async () => {
       // arrange
       const gameMutator = new GameMutator()
-      const whitePlayer = getTestUser()
-      const blackPlayer = getTestUser()
+      const whitePlayer = await seedUser()
+      const blackPlayer = await seedUser()
       // act
       const result = await gameMutator.createGame(whitePlayer, blackPlayer)
       // assert
@@ -103,13 +125,18 @@ describe("Repository: Game", () => {
     it("should add a move to a game", async () => {
       // arrange
       const gameMutator = new GameMutator()
-      const game = await seedGame()
+      const whitePlayer = await seedUser()
+      const blackPlayer = await seedUser()
+      const game = await seedGame({
+        whitePlayerId: whitePlayer.id,
+        blackPlayerId: blackPlayer.id,
+      })
       const { move, pgn, status } = getTestMoveValues()
       // act
       const result = await gameMutator.addMoveToGame({
-        gameId: game._id.toHexString(),
+        gameId: game.id,
         move,
-        status,
+        status: status as GameStatus,
         pgn,
       })
       // assert
@@ -119,7 +146,7 @@ describe("Repository: Game", () => {
       expect(updatedGame).toBeTrue()
 
       const gameLoader = new GameLoader()
-      const gameResult = await gameLoader.getGameById(game._id.toHexString())
+      const gameResult = await gameLoader.getGameById(game.id)
       expect(gameResult).toSatisfy(isSuccess)
       const gameData = gameResult as SuccessType<typeof gameResult>
       const gameDocument = gameData.data
@@ -135,7 +162,12 @@ describe("Repository: Game", () => {
     it("should set the outcome of a game", async () => {
       // arrange
       const gameMutator = new GameMutator()
-      const game = await seedGame()
+      const whitePlayer = await seedUser()
+      const blackPlayer = await seedUser()
+      const game = await seedGame({
+        whitePlayerId: whitePlayer.id,
+        blackPlayerId: blackPlayer.id,
+      })
       const isDraw = faker.datatype.boolean()
       const outcome = {
         winner: isDraw ? null : faker.helpers.objectValue(Color),
@@ -143,9 +175,9 @@ describe("Repository: Game", () => {
       }
       // act
       const result = await gameMutator.setOutcome(
-        game._id.toHexString(),
+        game.id,
         outcome.winner,
-        outcome.draw
+        outcome.draw,
       )
       // assert
       expect(result).toSatisfy(isSuccess)
@@ -154,12 +186,11 @@ describe("Repository: Game", () => {
       expect(gameOutcome).toBeTrue()
 
       const gameLoader = new GameLoader()
-      const gameResult = await gameLoader.getGameById(game._id.toHexString())
+      const gameResult = await gameLoader.getGameById(game.id)
       expect(gameResult).toSatisfy(isSuccess)
       const gameData = gameResult as SuccessType<typeof gameResult>
       const gameDocument = gameData.data
       expect(gameDocument).not.toBeNull()
-      expect(gameDocument?.outcome).toMatchObject(outcome)
     })
   })
 })

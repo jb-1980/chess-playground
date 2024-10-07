@@ -8,10 +8,11 @@ export const observeGameMessage = z.object({
   }),
 })
 
-export const subscription_joinGame = async (
+export const subscription_ObserveGame = async (
   payload: z.infer<typeof observeGameMessage>["payload"],
   ws: ExtWebSocket,
 ) => {
   const { gameId } = payload
+  console.log(`Observing game ${gameId}`)
   pubsub.subscribe(`OBSERVE_GAME.${gameId}`, ws)
 }

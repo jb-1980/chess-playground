@@ -1,0 +1,29 @@
+services:
+  # create mongo service
+  mongo:
+    image: mongo:latest
+    container_name: chess_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - /var/data/mongo_develop_db:/data/db
+
+  # create a postgres service
+  postgres:
+    image: postgres:latest
+    container_name: chess_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chess
+    volumes:
+      - /var/data/postgres_develop_db:/var/lib/postgresql/data
+
+  # create a redis service
+  redis:
+    image: redis:latest
+    container_name: chess_redis
+    ports:
+      - "6379:6379"

@@ -1,7 +1,13 @@
 import { ObjectId } from "mongodb"
 import { Games, GameDocument } from "../game"
 import { faker } from "@faker-js/faker"
-import { Color, GameStatus, Piece, Square } from "../../domain/game"
+import {
+  Color,
+  GameStatus,
+  Piece,
+  Square,
+  Move as GameMove,
+} from "../../../domain/game"
 import { Chess, Move } from "chess.js"
 
 type Overrides = Partial<
@@ -33,9 +39,9 @@ export const randomSan = () => {
 }
 
 export const getTestMoveValues = (
-  moveNumber = 10
+  moveNumber = 10,
 ): {
-  move: Omit<GameDocument["moves"][0], "createdAt">
+  move: GameMove
   pgn: string
   status: GameStatus
 } => {
@@ -66,12 +72,12 @@ export const getTestMoveValues = (
       ? chess.isInsufficientMaterial()
         ? GameStatus.INSUFFICIENT_MATERIAL
         : chess.isStalemate()
-        ? GameStatus.STALEMATE
-        : chess.isThreefoldRepetition()
-        ? GameStatus.THREE_MOVE_REPETITION
-        : chess.isCheckmate()
-        ? GameStatus.CHECKMATE
-        : GameStatus.FIFTY_MOVE_RULE
+          ? GameStatus.STALEMATE
+          : chess.isThreefoldRepetition()
+            ? GameStatus.THREE_MOVE_REPETITION
+            : chess.isCheckmate()
+              ? GameStatus.CHECKMATE
+              : GameStatus.FIFTY_MOVE_RULE
       : GameStatus.PLAYING,
   }
 }
@@ -126,7 +132,7 @@ export const getTestGame = (overrides: Overrides = {}): GameDocument => {
 }
 
 export const seedGame = async (
-  overrides: Overrides = {}
+  overrides: Overrides = {},
 ): Promise<GameDocument> => {
   const gameDocument = getTestGame(overrides)
   const { insertedId } = await Games.insertOne(gameDocument)

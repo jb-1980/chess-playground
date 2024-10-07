@@ -1,15 +1,17 @@
 import { ObjectId } from "mongodb"
 import { MongoCollection } from "./collection"
 import bcrypt from "bcrypt"
-import { AsyncResult, Result } from "../lib/result"
+import { AsyncResult, Result } from "../../lib/result"
 import DataLoader from "dataloader"
+import { UserLoaderInterface, UserMutatorInterface } from "../loaders"
+import { User } from "../../domain/user"
 
 export type UserDocument = {
   _id: ObjectId
   username: string
   passwordHash: string
   rating: number
-  avatarUrl?: string
+  avatarUrl?: string | null
 }
 
 export type ParsedUserDocument = Omit<UserDocument, "_id" | "passwordHash"> & {
@@ -18,42 +20,67 @@ export type ParsedUserDocument = Omit<UserDocument, "_id" | "passwordHash"> & {
 
 export const Users = MongoCollection<UserDocument>("users")
 
-export class UserLoader {
+export const makeUserDto = (
+  user: Omit<UserDocument, "passwordHash">,
+): User => ({
+  id: user._id.toHexString(),
+  username: user.username,
+  rating: user.rating,
+  avatarUrl: user.avatarUrl,
+})
+
+export class UserLoader extends UserLoaderInterface {
   private _batchUsersById = new DataLoader<string, UserDocument | null>(
     async (ids) => {
       const users = await Users.find({
         _id: { $in: ids.map((id) => new ObjectId(id)) },
       }).toArray()
 
-      const usersMap = users.reduce((map, user) => {
-        map[user._id.toString()] = user
-        return map
-      }, {} as Record<string, UserDocument>)
+      const usersMap = users.reduce(
+        (map, user) => {
+          map[user._id.toString()] = user
+          return map
+        },
+        {} as Record<string, UserDocument>,
+      )
 
       return ids.map((id) => usersMap[id] || null)
-    }
+    },
   )
 
   private _batchUsersByUsername = new DataLoader<string, UserDocument | null>(
     async (usernames) => {
       const users = await Users.find({ username: { $in: usernames } }).toArray()
 
-      const usersMap = users.reduce((map, user) => {
-        map[user.username] = user
-        return map
-      }, {} as Record<string, UserDocument>)
+      const usersMap = users.reduce(
+        (map, user) => {
+          map[user.username] = user
+          return map
+        },
+        {} as Record<string, UserDocument>,
+      )
 
       return usernames.map((username) => usersMap[username] || null)
-    }
+    },
   )
 
-  public async getUserByUsername(
-    username: string
-  ): AsyncResult<UserDocument | null, "DB_ERR_FAILED_TO_GET_USER"> {
+  public async validateUser(
+    username: string,
+    password: string,
+  ): AsyncResult<User, "DB_ERR_FAILED_TO_GET_USER" | "BAD_CREDENTIALS"> {
     try {
       const user = await this._batchUsersByUsername.load(username)
+      if (!user) {
+        return Result.Fail("BAD_CREDENTIALS")
+      }
 
-      return Result.Success(user)
+      const passwordMatch = await bcrypt.compare(password, user.passwordHash)
+      if (!passwordMatch) {
+        return Result.Fail("BAD_CREDENTIALS")
+      }
+      const parsedUser = makeUserDto(user)
+
+      return Result.Success(parsedUser)
     } catch (error) {
       console.error(error)
       return Result.Fail("DB_ERR_FAILED_TO_GET_USER", error)
@@ -61,14 +88,16 @@ export class UserLoader {
   }
 
   public async getUsersByIds(
-    ids: string[]
-  ): AsyncResult<UserDocument[], "DB_ERR_FAILED_TO_GET_USERS_BY_IDS"> {
+    ids: string[],
+  ): AsyncResult<User[], "DB_ERR_FAILED_TO_GET_USERS_BY_IDS"> {
     try {
       const users = await this._batchUsersById.loadMany(ids)
       return Result.Success(
-        users.filter((user): user is UserDocument => {
-          return user !== null && !(user instanceof Error)
-        })
+        users
+          .filter((user): user is UserDocument => {
+            return user !== null && !(user instanceof Error)
+          })
+          .map(makeUserDto),
       )
     } catch (error) {
       console.error(error)
@@ -77,14 +106,11 @@ export class UserLoader {
   }
 }
 
-export class UserMutator {
+export class UserMutator extends UserMutatorInterface {
   public async createUser(
     username: string,
-    password: string
-  ): AsyncResult<
-    UserDocument,
-    "DB_ERR_FAILED_TO_CREATE_USER" | "USER_ALREADY_EXISTS"
-  > {
+    password: string,
+  ): AsyncResult<User, "DB_ERR_FAILED_TO_CREATE_USER" | "USER_ALREADY_EXISTS"> {
     try {
       const user = await Users.findOne({ username })
 
@@ -100,9 +126,8 @@ export class UserMutator {
         rating: 1200,
       })
       return Result.Success({
-        _id: insertedId,
+        id: insertedId.toHexString(),
         username,
-        passwordHash,
         rating: 1200,
       })
     } catch (error) {
@@ -113,13 +138,13 @@ export class UserMutator {
 
   public async updateUserRating(
     userId: ObjectId | string,
-    newRating: number
+    newRating: number,
   ): AsyncResult<boolean, "DB_ERR_FAILED_TO_UPDATE_USER_RATING"> {
     const _id = userId instanceof ObjectId ? userId : new ObjectId(userId)
     try {
       const { modifiedCount } = await Users.updateOne(
         { _id },
-        { $set: { rating: newRating } }
+        { $set: { rating: newRating } },
       )
 
       return Result.Success(modifiedCount === 1)

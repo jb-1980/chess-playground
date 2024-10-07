@@ -3,7 +3,7 @@ import { useRegisterMutation } from "./apollo/signup.operation"
 import { useSignupWithReactQuery } from "./react-query/useSignupWithReactQuery"
 
 export enum SignupError {
-  INCORRECT_USERNAME_OR_PASSWORD = "Incorrect username or password",
+  USER_ALREADY_EXISTS = "User already exists",
   UNKNOWN_SERVER_ERROR = "Unknown server error",
 }
 
@@ -57,7 +57,7 @@ export const useHandleSignup = (): {
               __typename: "RegisterError",
               message: "Incorrect username or password",
             },
-            () => SignupError.INCORRECT_USERNAME_OR_PASSWORD,
+            () => SignupError.USER_ALREADY_EXISTS,
           )
           .with(
             { __typename: "RegisterError" },
@@ -92,7 +92,7 @@ export const useHandleSignup = (): {
     isLoading: mutation.isPending,
     error: mutation.error
       ? mutation.error.message === "Incorrect username or password"
-        ? SignupError.INCORRECT_USERNAME_OR_PASSWORD
+        ? SignupError.USER_ALREADY_EXISTS
         : SignupError.UNKNOWN_SERVER_ERROR
       : undefined,
   }

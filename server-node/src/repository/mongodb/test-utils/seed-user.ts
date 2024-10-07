@@ -2,8 +2,8 @@ import { ObjectId } from "mongodb"
 import { UserDocument, Users } from "../user"
 import { faker } from "@faker-js/faker"
 
-export const getTestUser = (
-  overrides: Partial<UserDocument> = {}
+export const getTestUserDocument = (
+  overrides: Partial<UserDocument> = {},
 ): UserDocument => {
   return {
     _id: new ObjectId(),
@@ -16,9 +16,9 @@ export const getTestUser = (
 }
 
 export const seedUser = async (
-  overrides: Partial<UserDocument> = {}
+  overrides: Partial<UserDocument> = {},
 ): Promise<UserDocument> => {
-  const user = getTestUser(overrides)
+  const user = getTestUserDocument(overrides)
   await Users.insertOne(user)
   return user
 }

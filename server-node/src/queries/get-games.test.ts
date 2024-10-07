@@ -1,4 +1,4 @@
-jest.mock("../repository/game")
+jest.mock("../repository")
 import { query_GetGamesForPlayerId } from "./get-games"
 import * as getGamesModule from "./get-games"
 import { setupExpress } from "../server/setup-express"
@@ -11,9 +11,9 @@ import {
   Result,
   SuccessType,
 } from "../lib/result"
-import { makeGameDTO } from "../domain/game"
-import { getTestGame } from "../repository/test-utils/seed-game"
+
 import { createContext } from "../middleware/context"
+import { getTestGame } from "../test-utils/game"
 
 describe("Queries: Get Games", () => {
   describe("API Layer", () => {
@@ -43,8 +43,8 @@ describe("Queries: Get Games", () => {
     })
 
     it("should return 200 with the game data when the query succeeds", async () => {
-      const expectedGame = makeGameDTO(getTestGame())
-      const querySpy = jest
+      const expectedGame = getTestGame()
+      jest
         .spyOn(getGamesModule, "query_GetGamesForPlayerId")
         .mockResolvedValueOnce(Result.Success([expectedGame]))
 
@@ -54,7 +54,9 @@ describe("Queries: Get Games", () => {
         .send({ playerId: "123" })
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual([expectedGame])
+      expect(response.body).toEqual([
+        { ...expectedGame, createdAt: expectedGame.createdAt.toISOString() },
+      ])
     })
   })
 
@@ -79,7 +81,7 @@ describe("Queries: Get Games", () => {
       const result = await query_GetGamesForPlayerId("123", context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toEqual([makeGameDTO(game)])
+      expect(successResult.data).toEqual([game])
     })
   })
 })

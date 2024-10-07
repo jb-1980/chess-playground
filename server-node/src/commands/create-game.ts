@@ -1,10 +1,10 @@
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { makeUserDto, User } from "../domain/user"
+import { User } from "../domain/user"
 import { Context } from "../middleware/context"
 
 export const command_CreateGame = async (
   playerIds: [string, string],
-  { Mutator, Loader }: Context
+  { Mutator, Loader }: Context,
 ): AsyncResult<
   {
     gameId: string
@@ -23,7 +23,7 @@ export const command_CreateGame = async (
   // randomly choose a player to be white
   const whitePlayer = users[Math.round(Math.random())]
   const blackPlayer = users.find(
-    (user) => user.username !== whitePlayer.username
+    (user) => user.username !== whitePlayer.username,
   )
 
   if (!whitePlayer || !blackPlayer) {
@@ -32,14 +32,14 @@ export const command_CreateGame = async (
 
   const createGameResult = await Mutator.GameMutator.createGame(
     whitePlayer,
-    blackPlayer
+    blackPlayer,
   )
 
   if (createGameResult.success) {
     return Result.Success({
       gameId: createGameResult.data,
-      whitePlayer: makeUserDto(whitePlayer),
-      blackPlayer: makeUserDto(blackPlayer),
+      whitePlayer,
+      blackPlayer,
     })
   }
 

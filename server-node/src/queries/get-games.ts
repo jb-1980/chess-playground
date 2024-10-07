@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { Game, makeGameDTO } from "../domain/game"
+import { Game } from "../domain/game"
 import { z, ZodError } from "zod"
 import { Context } from "../middleware/context"
 
@@ -10,7 +10,7 @@ const GetGamesRequestSchema = z.object({
 
 export const handle_GetGames = async (
   req: Request,
-  res: Response<Game[] | ZodError | "DB_ERR_GET_GAMES_FOR_USER_ID">
+  res: Response<Game[] | ZodError | "DB_ERR_GET_GAMES_FOR_USER_ID">,
 ) => {
   const parsedBody = GetGamesRequestSchema.safeParse(req.body)
   if (!parsedBody.success) {
@@ -27,11 +27,11 @@ export const handle_GetGames = async (
 
 export const query_GetGamesForPlayerId = async (
   playerId: string,
-  { Loader: { GameLoader } }: Context
+  { Loader: { GameLoader } }: Context,
 ): AsyncResult<Game[], "DB_ERR_GET_GAMES_FOR_USER_ID"> => {
   const gamesResult = await GameLoader.getGamesForPlayerId(playerId)
   if (isFailure(gamesResult)) {
     return gamesResult
   }
-  return Result.Success(gamesResult.data.map(makeGameDTO))
+  return Result.Success(gamesResult.data)
 }

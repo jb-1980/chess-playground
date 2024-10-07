@@ -18,7 +18,7 @@ export const useSignupWithReactQuery = () => {
         .then(async (res) => {
           if (!res.ok) {
             const status = res.status
-            if (status === 400) {
+            if (status === 409) {
               throw new Error("Incorrect username or password")
             } else if (status === 500) {
               throw new Error("Unknown server error")

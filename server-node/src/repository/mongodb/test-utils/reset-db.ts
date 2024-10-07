@@ -1,4 +1,4 @@
-import { mongoDB } from "../repository/connection"
+import { mongoDB } from "../connection"
 
 export async function resetDb() {
   await mongoDB.dropDatabase()

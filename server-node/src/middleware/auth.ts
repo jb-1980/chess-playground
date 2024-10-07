@@ -1,12 +1,12 @@
-import jwt from 'jsonwebtoken'
-import { User, userSchema } from '../domain/user'
-import { NextFunction, Request, Response } from 'express'
+import jwt from "jsonwebtoken"
+import { User, userSchema } from "../domain/user"
+import { NextFunction, Request, Response } from "express"
 
 const JWT_SECRET = process.env.JWT_SECRET
 
 if (!JWT_SECRET) {
   throw new Error(
-    'Please define the JWT_SECRET environment variable inside .env',
+    "Please define the JWT_SECRET environment variable inside .env",
   )
 }
 
@@ -20,7 +20,7 @@ export const signToken = (payload: User): string => {
     },
     JWT_SECRET,
     {
-      expiresIn: '24h',
+      expiresIn: "24h",
     },
   )
 }
@@ -32,7 +32,7 @@ export const verifyToken = (token: string): User => {
   const parsedUser = userSchema.safeParse(verifiedToken)
   if (!parsedUser.success) {
     console.error(parsedUser.error)
-    throw new Error('MALFORMED_TOKEN_ERROR')
+    throw new Error("MALFORMED_TOKEN_ERROR")
   }
   return parsedUser.data
 }
@@ -51,15 +51,15 @@ export const authenticationMiddleware = (
   next: NextFunction,
 ) => {
   const tokenHeader = req.headers.authorization
-  if (!tokenHeader || !tokenHeader.startsWith('Bearer ')) {
+  if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
     return res.sendStatus(401)
   }
-  const token = tokenHeader?.split(' ')[1]
+  const token = tokenHeader?.split(" ")[1]
   try {
     req.user = verifyToken(token)
     next()
   } catch (error) {
     console.error(error)
-    return res.status(401).json({ error: 'INVALID_TOKEN' })
+    return res.status(401).json({ error: "INVALID_TOKEN" })
   }
 }

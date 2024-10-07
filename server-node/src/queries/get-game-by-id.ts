@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { Game, makeGameDTO } from "../domain/game"
+import { Game } from "../domain/game"
 import { z, ZodError } from "zod"
 import { Context } from "../middleware/context"
 
@@ -12,7 +12,7 @@ export const handle_GetGameById = async (
   req: Request,
   res: Response<
     Game | ZodError | "GAME_NOT_FOUND" | "DB_ERROR_WHILE_GETTING_GAME"
-  >
+  >,
 ) => {
   const parsedBody = GetGameRequestSchema.safeParse(req.body)
   if (!parsedBody.success) {
@@ -32,7 +32,7 @@ export const handle_GetGameById = async (
 
 export const query_GetGameById = async (
   gameId: string,
-  { Loader: { GameLoader } }: Context
+  { Loader: { GameLoader } }: Context,
 ): AsyncResult<Game, "GAME_NOT_FOUND" | "DB_ERROR_WHILE_GETTING_GAME"> => {
   const gameResult = await GameLoader.getGameById(gameId)
   if (isFailure(gameResult)) {
@@ -42,5 +42,5 @@ export const query_GetGameById = async (
   if (!gameResult.data) {
     return Result.Fail("GAME_NOT_FOUND")
   }
-  return Result.Success(makeGameDTO(gameResult.data))
+  return Result.Success(gameResult.data)
 }

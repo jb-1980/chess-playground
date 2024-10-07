@@ -91,10 +91,10 @@ export const useHandleLogin = (): {
     mutate,
     data: mutation.error ? null : mutation.data?.token,
     isLoading: mutation.isPending,
-    error:
-      mutation.error &&
-      mutation.error.message === "Incorrect username or password"
+    error: mutation.error
+      ? mutation.error.message === "Invalid credentials"
         ? LoginError.INCORRECT_USERNAME_OR_PASSWORD
-        : LoginError.UNKNOWN_SERVER_ERROR,
+        : LoginError.UNKNOWN_SERVER_ERROR
+      : undefined,
   }
 }

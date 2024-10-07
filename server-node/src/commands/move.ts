@@ -61,7 +61,7 @@ export const command_Move = async (
 
   const status = getStatus(move.after)
 
-  const gameResult = await Loader.GameLoader.getGameById(gameId, true)
+  const gameResult = await Loader.GameLoader.getGameById(gameId)
   if (isFailure(gameResult)) {
     return Result.Fail(MoveError.FAILED_TO_GET_GAME)
   }
@@ -71,8 +71,8 @@ export const command_Move = async (
     return Result.Fail(MoveError.GAME_NOT_FOUND)
   }
 
-  const whitePlayerId = game.whitePlayer._id.toString()
-  const blackPlayerId = game.blackPlayer._id.toString()
+  const whitePlayerId = game.whitePlayer.id
+  const blackPlayerId = game.blackPlayer.id
   const color = move.color
   if (color === Color.WHITE && user?.id !== whitePlayerId) {
     return Result.Fail(MoveError.NOT_YOUR_MOVE)
@@ -139,32 +139,37 @@ export const command_Move = async (
       draw: status !== GameStatus.CHECKMATE,
     }
     const whiteWins = move.color === Color.WHITE
+    const outcomesResult = await Loader.GameLoader.getGameOutcomes(game.id)
+    if (isFailure(outcomesResult)) {
+      return Result.Fail(MoveError.FAILED_TO_GET_GAME)
+    }
+    const outcomes = outcomesResult.data
     if (status === GameStatus.CHECKMATE) {
       newRatings.whiteRating = whiteWins
-        ? game.outcomes.whiteWins.whiteRating
-        : game.outcomes.blackWins.whiteRating
+        ? outcomes.whiteWins.whiteRating
+        : outcomes.blackWins.whiteRating
       newRatings.blackRating = whiteWins
-        ? game.outcomes.whiteWins.blackRating
-        : game.outcomes.blackWins.blackRating
+        ? outcomes.whiteWins.blackRating
+        : outcomes.blackWins.blackRating
     } else {
-      newRatings.whiteRating = game.outcomes.draw.whiteRating
-      newRatings.blackRating = game.outcomes.draw.blackRating
+      newRatings.whiteRating = outcomes.draw.whiteRating
+      newRatings.blackRating = outcomes.draw.blackRating
     }
 
     await Promise.all([
       Mutator.GameMutator.setOutcome(gameId, outcome.winner, outcome.draw),
       Mutator.UserMutator.updateUserRating(
-        game.whitePlayer._id,
+        game.whitePlayer.id,
         newRatings.whiteRating,
       ),
       Mutator.UserMutator.updateUserRating(
-        game.blackPlayer._id,
+        game.blackPlayer.id,
         newRatings.blackRating,
       ),
     ])
 
-    PlayersInActiveGames.delete(game.whitePlayer._id.toString())
-    PlayersInActiveGames.delete(game.blackPlayer._id.toString())
+    PlayersInActiveGames.delete(game.whitePlayer.id)
+    PlayersInActiveGames.delete(game.blackPlayer.id)
   }
 
   pubsub.publish(

@@ -1,6 +1,5 @@
 import type { WebSocket } from "ws"
-import { GameDocument } from "../repository/game"
-import { Game, makeGameDTO } from "../domain/game"
+import { Game } from "../domain/game"
 
 export type TaggedWebSocket = WebSocket & { id: string }
 
@@ -96,11 +95,11 @@ type ErrorResponseMessage = {
 }
 
 export const makeObserveGameResponseMessage = (
-  payload: GameDocument,
+  payload: Game,
 ): ObserveGameResponseMessage => {
   return {
     type: MessageResponseType.OBSERVE_GAME,
-    payload: makeGameDTO(payload),
+    payload,
   }
 }
 

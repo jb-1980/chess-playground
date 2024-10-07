@@ -1,6 +1,5 @@
 import { z } from "zod"
-import { makeUserDto, userSchema } from "./user"
-import { GameDocument } from "../repository/game"
+import { userSchema } from "./user"
 
 // prettier-ignore
 export const Square = z.enum([
@@ -68,14 +67,22 @@ export const gameSchema = z.object({
   whitePlayer: userSchema,
   blackPlayer: userSchema,
   status: z.nativeEnum(GameStatus),
+  createdAt: z.date(),
 })
 export type Game = z.infer<typeof gameSchema>
 
-export const makeGameDTO = (game: GameDocument): Game => ({
-  id: game._id.toHexString(),
-  moves: game.moves,
-  pgn: game.pgn,
-  whitePlayer: makeUserDto(game.whitePlayer),
-  blackPlayer: makeUserDto(game.blackPlayer),
-  status: game.status,
+export const gameOutcomeSchema = z.object({
+  whiteWins: z.object({
+    whiteRating: z.number(),
+    blackRating: z.number(),
+  }),
+  blackWins: z.object({
+    whiteRating: z.number(),
+    blackRating: z.number(),
+  }),
+  draw: z.object({
+    whiteRating: z.number(),
+    blackRating: z.number(),
+  }),
 })
+export type GameOutcome = z.infer<typeof gameOutcomeSchema>

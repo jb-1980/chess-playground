@@ -1,4 +1,4 @@
-jest.mock("../repository/game")
+jest.mock("../repository")
 import { query_GetGameById } from "./get-game-by-id"
 import * as getGameByIdModule from "./get-game-by-id"
 import { setupExpress } from "../server/setup-express"
@@ -11,10 +11,9 @@ import {
   Result,
   SuccessType,
 } from "../lib/result"
-import { makeGameDTO } from "../domain/game"
-import { getTestGame } from "../repository/test-utils/seed-game"
 import { createContext } from "../middleware/context"
 import { faker } from "@faker-js/faker"
+import { getTestGame } from "../test-utils/game"
 
 describe("Queries: Get Game By Id", () => {
   afterEach(() => {
@@ -48,8 +47,8 @@ describe("Queries: Get Game By Id", () => {
     })
 
     it("should return 200 with the game data when the query succeeds", async () => {
-      const expectedGame = makeGameDTO(getTestGame())
-      const querySpy = jest
+      const expectedGame = getTestGame()
+      jest
         .spyOn(getGameByIdModule, "query_GetGameById")
         .mockResolvedValueOnce(Result.Success(expectedGame))
 
@@ -59,7 +58,10 @@ describe("Queries: Get Game By Id", () => {
         .send({ gameId: expectedGame.id })
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(expectedGame)
+      expect(response.body).toEqual({
+        ...expectedGame,
+        createdAt: expectedGame.createdAt.toISOString(),
+      })
     })
   })
 
@@ -71,7 +73,7 @@ describe("Queries: Get Game By Id", () => {
         .mockResolvedValue(Result.Fail("DB_ERROR_WHILE_GETTING_GAME"))
       const result = await query_GetGameById(
         faker.database.mongodbObjectId(),
-        context
+        context,
       )
       expect(result).toSatisfy(isFailure)
       const failResult = result as FailureType<typeof result>
@@ -86,11 +88,11 @@ describe("Queries: Get Game By Id", () => {
         .mockResolvedValue(Result.Success(game))
       const result = await query_GetGameById(
         faker.database.mongodbObjectId(),
-        context
+        context,
       )
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toEqual(makeGameDTO(game))
+      expect(successResult.data).toEqual(game)
     })
   })
 })

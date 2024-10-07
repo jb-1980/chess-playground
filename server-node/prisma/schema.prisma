@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(uuid())
+  username     String  @unique
+  passwordHash String
+  rating       Int
+  avatarUrl    String?
+  GamesAsWhite Game[]  @relation("whitePlayer")
+  GamesAsBlack Game[]  @relation("blackPlayer")
+}
+
+enum Square {
+  a1
+  a2
+  a3
+  a4
+  a5
+  a6
+  a7
+  a8
+  b1
+  b2
+  b3
+  b4
+  b5
+  b6
+  b7
+  b8
+  c1
+  c2
+  c3
+  c4
+  c5
+  c6
+  c7
+  c8
+  d1
+  d2
+  d3
+  d4
+  d5
+  d6
+  d7
+  d8
+  e1
+  e2
+  e3
+  e4
+  e5
+  e6
+  e7
+  e8
+  f1
+  f2
+  f3
+  f4
+  f5
+  f6
+  f7
+  f8
+  g1
+  g2
+  g3
+  g4
+  g5
+  g6
+  g7
+  g8
+  h1
+  h2
+  h3
+  h4
+  h5
+  h6
+  h7
+  h8
+}
+
+enum Color {
+  w
+  b
+}
+
+enum Piece {
+  p
+  n
+  b
+  r
+  q
+  k
+}
+
+model Move {
+  id        String   @id @default(uuid())
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    String
+  color     Color
+  from      Square
+  to        Square
+  piece     Piece
+  captured  Piece?
+  promotion Piece?
+  flags     String
+  san       String
+  lan       String
+  before    String
+  after     String
+  createdAt DateTime
+}
+
+enum GameStatus {
+  NOT_STARTED
+  JOINING
+  PLAYING
+  CHECKMATE
+  STALEMATE
+  THREE_MOVE_REPETITION
+  INSUFFICIENT_MATERIAL
+  FIFTY_MOVE_RULE
+  RESIGNATION
+  AGREED_DRAW
+  TIMEOUT
+  ABANDONED
+}
+
+enum Outcome {
+  WHITE_WINS
+  BLACK_WINS
+  DRAW
+}
+
+model Game {
+  id            String     @id @default(uuid())
+  moves         Move[]
+  pgn           String
+  whitePlayerId String
+  blackPlayerId String
+  whitePlayer   User       @relation(name: "whitePlayer", fields: [whitePlayerId], references: [id])
+  blackPlayer   User       @relation(name: "blackPlayer", fields: [blackPlayerId], references: [id])
+  status        GameStatus
+  createdAt     DateTime
+  outcome       Outcome?
+
+  GameOutcomes GameOutcomes[]
+}
+
+model GameOutcomes {
+  id                   String @id @default(uuid())
+  game                 Game   @relation(fields: [gameId], references: [id])
+  gameId               String @unique
+  whiteWinsWhiteRating Int
+  whiteWinsBlackRating Int
+  blackWinsWhiteRating Int
+  blackWinsBlackRating Int
+  drawWhiteRating      Int
+  drawBlackRating      Int
+}

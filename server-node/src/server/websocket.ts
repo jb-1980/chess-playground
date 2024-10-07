@@ -16,7 +16,10 @@ import {
   joinGameMessage,
   subscription_joinGame,
 } from "../subscriptions/join-game"
-import { observeGameMessage } from "../subscriptions/observe-game"
+import {
+  observeGameMessage,
+  subscription_ObserveGame,
+} from "../subscriptions/observe-game"
 
 export const webSocketServer = new WebSocketServer({
   clientTracking: false,
@@ -77,7 +80,8 @@ webSocketServer.on("connection", (ws: ExtWebSocket) => {
     messageHandler(ws, message)
   })
 
-  ws.on("close", () => {
+  ws.on("close", (...args) => {
+    console.dir(args, { depth: null })
     console.info("client disconnected")
     const user = ws.context.user
     if (!user) {
@@ -133,6 +137,8 @@ const messageHandler = (ws: ExtWebSocket, data: RawData) => {
     .with({ type: "join-game" }, async ({ payload }) => {
       subscription_joinGame(payload, ws)
     })
-    .with({ type: "observe-game" }, async ({ payload }) => {})
+    .with({ type: "observe-game" }, async ({ payload }) => {
+      subscription_ObserveGame(payload, ws)
+    })
     .exhaustive()
 }

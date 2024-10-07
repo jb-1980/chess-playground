@@ -1,6 +1,5 @@
 import { Response, Request, NextFunction } from "express"
-import { GameLoader, GameMutator } from "../repository/game"
-import { UserLoader, UserMutator } from "../repository/user"
+import { GameLoader, UserLoader, GameMutator, UserMutator } from "../repository"
 import { User } from "../domain/user"
 
 export type Context = {
@@ -39,7 +38,7 @@ declare global {
 export const contextMiddleware = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   req.context = createContext(req.user)
   next()

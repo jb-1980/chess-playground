@@ -1,9 +1,7 @@
 import { Request, Response } from "express"
 import { z, ZodError } from "zod"
-import bcrypt from "bcrypt"
 import { signToken } from "../middleware/auth"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { makeUserDto } from "../domain/user"
 import { Context } from "../middleware/context"
 
 const RegisterUserSchema = z.object({
@@ -13,7 +11,7 @@ const RegisterUserSchema = z.object({
 
 export const handle_LoginUser = async (
   req: Request,
-  res: Response<{ token: string } | ZodError | { error: string }>
+  res: Response<{ token: string } | ZodError | { error: string }>,
 ) => {
   const requestBody = req.body
   const parsedBody = RegisterUserSchema.safeParse(requestBody)
@@ -34,24 +32,14 @@ export const command_LoginUser = async (
     username: string
     password: string
   },
-  { Loader }: Context
+  { Loader }: Context,
 ): AsyncResult<string, "BAD_CREDENTIALS" | "DB_ERR_FAILED_TO_GET_USER"> => {
   const { username, password } = args
-  const userResult = await Loader.UserLoader.getUserByUsername(username)
+  const userResult = await Loader.UserLoader.validateUser(username, password)
 
   if (!userResult.success) {
     return userResult
   }
 
-  const user = userResult.data
-  if (!user) {
-    return Result.Fail("BAD_CREDENTIALS")
-  }
-
-  const passwordMatch = await bcrypt.compare(password, user.passwordHash)
-  if (!passwordMatch) {
-    return Result.Fail("BAD_CREDENTIALS")
-  }
-  const parsedUser = makeUserDto(user)
-  return Result.Success(signToken(parsedUser))
+  return Result.Success(signToken(userResult.data))
 }
