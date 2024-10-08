@@ -3,6 +3,7 @@ import { useGameContext } from "../context/useContext"
 import { GameOverDialog } from "../components/game-over-dialog"
 import { Piece } from "react-chessboard/dist/chessboard/types"
 import { GameBoard } from "../../../components/GameBoard"
+import { Stack } from "@mui/material"
 
 export const Board = () => {
   const { fen, onMove, myColor, whitePlayer, blackPlayer } = useGameContext()
@@ -19,7 +20,18 @@ export const Board = () => {
   }
 
   return fen ? (
-    <div style={{ width: 800, height: 800 }}>
+    <Stack
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        maxHeight: "100vw",
+        width: "100%",
+        maxWidth: 800,
+        boxSizing: "border-box",
+      }}
+    >
       <GameOverDialog />
       <GameBoard
         fen={fen}
@@ -28,7 +40,7 @@ export const Board = () => {
         myColor={myColor}
         onPieceDrop={onDrop}
       />
-    </div>
+    </Stack>
   ) : (
     <div>Loading... </div>
   )

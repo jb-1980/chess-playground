@@ -52,7 +52,7 @@ export const Games = () => {
   }
 
   return (
-    <Container>
+    <Container sx={{ padding: 0 }}>
       <Typography variant="h3">Games</Typography>
       <TableContainer component={Paper}>
         <Table>
@@ -76,30 +76,20 @@ export const Games = () => {
                 >
                   <TableCell>
                     <div>
-                      <Typography variant="subtitle2">
-                        <div
-                          style={{
-                            display: "inline-block",
-                            width: 7,
-                            height: 7,
-                            background: "#fff",
-                            border: "1px solid #000",
-                          }}
-                        />{" "}
-                        {game.whitePlayer.username} ({game.whitePlayer.rating})
-                      </Typography>
-                      <Typography variant="subtitle2">
-                        <div
-                          style={{
-                            display: "inline-block",
-                            width: 7,
-                            height: 7,
-                            background: "#000",
-                            border: "1px solid #000",
-                          }}
-                        />{" "}
-                        {game.blackPlayer.username} ({game.blackPlayer.rating})
-                      </Typography>
+                      <Stack direction="row" alignItems="center" gap={1}>
+                        <Typography variant="subtitle2">♔</Typography>
+                        <Typography variant="subtitle2">
+                          {game.whitePlayer.username} ({game.whitePlayer.rating}
+                          )
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" alignItems="center" gap={1}>
+                        <Typography variant="subtitle2">♚</Typography>
+                        <Typography variant="subtitle2">
+                          {game.blackPlayer.username} ({game.blackPlayer.rating}
+                          )
+                        </Typography>
+                      </Stack>
                     </div>
                   </TableCell>
                   <TableCell>

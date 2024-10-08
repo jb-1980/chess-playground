@@ -5,6 +5,7 @@ import { UserProvider, useUserContext } from "./context"
 import {
   AppBar,
   Button,
+  Container,
   Menu,
   MenuItem,
   Stack,
@@ -18,7 +19,9 @@ export const Root = () => {
     <UserProvider>
       <MainHeader />
       <main>
-        <Outlet />
+        <Container>
+          <Outlet />
+        </Container>
       </main>
     </UserProvider>
   )

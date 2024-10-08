@@ -13,6 +13,5 @@ export const subscription_ObserveGame = async (
   ws: ExtWebSocket,
 ) => {
   const { gameId } = payload
-  console.log(`Observing game ${gameId}`)
   pubsub.subscribe(`OBSERVE_GAME.${gameId}`, ws)
 }
