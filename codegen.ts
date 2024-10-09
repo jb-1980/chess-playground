@@ -41,7 +41,7 @@ const config: CodegenConfig = {
       },
     },
     "client/src/routes": {
-      documents: ["**/*operation.graphql"],
+      documents: ["client/**/*operation.graphql"],
       overwrite: true,
       plugins: ["typescript-operations", "typescript-react-apollo"],
       preset: "near-operation-file",
@@ -56,6 +56,33 @@ const config: CodegenConfig = {
         nonOptionalTypename: true,
         avoidOptionals: true,
         scalars,
+      },
+    },
+    "vue-client/src/datasources/apollo-client/gql/types.generated.ts": {
+      plugins: ["typescript"],
+      config: {
+        scalars,
+        namingConvention: {
+          enumValues: "keep",
+        },
+        enumsAsTypes: true,
+      },
+    },
+    "vue-client/src/datasources/apollo-client/operations": {
+      documents: ["vue-client/**/*operation.graphql"],
+      overwrite: true,
+      plugins: ["typescript-operations", "typescript-vue-apollo"],
+      preset: "near-operation-file",
+      presetConfig: {
+        extension: ".ts",
+        // the preset uses the ~ for a workspace package, and vite has the ~ aliased to src,
+        // so using a ~~ to make it work
+        baseTypesPath: "../gql/types.generated.ts",
+      },
+      config: {
+        withCompositionFunctions: true,
+        vueCompositionApiImportFrom: "vue",
+        useTypeImports: true,
       },
     },
   },
