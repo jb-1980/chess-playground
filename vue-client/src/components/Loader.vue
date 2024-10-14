@@ -1,0 +1,92 @@
+<!-- import styled from "@emotion/styled"
+import { keyframes } from "@emotion/react"
+
+const loading = keyframes`
+  20% {
+    transform:rotate(90deg);
+  }
+  40%{
+    transform:rotate(180deg);
+  }
+  60%{
+    transform:rotate(270deg);
+  }
+  80%{
+    transform:rotate(360deg);
+  }
+  100%{
+    transform:rotate(360deg);
+  }
+`
+
+export const Loader = styled.div`
+  height: 125px;
+  width: 125px;
+  border: 8px solid #333;
+  border-radius: 20px;
+  background-image: conic-gradient(
+    #4e7837 0,
+    #4e7837 90deg,
+    #eeeed2 90deg,
+    #eeeed2 180deg,
+    #4e7837 180deg,
+    #4e7837 270deg,
+    #eeeed2 270deg,
+    #eeeed2 360deg
+  );
+  animation-name: ${loading};
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+` -->
+<template>
+  <div :style="styles"></div>
+</template>
+
+<script lang="ts">
+import { css, keyframes } from "@emotion/css"
+
+const loading = keyframes`
+  20% {
+    transform:rotate(90deg);
+  }
+  40%{
+    transform:rotate(180deg);
+  }
+  60%{
+    transform:rotate(270deg);
+  }
+  80%{
+    transform:rotate(360deg);
+  }
+  100%{
+    transform:rotate(360deg);
+  }
+`
+
+export default {
+  name: "Loader",
+  computed: {
+    styles() {
+      return css`
+        height: 125px;
+        width: 125px;
+        border: 8px solid #333;
+        border-radius: 20px;
+        background-image: conic-gradient(
+          #4e7837 0,
+          #4e7837 90deg,
+          #eeeed2 90deg,
+          #eeeed2 180deg,
+          #4e7837 180deg,
+          #4e7837 270deg,
+          #eeeed2 270deg,
+          #eeeed2 360deg
+        );
+        animation-name: ${loading};
+        animation-duration: 5s;
+        animation-iteration-count: infinite;
+      `
+    },
+  },
+}
+</script>

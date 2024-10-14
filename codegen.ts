@@ -58,7 +58,7 @@ const config: CodegenConfig = {
         scalars,
       },
     },
-    "vue-client/src/datasources/apollo-client/gql/types.generated.ts": {
+    "vue-client/src/datasources/types.generated.ts": {
       plugins: ["typescript"],
       config: {
         scalars,
@@ -75,9 +75,7 @@ const config: CodegenConfig = {
       preset: "near-operation-file",
       presetConfig: {
         extension: ".ts",
-        // the preset uses the ~ for a workspace package, and vite has the ~ aliased to src,
-        // so using a ~~ to make it work
-        baseTypesPath: "../gql/types.generated.ts",
+        baseTypesPath: "~@/datasources/types.generated.ts",
       },
       config: {
         withCompositionFunctions: true,

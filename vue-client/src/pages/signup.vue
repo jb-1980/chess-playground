@@ -11,7 +11,7 @@
     <v-sheet elevation="10" max-width="300" style="padding: 20px" rounded="lg">
       <form @submit="onSubmit">
         <div style="display: flex; flex-direction: column; gap: 8px">
-          <div class="text-h3" align="center">Sign In</div>
+          <div class="text-h3" align="center">Sign Up</div>
           <div v-if="error" class="text-red" align="center">{{ error }}</div>
           <v-text-field
             v-model="username"
@@ -34,10 +34,10 @@
             required
             name="password"
           ></v-text-field>
-          <v-btn color="primary" width="100%" type="submit"> Sign in </v-btn>
+          <v-btn color="primary" width="100%" type="submit"> Register </v-btn>
           <div>
-            Don't have an account?
-            <router-link to="/signup" class="text-primary">Sign Up</router-link>
+            Already have an account?
+            <router-link to="/login" class="text-primary">Sign in</router-link>
           </div>
         </div>
       </form>
@@ -47,7 +47,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue"
-import { useLoginMutation } from "../datasources/operations/mutations/login.operation"
+import { useRegisterMutation } from "@/datasources/operations/mutations/signup.operation"
 import { storeToken } from "@/lib/token"
 import router from "@/router"
 
@@ -57,24 +57,23 @@ export default defineComponent({
     const password = ref("")
     const error = ref("")
 
-    const { mutate, onDone } = useLoginMutation()
+    const { mutate, onDone } = useRegisterMutation()
     const onSubmit = (e: Event) => {
       e.preventDefault()
-      console.log(username.value, password.value)
       mutate({ username: username.value, password: password.value })
       onDone((result) => {
         const data = result.data
         if (!data) return
-        if (data.login.__typename === "LoginSuccess") {
-          storeToken(data.login.token)
+        if (data.register.__typename === "RegisterSuccess") {
+          storeToken(data.register.token)
           router.push("/dashboard")
           return
         }
 
-        if (data.login.__typename === "LoginError") {
+        if (data.register.__typename === "RegisterError") {
           error.value =
-            data.login.message === "BAD_CREDENTIALS"
-              ? "Incorrect username or password"
+            data.register.message === "USER_ALREADY_EXISTS"
+              ? "User already exists"
               : "Unknown server error"
         }
       })

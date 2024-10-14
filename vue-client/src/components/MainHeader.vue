@@ -65,18 +65,36 @@
 } -->
 <template>
   <v-app-bar app>
-    <v-toolbar>
-      <v-btn text color="white" to="/">Home</v-btn>
-      <v-btn text color="white" to="/games">Games</v-btn>
+    <v-toolbar class="bg-primary text-light">
+      <v-btn to="/">Home</v-btn>
+      <v-btn to="/games">Games</v-btn>
       <v-spacer></v-spacer>
-      <v-btn text color="white" to="/profile">
+      <v-btn id="menu-activator">
         <v-icon>mdi-account</v-icon>
         {{ username }}
       </v-btn>
-      <v-btn text color="white" to="/logout">
-        <v-icon>mdi-logout</v-icon>
-        Logout
-      </v-btn>
+      <v-menu activator="#menu-activator">
+        <v-list>
+          <v-list-item to="/profile">Profile</v-list-item>
+          <v-list-item to="/logout">Logout</v-list-item>
+        </v-list>
+      </v-menu>
     </v-toolbar>
   </v-app-bar>
 </template>
+
+<script lang="ts">
+import { decodeToken, retrieveToken } from "@/lib/token"
+import { defineComponent } from "vue"
+export default defineComponent({
+  setup() {
+    const token = retrieveToken()
+    if (!token) {
+      return { username: null }
+    }
+    const user = decodeToken(token)
+    console.log({ user })
+    return { username: user.username }
+  },
+})
+</script>

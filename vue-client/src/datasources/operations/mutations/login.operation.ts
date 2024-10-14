@@ -1,4 +1,4 @@
-import type * as Types from "../gql/types.generated"
+import type * as Types from "@/datasources/types.generated.ts"
 
 import gql from "graphql-tag"
 import * as VueApolloComposable from "@vue/apollo-composable"
