@@ -1,0 +1,45 @@
+{
+  "name": "aurelia-client",
+  "description": "An Aurelia 2 client application.",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "???"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@aurelia/router": "latest",
+    "@emotion/css": "^11.13.4",
+    "aurelia": "latest",
+    "jwt-decode": "^4.0.0"
+  },
+  "devDependencies": {
+    "@aurelia/testing": "latest",
+    "@aurelia/vite-plugin": "latest",
+    "@types/node": "^22.7.5",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.12.0",
+    "globals": "^15.10.0",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.47",
+    "stylelint": "^16.9.0",
+    "stylelint-config-standard": "^36.0.1",
+    "tailwindcss": "^3.4.13",
+    "tslib": "^2.7.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.8.1",
+    "vite": "^5.4.8",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "vitest": "^2.1.2"
+  },
+  "scripts": {
+    "lint:js": "eslint src test",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint": "npm run lint:js && npm run lint:css",
+    "pretest": "npm run lint",
+    "start": "vite",
+    "build": "vite build",
+    "test": "vitest"
+  },
+  "type": "module"
+}
