@@ -1,7 +1,6 @@
 import * as Types from "../../resources/apollo-client/types.generated"
 
-import { gql } from "@apollo/client"
-import * as Apollo from "@apollo/client"
+import { gql } from "@apollo/client/core"
 export type GetGamesQueryVariables = Types.Exact<{
   playerId: Types.Scalars["ID"]["input"]
 }>
@@ -53,7 +52,7 @@ export type GetGamesQuery = {
       }
 }
 
-export const GetGamesDocument = gql`
+export const GetGamesDocument = /*#__PURE__*/ gql`
   query GetGames($playerId: ID!) {
     gamesForPlayerId(id: $playerId) {
       ... on GetGamesForPlayerIdError {
@@ -95,7 +94,3 @@ export const GetGamesDocument = gql`
     }
   }
 `
-export type GetGamesQueryResult = Apollo.QueryResult<
-  GetGamesQuery,
-  GetGamesQueryVariables
->

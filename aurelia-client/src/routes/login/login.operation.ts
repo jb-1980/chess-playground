@@ -1,6 +1,6 @@
 import * as Types from "../../resources/apollo-client/types.generated"
 
-import { gql } from "@apollo/client"
+import { gql } from "@apollo/client/core"
 import * as Apollo from "@apollo/client"
 export type LoginMutationVariables = Types.Exact<{
   username: Types.Scalars["String"]["input"]
@@ -14,7 +14,7 @@ export type LoginMutation = {
     | { __typename: "LoginSuccess"; token: string }
 }
 
-export const LoginDocument = gql`
+export const LoginDocument = /*#__PURE__*/ gql`
   mutation Login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
       ... on LoginSuccess {
@@ -30,7 +30,6 @@ export type LoginMutationFn = Apollo.MutationFunction<
   LoginMutation,
   LoginMutationVariables
 >
-export type LoginMutationResult = Apollo.MutationResult<LoginMutation>
 export type LoginMutationOptions = Apollo.BaseMutationOptions<
   LoginMutation,
   LoginMutationVariables
