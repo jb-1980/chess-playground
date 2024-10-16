@@ -1,0 +1,40 @@
+query GetGames($playerId: ID!) {
+  gamesForPlayerId(id: $playerId) {
+    ... on GetGamesForPlayerIdError {
+      message
+    }
+    ... on GetGamesForPlayer {
+      games {
+        id
+        moves {
+          color
+          from
+          to
+          piece
+          captured
+          promotion
+          flags
+          san
+          lan
+          before
+          after
+        }
+        pgn
+        whitePlayer {
+          id
+          rating
+          username
+          avatarUrl
+        }
+        blackPlayer {
+          id
+          rating
+          username
+          avatarUrl
+        }
+        status
+        date
+      }
+    }
+  }
+}

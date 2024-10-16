@@ -1,0 +1,11 @@
+<section class="flex flex-col">
+  <h6 class="flex-0 text-xl">
+    ${orientation === "white" ? blackPlayer.username : whitePlayer.username}
+    (${orientation === "white" ? blackPlayer.rating : whitePlayer.rating})
+  </h6>
+  <div id="chessboard" class="w-[750px] h-[750px]"></div>
+  <h6 class="flex-0 text-xl">
+    ${orientation === "black" ? blackPlayer.username : whitePlayer.username}
+    (${orientation === "black" ? blackPlayer.rating : whitePlayer.rating})
+  </h6>
+</section>

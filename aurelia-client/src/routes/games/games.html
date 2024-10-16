@@ -1,0 +1,50 @@
+<import from="../../components/nav-bar"></import>
+<import from="../../resources/value-converters/result-from-pgn"></import>
+<div>
+  <nav-bar></nav-bar>
+  <section class="p-5 mx-auto">
+    <h3 class="text-3xl">Games</h3>
+    <table class="table-auto min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-100">
+        <tr>
+          <th scope="col" class="py-3.5 text-center text-gray-900">Players</th>
+          <th scope="col" class="py-3.5 text-center text-gray-900">Result</th>
+          <th scope="col" class="py-3.5 text-center text-gray-900">Moves</th>
+          <th scope="col" class="py-3.5 text-center text-gray-900">Date</th>
+        </tr>
+      </thead>
+      <tbody class="bg-gray-50">
+        <tr repeat.for="game of games" class="even:bg-gray-100">
+          <td class="whitespace-nowrap py-4 pl-4 text-gray-900">
+            <a load="/games/${game.id}/review">
+              <div>
+                <span>♔</span>
+                <span
+                  >${game.whitePlayer.username}
+                  (${game.whitePlayer.rating})</span
+                >
+              </div>
+              <div>
+                <span>♚</span>
+                <span
+                  >${game.blackPlayer.username}
+                  (${game.blackPlayer.rating})</span
+                >
+              </div>
+            </a>
+          </td>
+          <td class="whitespace-nowrap py-4 text-gray-900 text-center">
+            <div>${game.pgn | resultFromPgn: {player: "w"}}</div>
+            <div>${game.pgn | resultFromPgn: {player: "b"}}</div>
+          </td>
+          <td class="whitespace-nowrap py-4 text-gray-900 text-center">
+            ${Math.floor(game.moves.length / 2)}
+          </td>
+          <td class="whitespace-nowrap py-4 text-gray-900 text-center">
+            ${game.date}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

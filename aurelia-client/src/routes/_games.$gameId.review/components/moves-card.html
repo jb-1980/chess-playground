@@ -1,0 +1,111 @@
+<div>
+  <h6 class="text-2xl">Moves</h6>
+  <div class="shadow-lg w-[300px] h-[750px]">
+    <div class="flex flex-col max-h-[700px] overflow-y-auto">
+      <table class="table-auto min-w-full divide-y divide-gray-300">
+        <thead></thead>
+        <tbody>
+          <tr repeat.for="move of moves" class="even:bg-gray-100">
+            <td
+              class="select-none whitespace-nowrap py-4 pl-4 text-gray-900 w-1/5"
+            >
+              ${move.number}
+            </td>
+            <td
+              class="cursor-pointer whitespace-nowrap py-4 text-gray-900 w-2/5 text-center"
+              style.bind="move.white.style"
+              click.trigger="moveClicked(move.white.index)"
+            >
+              ${move.white.san}
+            </td>
+            <td
+              class="cursor-pointer whitespace-nowrap py-4 text-gray-900 w-2/5 text-center"
+              style.bind="move.black.style"
+              click.trigger="moveClicked(move.black.index)"
+            >
+              ${move.black.san}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex justify-center gap-4 w-full p-1">
+      <button
+        class="p-1 rounded hover:bg-lime-50"
+        click.trigger="moveClicked('FIRST')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5"
+          />
+        </svg>
+      </button>
+      <button
+        class="p-1 rounded hover:bg-lime-50"
+        click.trigger="moveClicked('MINUS_ONE')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 19.5 8.25 12l7.5-7.5"
+          />
+        </svg>
+      </button>
+      <button
+        class="p-1 rounded hover:bg-lime-50"
+        click.trigger="moveClicked('PLUS_ONE')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m8.25 4.5 7.5 7.5-7.5 7.5"
+          />
+        </svg>
+      </button>
+      <button
+        class="p-1 rounded hover:bg-lime-50"
+        click.trigger="moveClicked('LAST')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
