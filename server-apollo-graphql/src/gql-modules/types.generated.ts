@@ -57,6 +57,7 @@ export type Error = {
 export type Game = {
   __typename?: "Game"
   blackPlayer: GameUser
+  date: Scalars["LocalDate"]["output"]
   id: Scalars["ID"]["output"]
   moves: Array<Move>
   pgn: Scalars["String"]["output"]
@@ -763,6 +764,7 @@ export type GameResolvers<
     ResolversParentTypes["Game"] = ResolversParentTypes["Game"],
 > = {
   blackPlayer?: Resolver<ResolversTypes["GameUser"], ParentType, ContextType>
+  date?: Resolver<ResolversTypes["LocalDate"], ParentType, ContextType>
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   moves?: Resolver<Array<ResolversTypes["Move"]>, ParentType, ContextType>
   pgn?: Resolver<ResolversTypes["String"], ParentType, ContextType>

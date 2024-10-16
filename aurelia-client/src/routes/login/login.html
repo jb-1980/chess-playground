@@ -1,10 +1,8 @@
 <div class="flex items-center justify-center min-h-screen min-w-[100vw]">
   <div class="shadow-lg p-3 rounded-sm">
     <h3 class="text-xl text-center">Sign In</h3>
+    <div if.bind="error" class="text-red-500 text-center">${error}</div>
     <form class="space-y-6" submit.trigger="login">
-      <!-- {error && (
-      <Typography variant="subtitle2" color="error"> {error} </Typography>
-      )} -->
       <div>
         <label for="username" class="block text-sm font-medium text-gray-700">
           Username
@@ -40,8 +38,8 @@
         Sign in
       </button>
     </form>
-    <div class="text-sm">
-      Don't have an account? <a href="/signup">Sign Up</a>
+    <div class="text-sm mt-1">
+      Don't have an account? <a load="/signup">Sign Up</a>
     </div>
   </div>
 </div>

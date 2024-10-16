@@ -41,6 +41,7 @@ export type Error = {
 export type Game = {
   __typename?: "Game"
   blackPlayer: GameUser
+  date: Scalars["LocalDate"]["output"]
   id: Scalars["ID"]["output"]
   moves: Array<Move>
   pgn: Scalars["String"]["output"]

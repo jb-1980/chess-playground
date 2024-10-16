@@ -33,4 +33,5 @@ export const Game: GameResolvers = {
     /* Game.whitePlayer resolver is required because Game.whitePlayer and GameMapper.whitePlayer are not compatible */
     return { ...whitePlayer, id: whitePlayer._id.toHexString() }
   },
+  date: async ({ createdAt }) => createdAt.toISOString().slice(0, 10),
 }

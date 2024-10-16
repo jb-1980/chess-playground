@@ -1,8 +1,22 @@
 import { resolve } from "aurelia"
-import { IHttpClient } from "@aurelia/fetch-client"
+import {
+  GraphQLClient,
+  IGraphQLClient,
+} from "../../resources/apollo-client/client"
+import {
+  RegisterDocument,
+  RegisterMutation,
+  RegisterMutationVariables,
+} from "./sign-up.operation"
+import { match } from "ts-pattern"
+
+export enum SignupError {
+  USER_ALREADY_EXISTS = "User already exists",
+  UNKNOWN_SERVER_ERROR = "Unknown server error",
+}
 
 export class SignUpService {
-  private http: IHttpClient = resolve(IHttpClient)
+  private graphQLClient: GraphQLClient = resolve(IGraphQLClient)
 
   async signup(
     username: string,
@@ -18,33 +32,51 @@ export class SignUpService {
       }
   > {
     try {
-      const response = await this.http.post(
-        `${import.meta.env.VITE_API_URL}/register-user`,
-        JSON.stringify({ username, password }),
-        {
-          headers: { "Content-Type": "application/json" },
+      const response = await this.graphQLClient.mutate<
+        RegisterMutation,
+        RegisterMutationVariables
+      >({
+        mutation: RegisterDocument,
+        variables: {
+          username,
+          password,
         },
-      )
+      })
 
-      if (!response.ok) {
-        const status = response.status
-        let error: string
-        if (status === 409) {
-          error = "User already exists"
-        } else {
-          error = "Unknown server error"
-        }
+      const data = match(response.data?.register)
+        .with({ __typename: "RegisterSuccess" }, ({ token }) => token)
+        .with({ __typename: "RegisterError" }, () => null)
+        .with(undefined, () => undefined)
+        .exhaustive()
 
+      const error =
+        response.errors?.length > 0
+          ? SignupError.UNKNOWN_SERVER_ERROR
+          : match(response.data?.register)
+              .with(
+                {
+                  __typename: "RegisterError",
+                  message: "USER_ALREADY_EXISTS",
+                },
+                () => SignupError.USER_ALREADY_EXISTS,
+              )
+              .with(
+                { __typename: "RegisterError" },
+                () => SignupError.UNKNOWN_SERVER_ERROR,
+              )
+              .with({ __typename: "RegisterSuccess" }, () => undefined)
+              .with(undefined, () => undefined)
+              .exhaustive()
+
+      if (data) {
         return {
-          _type: "SignUpError",
-          error,
+          _type: "SignUpSuccess",
+          token: data,
         }
       }
-
-      const data = await response.json()
       return {
-        _type: "SignUpSuccess",
-        token: data.token,
+        _type: "SignUpError",
+        error,
       }
     } catch (e) {
       return {

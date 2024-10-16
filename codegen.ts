@@ -85,6 +85,33 @@ const config: CodegenConfig = {
         useTypeImports: true,
       },
     },
+
+    "aurelia-client/src/resources/apollo-client/types.generated.ts": {
+      plugins: ["typescript"],
+      config: {
+        scalars,
+        namingConvention: {
+          enumValues: "keep",
+        },
+        enumsAsTypes: true,
+      },
+    },
+    "aurelia-client/src/routes": {
+      documents: ["aurelia-client/**/*operation.graphql"],
+      overwrite: true,
+      plugins: ["typescript-operations", "typescript-react-apollo"],
+      preset: "near-operation-file",
+      presetConfig: {
+        extension: ".ts",
+        baseTypesPath: "../resources/apollo-client/types.generated.ts",
+      },
+      config: {
+        withHooks: false,
+        nonOptionalTypename: true,
+        avoidOptionals: true,
+        scalars,
+      },
+    },
   },
 }
 export default config

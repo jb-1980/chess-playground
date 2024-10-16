@@ -16,6 +16,7 @@ interface Error {
 
 type Game {
   blackPlayer: GameUser!
+  date: LocalDate!
   id: ID!
   moves: [Move!]!
   pgn: String!

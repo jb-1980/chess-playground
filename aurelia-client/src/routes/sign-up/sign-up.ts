@@ -1,9 +1,12 @@
+import { resolve } from "aurelia"
 import { SignUpService } from "./sign-up-service"
-
-export class SignUp {
+import { IRouter, IRouteableComponent } from "@aurelia/router"
+import { storeToken } from "../../resources/token"
+export class SignUp implements IRouteableComponent {
   error: string | null = null
   isLoading: boolean = false
   signUpService: SignUpService
+  private router: IRouter = resolve(IRouter)
 
   constructor() {
     this.signUpService = new SignUpService()
@@ -30,8 +33,8 @@ export class SignUp {
     if (response._type === "SignUpError") {
       this.error = response.error
     } else {
-      localStorage.setItem("token", response.token)
-      window.location.href = "/"
+      storeToken(response.token)
+      this.router.load("/")
     }
   }
 }

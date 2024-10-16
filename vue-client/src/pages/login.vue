@@ -89,7 +89,6 @@ export const Login = () => {
   )
 } -->
 
-
 <template>
   <div
     style="
@@ -135,7 +134,8 @@ export const Login = () => {
             Sign in
           </v-btn>
           <div>
-            Don't have an account? <router-link to="/signup">Sign Up</router-link>
+            Don't have an account?
+            <router-link to="/signup">Sign Up</router-link>
           </div>
         </v-container>
       </form>
@@ -155,12 +155,10 @@ export default {
     const { mutate } = useLoginMutation()
     const onSubmit = (e) => {
       e.preventDefault()
-      console.log(username.value, password.value)
       mutate({ username: username.value, password: password.value })
     }
 
-
     return { username, password, onSubmit }
-  }
+  },
 }
 </script>

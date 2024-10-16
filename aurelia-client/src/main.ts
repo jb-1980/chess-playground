@@ -12,5 +12,6 @@ Aurelia.register(EmotionCustomAttribute)
       fallback: MissingPage,
     }),
   )
+
   .app(MyApp)
   .start()

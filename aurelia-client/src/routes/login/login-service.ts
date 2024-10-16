@@ -1,8 +1,22 @@
 import { resolve } from "aurelia"
-import { IHttpClient } from "@aurelia/fetch-client"
+import {
+  GraphQLClient,
+  IGraphQLClient,
+} from "../../resources/apollo-client/client"
+import {
+  LoginDocument,
+  LoginMutation,
+  LoginMutationVariables,
+} from "./login.operation"
+import { match } from "ts-pattern"
+
+export enum LoginError {
+  INCORRECT_USERNAME_OR_PASSWORD = "Incorrect username or password",
+  UNKNOWN_SERVER_ERROR = "Unknown server error",
+}
 
 export class LoginService {
-  private http: IHttpClient = resolve(IHttpClient)
+  private graphQLClient: GraphQLClient = resolve(IGraphQLClient)
 
   async login(
     username: string,
@@ -18,32 +32,50 @@ export class LoginService {
       }
   > {
     try {
-      const response = await this.http.post(
-        `${import.meta.env.VITE_API_URL}/login`,
-        JSON.stringify({ username, password }),
-        {
-          headers: { "Content-Type": "application/json" },
+      const response = await this.graphQLClient.mutate<
+        LoginMutation,
+        LoginMutationVariables
+      >({
+        mutation: LoginDocument,
+        variables: {
+          username,
+          password,
         },
-      )
+      })
+      const data = match(response.data?.login)
+        .with({ __typename: "LoginSuccess" }, ({ token }) => token)
+        .with({ __typename: "LoginError" }, () => null)
+        .with(undefined, () => undefined)
+        .exhaustive()
 
-      if (!response.ok) {
-        const status = response.status
-        if (status === 401) {
-          return {
-            _type: "LoginError",
-            error: "Invalid credentials",
-          }
+      const error =
+        response.errors?.length > 0
+          ? LoginError.UNKNOWN_SERVER_ERROR
+          : match(response.data?.login)
+              .with(
+                {
+                  __typename: "LoginError",
+                  message: "BAD_CREDENTIALS",
+                },
+                () => LoginError.INCORRECT_USERNAME_OR_PASSWORD,
+              )
+              .with(
+                { __typename: "LoginError" },
+                () => LoginError.UNKNOWN_SERVER_ERROR,
+              )
+              .with({ __typename: "LoginSuccess" }, () => undefined)
+              .with(undefined, () => undefined)
+              .exhaustive()
+      if (data) {
+        return {
+          _type: "LoginSuccess",
+          token: data,
         }
+      } else {
         return {
           _type: "LoginError",
-          error: "Invalid login",
+          error,
         }
-      }
-
-      const data = await response.json()
-      return {
-        _type: "LoginSuccess",
-        token: data.token,
       }
     } catch (e) {
       return {

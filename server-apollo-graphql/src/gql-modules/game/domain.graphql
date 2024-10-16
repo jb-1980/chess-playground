@@ -86,4 +86,5 @@ type Game {
   whitePlayer: GameUser!
   blackPlayer: GameUser!
   status: GameStatus!
+  date: LocalDate!
 }

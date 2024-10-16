@@ -1,9 +1,13 @@
+import { IRouteableComponent, IRouter } from "@aurelia/router"
+import { storeToken } from "../../resources/token"
 import { LoginService } from "./login-service"
+import { resolve } from "aurelia"
 
-export class Login {
+export class Login implements IRouteableComponent {
   error: string | null = null
   isLoading: boolean = false
   loginService: LoginService
+  private router: IRouter = resolve(IRouter)
 
   constructor() {
     this.loginService = new LoginService()
@@ -11,7 +15,6 @@ export class Login {
 
   async login(e: Event) {
     e.preventDefault()
-    console.dir(e)
 
     this.isLoading = true
     this.error = null
@@ -23,11 +26,6 @@ export class Login {
       this.isLoading = false
       return
     }
-    console.log("login")
-    console.log({
-      username,
-      password,
-    })
     const response = await this.loginService.login(username, password)
 
     this.isLoading = false
@@ -35,8 +33,8 @@ export class Login {
     if (response._type === "LoginError") {
       this.error = response.error
     } else {
-      localStorage.setItem("token", response.token)
-      window.location.href = "/"
+      storeToken(response.token)
+      this.router.load("/")
     }
   }
 }
