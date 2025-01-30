@@ -1,15 +1,15 @@
-import DataLoader from 'dataloader'
-import { UserDocument } from './data-schema'
-import { ObjectId } from 'mongodb'
-import { Users } from './user-collection'
-import { AsyncResult, Result } from '../../../lib/result'
-import bcrypt from 'bcrypt'
+import DataLoader from "dataloader"
+import { UserDocument } from "./data-schema"
+import { ObjectId } from "mongodb"
+import { Users } from "./user-collection"
+import { AsyncResult, Result } from "../../../lib/result"
+import bcrypt from "bcrypt"
 
 export class UserLoader {
   private _batchUsersById = new DataLoader<string, UserDocument | null>(
     async (ids) => {
       const users = await Users.find({
-        _id: { $in: ids.map((id) => new ObjectId(id)) },
+        _id: { $in: ids },
       }).toArray()
 
       const usersMap = users.reduce(
@@ -24,8 +24,8 @@ export class UserLoader {
     },
   )
 
-  private _batchUsersByUsername = new DataLoader<string, UserDocument | null>(
-    async (usernames) => {
+  private _batchUsersByUsername = new DataLoader<string, null | UserDocument>(
+    async (usernames): Promise<Array<UserDocument | null>> => {
       const users = await Users.find({ username: { $in: usernames } }).toArray()
 
       const usersMap = users.reduce(
@@ -42,20 +42,20 @@ export class UserLoader {
 
   public async getUserByUsername(
     username: string,
-  ): AsyncResult<UserDocument | null, 'DB_ERR_FAILED_TO_GET_USER'> {
+  ): AsyncResult<UserDocument | null, "DB_ERR_FAILED_TO_GET_USER"> {
     try {
       const user = await this._batchUsersByUsername.load(username)
 
       return Result.Success(user)
     } catch (error) {
       console.error(error)
-      return Result.Fail('DB_ERR_FAILED_TO_GET_USER', error)
+      return Result.Fail("DB_ERR_FAILED_TO_GET_USER", error)
     }
   }
 
   public async getUsersByIds(
     ids: string[],
-  ): AsyncResult<UserDocument[], 'DB_ERR_FAILED_TO_GET_USERS_BY_IDS'> {
+  ): AsyncResult<UserDocument[], "DB_ERR_FAILED_TO_GET_USERS_BY_IDS"> {
     try {
       const users = await this._batchUsersById.loadMany(ids)
       return Result.Success(
@@ -65,7 +65,7 @@ export class UserLoader {
       )
     } catch (error) {
       console.error(error)
-      return Result.Fail('DB_ERR_FAILED_TO_GET_USERS_BY_IDS' as const, error)
+      return Result.Fail("DB_ERR_FAILED_TO_GET_USERS_BY_IDS" as const, error)
     }
   }
 }
@@ -76,13 +76,13 @@ export class UserMutator {
     password: string,
   ): AsyncResult<
     UserDocument,
-    'DB_ERR_FAILED_TO_CREATE_USER' | 'USER_ALREADY_EXISTS'
+    "DB_ERR_FAILED_TO_CREATE_USER" | "USER_ALREADY_EXISTS"
   > {
     try {
       const user = await Users.findOne({ username })
 
       if (user) {
-        return Result.Fail('USER_ALREADY_EXISTS')
+        return Result.Fail("USER_ALREADY_EXISTS")
       }
 
       const passwordHash = await bcrypt.hash(password, 10)
@@ -99,26 +99,25 @@ export class UserMutator {
         rating: 1200,
       })
     } catch (error) {
-      console.error(error)
-      return Result.Fail('DB_ERR_FAILED_TO_CREATE_USER', error)
+      console.dir(error, { depth: null, colors: true })
+      return Result.Fail("DB_ERR_FAILED_TO_CREATE_USER", error)
     }
   }
 
   public async updateUserRating(
-    userId: ObjectId | string,
+    userId: string,
     newRating: number,
-  ): AsyncResult<boolean, 'DB_ERR_FAILED_TO_UPDATE_USER_RATING'> {
-    const _id = userId instanceof ObjectId ? userId : new ObjectId(userId)
+  ): AsyncResult<boolean, "DB_ERR_FAILED_TO_UPDATE_USER_RATING"> {
     try {
       const { modifiedCount } = await Users.updateOne(
-        { _id },
+        { _id: userId },
         { $set: { rating: newRating } },
       )
 
       return Result.Success(modifiedCount === 1)
     } catch (error) {
       console.error(error)
-      return Result.Fail('DB_ERR_FAILED_TO_UPDATE_USER_RATING', error)
+      return Result.Fail("DB_ERR_FAILED_TO_UPDATE_USER_RATING", error)
     }
   }
 }

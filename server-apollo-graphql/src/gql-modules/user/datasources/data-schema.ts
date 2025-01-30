@@ -1,7 +1,5 @@
-import { ObjectId } from "mongodb"
-
 export type UserDocument = {
-  _id: ObjectId
+  _id: string
   username: string
   passwordHash: string
   rating: number

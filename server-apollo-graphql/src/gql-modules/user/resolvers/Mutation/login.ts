@@ -34,7 +34,7 @@ export const login: NonNullable<MutationResolvers["login"]> = async (
   }
 
   const parsedUser = {
-    id: user._id.toHexString(),
+    id: user._id,
     username: user.username,
     rating: user.rating,
     avatarUrl: user.avatarUrl,
