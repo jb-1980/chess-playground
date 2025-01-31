@@ -1,5 +1,14 @@
 import { useNavigate } from "@solidjs/router"
 import { storeToken } from "../../lib/token"
+// import {
+//   Button,
+//   Link,
+//   Paper,
+//   Stack,
+//   TextField,
+//   Typography,
+// } from "../../common-ui"
+import { useSignupWithReactQuery } from "./data/react-query/useSignupWithReactQuery"
 import {
   Button,
   Link,
@@ -7,8 +16,7 @@ import {
   Stack,
   TextField,
   Typography,
-} from "../../common-ui"
-import { useSignupWithReactQuery } from "./data/react-query/useSignupWithReactQuery"
+} from "@suid/material"
 
 export const Signup = () => {
   const navigate = useNavigate()
@@ -88,7 +96,7 @@ export const Signup = () => {
             />
 
             <Button
-              variant="primary"
+              variant="contained"
               type="submit"
               style={btnstyle}
               fullWidth

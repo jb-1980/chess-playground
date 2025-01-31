@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { ObjectId } from "mongodb"
 
 export type GameUserDocument = {
   _id: ObjectId
@@ -23,7 +23,7 @@ export type MoveDocument = {
 }
 
 export type GameDocument = {
-  _id: ObjectId
+  _id: string
   moves: MoveDocument[]
   pgn: string
   whitePlayer: GameUserDocument

@@ -9,11 +9,11 @@ import { GameLoaderInterface, GameMutatorInterface } from "../loaders"
 import { User } from "../../domain/user"
 
 type GameUser = Pick<Omit<User, "id">, "username" | "rating" | "avatarUrl"> & {
-  _id: ObjectId
+  _id: string
 }
 
 export type GameDocument = {
-  _id: ObjectId
+  _id: string
   moves: (Move & { createdAt: Date })[]
   pgn: string
   whitePlayer: GameUser
@@ -43,14 +43,14 @@ export type GameDocument = {
 export const Games = MongoCollection<GameDocument>("games")
 
 const toGameUserFromUser = (user: User): GameUser => ({
-  _id: new ObjectId(user.id),
+  _id: user.id,
   username: user.username,
   rating: user.rating,
   avatarUrl: user.avatarUrl,
 })
 
 export const makeGameDTO = (game: GameDocument): Game => ({
-  id: game._id.toHexString(),
+  id: game._id,
   moves: game.moves,
   pgn: game.pgn,
   whitePlayer: makeUserDto(game.whitePlayer),
@@ -63,7 +63,7 @@ export class GameLoader implements GameLoaderInterface {
   private _batchGames = new DataLoader<string, GameDocument | null>(
     async (ids) => {
       const games = await Games.find({
-        _id: { $in: ids.map((id) => new ObjectId(id)) },
+        _id: { $in: ids },
       }).toArray()
 
       const gamesMap = games.reduce(
@@ -173,6 +173,7 @@ export class GameMutator implements GameMutatorInterface {
     )
     try {
       const response = await Games.insertOne({
+        _id: new ObjectId().toHexString(),
         whitePlayer: toGameUserFromUser(whiteUser),
         blackPlayer: toGameUserFromUser(blackUser),
         moves: [],
@@ -191,7 +192,7 @@ export class GameMutator implements GameMutatorInterface {
       })
       return Result.Success(response.insertedId.toString())
     } catch (error) {
-      console.error(error)
+      console.dir(error, { depth: null })
       return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
     }
   }
@@ -205,7 +206,7 @@ export class GameMutator implements GameMutatorInterface {
     const { gameId, move, status, pgn } = args
     try {
       const { acknowledged } = await Games.updateOne(
-        { _id: new ObjectId(gameId) },
+        { _id: gameId },
         {
           $push: {
             moves: {
@@ -234,7 +235,7 @@ export class GameMutator implements GameMutatorInterface {
   ): AsyncResult<boolean, "DB_ERR_SET_OUTCOME"> {
     try {
       const { acknowledged } = await Games.updateOne(
-        { _id: new ObjectId(gameId) },
+        { _id: gameId },
         {
           $set: {
             outcome: {

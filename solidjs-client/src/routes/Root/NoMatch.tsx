@@ -1,4 +1,5 @@
 import { A } from "@solidjs/router"
+import { Button } from "@suid/material"
 
 export const NoMatch = () => {
   return (
@@ -17,9 +18,9 @@ export const NoMatch = () => {
         <h1>404</h1>
         <h4>Nothing here!</h4>
       </div>
-      <A href="/" class="button">
+      <Button component={A} href="/">
         Return Home
-      </A>
+      </Button>
     </div>
   )
 }

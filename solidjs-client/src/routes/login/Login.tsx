@@ -1,5 +1,3 @@
-// import { Button, Link, Stack, TextField, Typography } from "@mui/material"
-// import Paper from "@mui/material/Paper/Paper"
 import {
   Button,
   Link,
@@ -7,7 +5,7 @@ import {
   Stack,
   TextField,
   Typography,
-} from "../../common-ui"
+} from "@suid/material"
 import { storeToken } from "../../lib/token"
 import { useHandleLogin } from "./data/useHandleLogin"
 import { useNavigate } from "@solidjs/router"
@@ -78,7 +76,7 @@ export const Login = () => {
             />
 
             <Button
-              variant="primary"
+              variant="contained"
               style={btnstyle}
               fullWidth
               type="submit"
