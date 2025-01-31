@@ -7,7 +7,7 @@ import { UserLoaderInterface, UserMutatorInterface } from "../loaders"
 import { User } from "../../domain/user"
 
 export type UserDocument = {
-  _id: ObjectId
+  _id: string
   username: string
   passwordHash: string
   rating: number
@@ -23,7 +23,7 @@ export const Users = MongoCollection<UserDocument>("users")
 export const makeUserDto = (
   user: Omit<UserDocument, "passwordHash">,
 ): User => ({
-  id: user._id.toHexString(),
+  id: user._id,
   username: user.username,
   rating: user.rating,
   avatarUrl: user.avatarUrl,
@@ -33,7 +33,7 @@ export class UserLoader extends UserLoaderInterface {
   private _batchUsersById = new DataLoader<string, UserDocument | null>(
     async (ids) => {
       const users = await Users.find({
-        _id: { $in: ids.map((id) => new ObjectId(id)) },
+        _id: { $in: ids },
       }).toArray()
 
       const usersMap = users.reduce(
@@ -121,29 +121,30 @@ export class UserMutator extends UserMutatorInterface {
       const passwordHash = await bcrypt.hash(password, 10)
 
       const { insertedId } = await Users.insertOne({
+        _id: new ObjectId().toHexString(),
         username,
         passwordHash,
         rating: 1200,
+        avatarUrl: "",
       })
       return Result.Success({
-        id: insertedId.toHexString(),
+        id: insertedId,
         username,
         rating: 1200,
       })
     } catch (error) {
-      console.error(error)
+      console.dir(error, { depth: null })
       return Result.Fail("DB_ERR_FAILED_TO_CREATE_USER", error)
     }
   }
 
   public async updateUserRating(
-    userId: ObjectId | string,
+    userId: string,
     newRating: number,
   ): AsyncResult<boolean, "DB_ERR_FAILED_TO_UPDATE_USER_RATING"> {
-    const _id = userId instanceof ObjectId ? userId : new ObjectId(userId)
     try {
       const { modifiedCount } = await Users.updateOne(
-        { _id },
+        { _id: userId },
         { $set: { rating: newRating } },
       )
 

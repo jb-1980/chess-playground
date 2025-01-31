@@ -1,0 +1,38 @@
+.no-match-container {
+  border-radius: 5px;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  /* align-items: center; */
+  margin: 1rem;
+  padding: 2rem;
+}
+
+.error-page {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-page__background {
+  width: 80%;
+  padding: 2rem;
+  background-color: #eee;
+  text-align: center;
+}
+
+.error-page__background > h1 {
+  font-size: 3rem;
+  font-weight: 400;
+  color: #c40404;
+}
+
+.error-page__background > pre {
+  text-align: left;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #c40404;
+}

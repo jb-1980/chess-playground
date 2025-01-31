@@ -19,7 +19,9 @@
     "@graphql-codegen/typescript-vue-apollo": "^4.1.1",
     "@parcel/watcher": "^2.4.1",
     "@types/bcrypt": "^5.0.2",
+    "autoprefixer": "^10.4.20",
     "graphql-scalars": "^1.23.0",
+    "postcss": "^8.5.1",
     "prettier": "^3.3.3"
   },
   "dependencies": {
