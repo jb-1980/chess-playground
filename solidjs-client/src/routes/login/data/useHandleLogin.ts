@@ -11,12 +11,12 @@ type MutationFn = (
   onSuccess: (data: string) => void,
 ) => Promise<void>
 
-export const useHandleLogin = (): {
+export const useHandleLogin = (): (() => {
   mutate: MutationFn
   data: string | undefined | null
   isLoading: boolean
   error: LoginError | undefined
-} => {
+}) => {
   const mutation = useLoginWithReactQuery()
 
   const mutate = async (
@@ -34,7 +34,7 @@ export const useHandleLogin = (): {
     )
   }
 
-  return {
+  return () => ({
     mutate,
     data: mutation.error ? null : mutation.data?.token,
     isLoading: mutation.isPending,
@@ -43,5 +43,5 @@ export const useHandleLogin = (): {
         ? LoginError.INCORRECT_USERNAME_OR_PASSWORD
         : LoginError.UNKNOWN_SERVER_ERROR
       : undefined,
-  }
+  })
 }

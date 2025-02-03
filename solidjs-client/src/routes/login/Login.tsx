@@ -18,7 +18,7 @@ export const Login = () => {
   }
   const btnstyle = { margin: "8px 0" }
 
-  const { mutate, isLoading, error } = useHandleLogin()
+  const loginHandlers = useHandleLogin()
 
   const onSubmit = (e: SubmitEvent) => {
     e.preventDefault()
@@ -28,9 +28,9 @@ export const Login = () => {
     const username = formData.get("username") as string
     const password = formData.get("password") as string
 
-    mutate(username, password, (token) => {
+    loginHandlers().mutate(username, password, (token) => {
       storeToken(token)
-      navigate("/dashboard")
+      navigate("/")
     })
   }
 
@@ -50,9 +50,9 @@ export const Login = () => {
             <Typography align="center" variant="h3">
               Sign In
             </Typography>
-            {error && (
+            {loginHandlers().error && (
               <Typography variant="subtitle2" color="error">
-                {error}
+                {loginHandlers().error}
               </Typography>
             )}
             <TextField
@@ -80,7 +80,7 @@ export const Login = () => {
               style={btnstyle}
               fullWidth
               type="submit"
-              disabled={isLoading}
+              disabled={loginHandlers().isLoading}
             >
               Sign in
             </Button>

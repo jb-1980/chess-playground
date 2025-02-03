@@ -1,13 +1,5 @@
 import { useNavigate } from "@solidjs/router"
 import { storeToken } from "../../lib/token"
-// import {
-//   Button,
-//   Link,
-//   Paper,
-//   Stack,
-//   TextField,
-//   Typography,
-// } from "../../common-ui"
 import { useSignupWithReactQuery } from "./data/react-query/useSignupWithReactQuery"
 import {
   Button,
@@ -44,14 +36,10 @@ export const Signup = () => {
       {
         onSuccess: (data) => {
           storeToken(data.token)
-          navigate("/dashboard")
+          navigate("/")
         },
       },
     )
-    // signupHandlers.mutate({ username, password }), (token) => {
-    //   storeToken(token)
-    //   navigate("/dashboard")
-    // })
   }
 
   return (

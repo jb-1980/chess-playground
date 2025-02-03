@@ -8,6 +8,7 @@ import { SignupRoute } from "./routes/signup/route"
 import { createTheme, ThemeProvider } from "@suid/material"
 import { GamesRoute } from "./routes/games/route"
 import { GamesJoinRoute } from "./routes/_games.join/route"
+import { LogoutRoute } from "./routes/logout/route"
 
 const wrapper = document.getElementById("root")
 
@@ -18,6 +19,7 @@ if (!wrapper) {
 const routes = [
   RootRoute([GamesRoute(), GamesJoinRoute()]),
   LoginRoute(),
+  LogoutRoute(),
   SignupRoute(),
 ]
 
