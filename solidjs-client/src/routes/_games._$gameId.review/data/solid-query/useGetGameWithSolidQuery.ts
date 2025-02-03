@@ -3,7 +3,7 @@ import { Game } from "../../../../types/game"
 
 type GetGameResponseObject = Game
 
-export const useGetGameWithReactQuery = (gameId: string) => {
+export const useGetGameWithSolidQuery = (gameId: string) => {
   return createQuery<GetGameResponseObject>(() => ({
     queryKey: ["game", gameId],
     queryFn: async () => {

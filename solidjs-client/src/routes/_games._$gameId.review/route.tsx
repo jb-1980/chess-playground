@@ -1,10 +1,14 @@
+import { lazy } from "solid-js"
 import type { RouteConfigFunction } from "../types"
-import { GameReview } from "./GameReview"
 
 export const GameReviewRoute: RouteConfigFunction = (children) => ({
   path: "games/:gameId/review",
-  element: <GameReview />,
+
   children: [
+    {
+      path: "/",
+      component: lazy(() => import("./GameReview")),
+    },
     {
       path: "*",
       element: <div>404</div>,

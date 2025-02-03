@@ -19,6 +19,7 @@
     "@tailwindcss/vite": "^4.0.1",
     "@tanstack/solid-query": "^5.65.0",
     "chess.js": "^1.0.0",
+    "chessground": "^9.1.1",
     "clsx": "^2.1.1",
     "emotion-solid": "^2.1.0",
     "flowbite": "^3.0.0",

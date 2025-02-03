@@ -1,8 +1,24 @@
 import { GameBoard } from "../../components/GameBoard"
-import { useMemo, useState } from "react"
 import { Game } from "../../types/game"
 import { useUserContext } from "../Root/context"
 import { BLACK, DEFAULT_POSITION, WHITE } from "chess.js"
+
+import ArrowBackIosIcon from "@suid/icons-material/ArrowBackIos"
+import KeyboardDoubleArrowLeftIcon from "@suid/icons-material/KeyboardDoubleArrowLeft"
+import ArrowForwardIosIcon from "@suid/icons-material/ArrowForwardIos"
+import KeyboardDoubleArrowRightIcon from "@suid/icons-material/KeyboardDoubleArrowRight"
+import { getFancySan } from "./lib/get-fancy-san"
+import { Loader } from "../../components/Loader"
+import { useGetGame } from "./data/useGetGame"
+import {
+  createMemo,
+  createSignal,
+  For,
+  JSX,
+  Match,
+  Setter,
+  Switch,
+} from "solid-js"
 import {
   Box,
   Card,
@@ -13,77 +29,73 @@ import {
   TableCell,
   TableRow,
   Typography,
-} from "@mui/material"
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
-import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft"
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"
-import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight"
-import { getFancySan } from "./lib/get-fancy-san"
-import { Loader } from "../../components/Loader"
-import { useGetGame } from "./data/useGetGame"
-import { useParams } from "react-router-dom"
+} from "@suid/material"
+import { useParams } from "@solidjs/router"
 
-export const GameReview = () => {
+const GameReview = () => {
   const gameId = useParams().gameId!
-  const { data: game, isLoading, error } = useGetGame(gameId)
+  const gameData = useGetGame(gameId)
 
-  if (isLoading)
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "calc(100vh - 96px)",
-        }}
-      >
-        <Stack spacing={2} justifyContent="center" alignItems="center">
-          <Loader />
-          <Typography variant="h6">Loading game...</Typography>
-        </Stack>
-      </Box>
-    )
-  if (error) return <div>Error</div>
-
-  if (!game) return <div>Game not found</div>
-
-  return <ReviewBoard game={game} />
+  return (
+    <Switch fallback={<ReviewBoard game={gameData().data!} />}>
+      <Match when={gameData().isLoading}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "calc(100vh - 96px)",
+          }}
+        >
+          <Stack spacing={2} justifyContent="center" alignItems="center">
+            <Loader />
+            <Typography variant="h6">Loading game...</Typography>
+          </Stack>
+        </Box>
+      </Match>
+      <Match when={gameData().error}>
+        <div>Error: {gameData().error}</div>
+      </Match>
+    </Switch>
+  )
 }
+
+export default GameReview
 
 const ReviewBoard = (props: { game: Game }) => {
   const { game } = props
   const user = useUserContext()
 
   const myColor = game.whitePlayer.id === user.id ? WHITE : BLACK
-  const [moveIndex, setMoveIndex] = useState(game.moves.length - 1)
+  const [moveIndex, setMoveIndex] = createSignal(game.moves.length - 1)
 
   return (
     <Stack
       direction={{ md: "column", lg: "row" }}
       gap={4}
-      alignItems={{ md: "center", lg: "flex-start" }}
+      sx={{ alignItems: { md: "center", lg: "flex-start" } }}
       justifyContent="center"
     >
-      <Box width={{ md: "100%", lg: "75%" }} maxWidth={800}>
+      <Box sx={{ width: { md: "100%", lg: "75%" } }} maxWidth={800}>
         <GameBoard
           myColor={myColor}
-          fen={game.moves[moveIndex]?.after || DEFAULT_POSITION}
+          fen={game.moves[moveIndex()]?.after || DEFAULT_POSITION}
           whitePlayer={game.whitePlayer}
           blackPlayer={game.blackPlayer}
         />
       </Box>
-      <Box display={{ xs: "inherit", lg: "none" }}>
+      <Box sx={{ display: { xs: "inherit", lg: "none" } }}>
         <MobileMovesCard
           game={game}
-          moveIndex={moveIndex}
+          moveIndex={moveIndex()}
           setMoveIndex={setMoveIndex}
         />
       </Box>
-      <Box display={{ xs: "none", lg: "inherit" }}>
+      <Box sx={{ display: { xs: "none", lg: "inherit" } }}>
         <MovesCard
           game={game}
-          moveIndex={moveIndex}
+          moveIndex={moveIndex()}
           setMoveIndex={setMoveIndex}
         />
       </Box>
@@ -94,16 +106,14 @@ const ReviewBoard = (props: { game: Game }) => {
 const MovesCard = (props: {
   game: Game
   moveIndex: number
-  setMoveIndex: React.Dispatch<React.SetStateAction<number>>
+  setMoveIndex: Setter<number>
 }) => {
-  const { game, moveIndex, setMoveIndex } = props
-
-  const moves = useMemo(() => {
+  const moves = createMemo(() => {
     const moves: {
       white: { san: JSX.Element; index: number }
       black: { san: JSX.Element; index: number }
     }[] = []
-    game.moves.forEach((move, index, _moves) => {
+    props.game.moves.forEach((move, index, _moves) => {
       if (index % 2 === 0) {
         const whiteSan = getFancySan(move.san, WHITE)
         const blackSan = getFancySan(_moves[index + 1]?.san, BLACK)
@@ -112,7 +122,7 @@ const MovesCard = (props: {
           white: {
             san: (
               <Typography>
-                <span style={{ fontSize: "120%" }}>{whiteSan[0]}</span>
+                <span style={{ "font-size": "120%" }}>{whiteSan[0]}</span>
                 {whiteSan[1]}
               </Typography>
             ),
@@ -121,7 +131,7 @@ const MovesCard = (props: {
           black: {
             san: (
               <Typography>
-                <span style={{ fontSize: "120%" }}>{blackSan[0]}</span>
+                <span style={{ "font-size": "120%" }}>{blackSan[0]}</span>
                 {blackSan[1]}
               </Typography>
             ),
@@ -132,7 +142,7 @@ const MovesCard = (props: {
     })
 
     return moves
-  }, [game.moves])
+  })
 
   return (
     <div>
@@ -141,72 +151,90 @@ const MovesCard = (props: {
       </Typography>
       <Card sx={{ width: 300, height: 800 }}>
         <Stack
-          style={{ overflowY: "auto", maxHeight: 700, scrollbarWidth: "thin" }}
+          style={{
+            "overflow-y": "auto",
+            "max-height": "700px",
+            "scrollbar-width": "thin",
+          }}
         >
           <Table>
             <TableBody>
-              {moves.map((move, index) => (
-                <TableRow key={index}>
-                  <TableCell
-                    style={{
-                      width: "20%",
-                    }}
-                  >
-                    {index + 1}
-                  </TableCell>
-                  <TableCell
-                    style={{
-                      background:
-                        move.white.index === moveIndex ? "#4e7837" : "white",
-                      cursor: "pointer",
-                      width: "40%",
-                      color: move.white.index === moveIndex ? "white" : "black",
-                    }}
-                    onClick={() => setMoveIndex(move.white.index)}
-                  >
-                    {move.white.san}
-                  </TableCell>
-                  <TableCell
-                    style={{
-                      background:
-                        move.black.index === moveIndex ? "#4e7837" : "white",
-                      cursor: "pointer",
-                      width: "40%",
-                      color: move.black.index === moveIndex ? "white" : "black",
-                    }}
-                    onClick={() => setMoveIndex(move.black.index)}
-                  >
-                    {move.black?.san}
-                  </TableCell>
-                </TableRow>
-              ))}
+              <For each={moves()}>
+                {(move, index) => (
+                  <TableRow>
+                    <TableCell
+                      style={{
+                        width: "20%",
+                      }}
+                    >
+                      {index() + 1}
+                    </TableCell>
+                    <TableCell
+                      style={{
+                        background:
+                          move.white.index === props.moveIndex
+                            ? "#4e7837"
+                            : "white",
+                        cursor: "pointer",
+                        width: "40%",
+                        color:
+                          move.white.index === props.moveIndex
+                            ? "white"
+                            : "black",
+                      }}
+                      onClick={() => props.setMoveIndex(move.white.index)}
+                    >
+                      {move.white.san}
+                    </TableCell>
+                    <TableCell
+                      style={{
+                        background:
+                          move.black.index === props.moveIndex
+                            ? "#4e7837"
+                            : "white",
+                        cursor: "pointer",
+                        width: "40%",
+                        color:
+                          move.black.index === props.moveIndex
+                            ? "white"
+                            : "black",
+                      }}
+                      onClick={() => props.setMoveIndex(move.black.index)}
+                    >
+                      {move.black?.san}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </For>
             </TableBody>
           </Table>
         </Stack>
         <Stack direction="row" justifyContent="center">
           <IconButton
             aria-label="start-of-game"
-            onClick={() => setMoveIndex(-1)}
+            onClick={() => props.setMoveIndex(-1)}
           >
             <KeyboardDoubleArrowLeftIcon />
           </IconButton>
           <IconButton
             aria-label="back-one-move"
-            onClick={() => setMoveIndex((i) => (i === -1 ? i : i - 1))}
+            onClick={() => props.setMoveIndex((i) => (i === -1 ? i : i - 1))}
           >
             <ArrowBackIosIcon />
           </IconButton>
           <IconButton
             aria-label="forward-one-move"
             onClick={() =>
-              setMoveIndex((i) => (i === game.moves.length - 1 ? i : i + 1))
+              props.setMoveIndex((i) =>
+                i === props.game.moves.length - 1 ? i : i + 1,
+              )
             }
           >
             <ArrowForwardIosIcon />
           </IconButton>
           <IconButton
             aria-label="end-of-game"
-            onClick={() => setMoveIndex(game.moves.length - 1)}
+            onClick={() => props.setMoveIndex(props.game.moves.length - 1)}
           >
             <KeyboardDoubleArrowRightIcon />
           </IconButton>
@@ -219,16 +247,16 @@ const MovesCard = (props: {
 const MobileMovesCard = (props: {
   game: Game
   moveIndex: number
-  setMoveIndex: React.Dispatch<React.SetStateAction<number>>
+  setMoveIndex: Setter<number>
 }) => {
-  const { game, moveIndex, setMoveIndex } = props
+  // const { game, moveIndex, setMoveIndex } = props
 
-  const moves = useMemo(() => {
+  const moves = createMemo(() => {
     const moves: {
       white: { san: JSX.Element; index: number }
       black: { san: JSX.Element; index: number }
     }[] = []
-    game.moves.forEach((move, index, _moves) => {
+    props.game.moves.forEach((move, index, _moves) => {
       if (index % 2 === 0) {
         const whiteSan = getFancySan(move.san, WHITE)
         const blackSan = getFancySan(_moves[index + 1]?.san, BLACK)
@@ -237,7 +265,7 @@ const MobileMovesCard = (props: {
           white: {
             san: (
               <Typography>
-                <span style={{ fontSize: "120%" }}>{whiteSan[0]}</span>
+                <span style={{ "font-size": "120%" }}>{whiteSan[0]}</span>
                 {whiteSan[1]}
               </Typography>
             ),
@@ -246,7 +274,7 @@ const MobileMovesCard = (props: {
           black: {
             san: (
               <Typography>
-                <span style={{ fontSize: "120%" }}>{blackSan[0]}</span>
+                <span style={{ "font-size": "120%" }}>{blackSan[0]}</span>
                 {blackSan[1]}
               </Typography>
             ),
@@ -257,7 +285,7 @@ const MobileMovesCard = (props: {
     })
 
     return moves
-  }, [game.moves])
+  })
 
   return (
     <Stack
@@ -266,56 +294,60 @@ const MobileMovesCard = (props: {
       alignItems="center"
       width="100%"
     >
-      <Stack direction="row" style={{ marginRight: "auto" }}>
+      <Stack direction="row" style={{ "margin-right": "auto" }}>
         <IconButton
           aria-label="start-of-game"
-          onClick={() => setMoveIndex(-1)}
+          onClick={() => props.setMoveIndex(-1)}
           style={{ padding: 0 }}
         >
           <KeyboardDoubleArrowLeftIcon />
         </IconButton>
         <IconButton
           aria-label="back-one-move"
-          onClick={() => setMoveIndex((i) => (i === -1 ? i : i - 1))}
+          onClick={() => props.setMoveIndex((i) => (i === -1 ? i : i - 1))}
           style={{ padding: 0 }}
         >
           <ArrowBackIosIcon />
         </IconButton>
       </Stack>
       <Stack direction="row" gap={1}>
-        {moves.map((move, index) => {
-          const isVisible =
-            (Math.floor(moveIndex / 2) - 1 <= index &&
-              index <= Math.floor(moveIndex / 2) + 1) ||
-            (moveIndex <= 2 && index <= 2) ||
-            (moveIndex >= game.moves.length - 3 && index >= moves.length - 3)
-          return (
-            isVisible && (
-              <MobileMove
-                key={index}
-                number={index + 1}
-                white={{
-                  san: move.white.san,
-                  active: moveIndex === move.white.index,
-                }}
-                black={{
-                  san: move.black.san,
-                  active: moveIndex === move.black.index,
-                }}
-                active={
-                  moveIndex === move.white.index ||
-                  moveIndex === move.black.index
-                }
-              />
+        <For each={moves()}>
+          {(move, index) => {
+            const isVisible =
+              (Math.floor(props.moveIndex / 2) - 1 <= index() &&
+                index() <= Math.floor(props.moveIndex / 2) + 1) ||
+              (props.moveIndex <= 2 && index() <= 2) ||
+              (props.moveIndex >= props.game.moves.length - 3 &&
+                index() >= moves().length - 3)
+            return (
+              isVisible && (
+                <MobileMove
+                  number={index() + 1}
+                  white={{
+                    san: move.white.san,
+                    active: props.moveIndex === move.white.index,
+                  }}
+                  black={{
+                    san: move.black.san,
+                    active: props.moveIndex === move.black.index,
+                  }}
+                  active={
+                    props.moveIndex === move.white.index ||
+                    props.moveIndex === move.black.index
+                  }
+                />
+              )
             )
-          )
-        })}
+          }}
+        </For>
       </Stack>
-      <Stack direction="row" style={{ marginLeft: "auto" }}>
+      <Stack direction="row" style={{ "margin-left": "auto" }}>
         <IconButton
           aria-label="forward-one-move"
           onClick={() =>
-            setMoveIndex((i) => (i === game.moves.length - 1 ? i : i + 1))
+            props.setMoveIndex((i) =>
+              i === props.game.moves.length - 1 ? i : i + 1,
+            )
           }
           style={{ padding: 0 }}
         >
@@ -323,7 +355,7 @@ const MobileMovesCard = (props: {
         </IconButton>
         <IconButton
           aria-label="end-of-game"
-          onClick={() => setMoveIndex(game.moves.length - 1)}
+          onClick={() => props.setMoveIndex(props.game.moves.length - 1)}
           style={{ padding: 0 }}
         >
           <KeyboardDoubleArrowRightIcon />

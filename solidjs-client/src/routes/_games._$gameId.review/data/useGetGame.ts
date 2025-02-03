@@ -1,5 +1,5 @@
 import { Game } from "../../../types/game"
-import { useGetGameWithReactQuery } from "./solid-query/useGetGameWithReactQuery"
+import { useGetGameWithSolidQuery } from "./solid-query/useGetGameWithSolidQuery"
 
 export enum GetGameError {
   GAME_NOT_FOUND = "GAME_NOT_FOUND",
@@ -13,7 +13,7 @@ export const useGetGame = (
   isLoading: boolean
   error: GetGameError | undefined
 }) => {
-  const result = useGetGameWithReactQuery(gameId)
+  const result = useGetGameWithSolidQuery(gameId)
 
   return () => ({
     data: result.error ? null : result.data,

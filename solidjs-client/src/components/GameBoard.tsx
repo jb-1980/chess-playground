@@ -1,57 +1,82 @@
-import { Chessboard } from "react-chessboard"
-import { Color } from "chess.js"
-import { ChessboardProps } from "react-chessboard/dist/chessboard/types"
-import { useGetPieces } from "../hooks/useGetPieces"
-import { Stack, Typography } from "@mui/material"
+import { Chessground } from "chessground"
+import { Api } from "chessground/api"
+import { createEffect, on, onCleanup } from "solid-js"
 import { User } from "../types/user"
+import { Color } from "chess.js"
+import { Stack, Typography } from "@suid/material"
 
-export const GameBoard = (
-  props: {
-    fen: string
-    whitePlayer: User | null
-    blackPlayer: User | null
-    myColor: Color
-  } & Omit<ChessboardProps, "ref">,
-) => {
-  const customPieces = useGetPieces()
-  const { fen, myColor, whitePlayer, blackPlayer, ...chessBoardProps } = props
+import "./assets/chessground.base.css"
+// the included colour theme is quite ugly :/
+import "./assets/chessground.brown.css"
+import "./assets/chessground.cburnett.css"
 
-  const boardOrientation = myColor === "w" ? "white" : "black"
+interface ChessgroundProps {
+  style?: string
+  fen: string
+  whitePlayer: User | null
+  blackPlayer: User | null
+  myColor: Color
+  // onPieceDrop={onDrop}
+}
+
+export const GameBoard = (props: ChessgroundProps) => {
+  let api: Api | null = null
+
+  const boardOrientation = () =>
+    props.myColor === "w" ? ("white" as const) : ("black" as const)
+  const config = (newFen: string) => ({
+    fen: newFen,
+    orientation: boardOrientation(),
+    coordinates: true,
+  })
+  let mount = (el: HTMLDivElement) => {
+    api = Chessground(el, config(props.fen))
+  }
+
+  createEffect(
+    on(
+      () => props.fen,
+      (fen) => {
+        api?.set(config(fen))
+      },
+      { defer: true },
+    ),
+  )
+
+  onCleanup(() => {
+    api?.destroy()
+  })
 
   return (
     <Stack width="100%">
       <NameLabel
         name={
-          boardOrientation === "white"
-            ? (blackPlayer?.username ?? "")
-            : (whitePlayer?.username ?? "")
+          boardOrientation() === "white"
+            ? (props.blackPlayer?.username ?? "")
+            : (props.whitePlayer?.username ?? "")
         }
         rating={
-          boardOrientation === "white"
-            ? (blackPlayer?.rating ?? 0)
-            : (whitePlayer?.rating ?? 0)
+          boardOrientation() === "white"
+            ? (props.blackPlayer?.rating ?? 0)
+            : (props.whitePlayer?.rating ?? 0)
         }
       />
       <div style={{ flex: 1 }}>
-        <Chessboard
-          customDarkSquareStyle={{ backgroundColor: "#4e7837" }}
-          customLightSquareStyle={{ backgroundColor: "#eeeed2" }}
-          customPieces={customPieces}
-          position={fen}
-          boardOrientation={boardOrientation}
-          {...chessBoardProps}
-        />
+        <div
+          style={"width: 100%; aspect-ratio: 1/1"}
+          ref={(el) => mount(el)}
+        ></div>
       </div>
       <NameLabel
         name={
-          boardOrientation === "white"
-            ? (whitePlayer?.username ?? "")
-            : (blackPlayer?.username ?? "")
+          boardOrientation() === "white"
+            ? (props.whitePlayer?.username ?? "")
+            : (props.blackPlayer?.username ?? "")
         }
         rating={
-          boardOrientation === "white"
-            ? (whitePlayer?.rating ?? 0)
-            : (blackPlayer?.rating ?? 0)
+          boardOrientation() === "white"
+            ? (props.whitePlayer?.rating ?? 0)
+            : (props.blackPlayer?.rating ?? 0)
         }
       />
     </Stack>
