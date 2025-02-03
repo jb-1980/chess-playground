@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material"
+import { Typography } from "@suid/material"
 
 export const NameLabel = (props: { name: string; rating: number }) => {
   return (

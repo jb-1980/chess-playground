@@ -1,52 +1,55 @@
-import { Button, Dialog, IconButton, Stack, Typography } from "@mui/material"
 import { WHITE } from "chess.js"
 import { useGameContext } from "../context"
 import { match, P } from "ts-pattern"
-import { Link, useParams } from "react-router-dom"
 import { GameStatus } from "../../../types/game"
-import { useState } from "react"
-import CloseIcon from "@mui/icons-material/Close"
+import CloseIcon from "@suid/icons-material/Close"
+import { A, useParams } from "@solidjs/router"
+import { createSignal } from "solid-js"
+import { Button, Dialog, IconButton, Stack, Typography } from "@suid/material"
 
 export const GameOverDialog = () => {
   const { gameId } = useParams()
-  const { status, turn } = useGameContext()
-  const [dismissed, setDismissed] = useState(false)
-  const gameOver = match(status)
-    .with(
-      P.union(
-        GameStatus.CHECKMATE,
-        GameStatus.STALEMATE,
-        GameStatus.THREE_MOVE_REPETITION,
-        GameStatus.INSUFFICIENT_MATERIAL,
-        GameStatus.FIFTY_MOVE_RULE,
-      ),
-      () => true,
-    )
-    .otherwise(() => false)
+  const contextValues = useGameContext()
+  const [dismissed, setDismissed] = createSignal(false)
+  const gameOver = () =>
+    match(contextValues().status)
+      .with(
+        P.union(
+          GameStatus.CHECKMATE,
+          GameStatus.STALEMATE,
+          GameStatus.THREE_MOVE_REPETITION,
+          GameStatus.INSUFFICIENT_MATERIAL,
+          GameStatus.FIFTY_MOVE_RULE,
+        ),
+        () => true,
+      )
+      .otherwise(() => false)
 
-  const winner = turn === WHITE ? "Black" : "White"
+  const winner = () => (contextValues().turn === WHITE ? "Black" : "White")
   return (
     <Dialog
-      open={gameOver && !dismissed}
-      PaperProps={{ style: { padding: 20, textAlign: "center", width: 300 } }}
+      open={gameOver() && !dismissed}
+      PaperProps={{
+        style: { padding: "20px", "text-align": "center", width: "300px" },
+      }}
       onClose={() => setDismissed(true)}
     >
       <IconButton
         aria-label="close"
         onClick={() => setDismissed(true)}
-        sx={(theme) => ({
+        sx={{
           position: "absolute",
           right: 8,
           top: 8,
-          color: theme.palette.grey[500],
-        })}
+          color: (theme) => theme.palette.grey[500],
+        }}
       >
         <CloseIcon />
       </IconButton>
-      {match(status)
+      {match(contextValues().status)
         .with(GameStatus.CHECKMATE, () => (
           <>
-            <Typography variant="h4">{winner} Wins!</Typography>
+            <Typography variant="h4">{winner()} Wins!</Typography>
             <Typography variant="body1" textAlign="center">
               {/* TODO: By timeout, by resignation */}
               by Checkmate
@@ -90,22 +93,22 @@ export const GameOverDialog = () => {
         <Stack spacing={2} direction="row" justifyContent="center">
           <Button
             variant="contained"
-            component={Link}
-            to={`/games/${gameId}/review`}
+            component={A}
+            href={`/games/${gameId}/review`}
             style={{ flex: 1 }}
           >
             Review
           </Button>
           <Button
             variant="contained"
-            component={Link}
-            to="/games"
+            component={A}
+            href="/games"
             style={{ flex: 1 }}
           >
             My Games
           </Button>
         </Stack>
-        <Button variant="contained" component={Link} to="/games/join">
+        <Button variant="contained" component={A} href="/games/join">
           New Game
         </Button>
       </Stack>

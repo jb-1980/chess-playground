@@ -9,6 +9,7 @@ import "./assets/chessground.base.css"
 // the included colour theme is quite ugly :/
 import "./assets/chessground.brown.css"
 import "./assets/chessground.cburnett.css"
+import { Key, Piece } from "chessground/types"
 
 interface ChessgroundProps {
   style?: string
@@ -16,7 +17,7 @@ interface ChessgroundProps {
   whitePlayer: User | null
   blackPlayer: User | null
   myColor: Color
-  // onPieceDrop={onDrop}
+  onPieceDrop: (orig: Key, dest: Key, capturedPiece?: Piece) => void
 }
 
 export const GameBoard = (props: ChessgroundProps) => {
@@ -28,6 +29,13 @@ export const GameBoard = (props: ChessgroundProps) => {
     fen: newFen,
     orientation: boardOrientation(),
     coordinates: true,
+
+    events: {
+      change: () => {
+        api?.set({ fen: props.fen })
+      },
+      move: props.onPieceDrop,
+    },
   })
   let mount = (el: HTMLDivElement) => {
     api = Chessground(el, config(props.fen))
@@ -37,7 +45,8 @@ export const GameBoard = (props: ChessgroundProps) => {
     on(
       () => props.fen,
       (fen) => {
-        api?.set(config(fen))
+        console.log("setting fen", fen)
+        api?.set({ fen })
       },
       { defer: true },
     ),
@@ -79,6 +88,7 @@ export const GameBoard = (props: ChessgroundProps) => {
             : (props.blackPlayer?.rating ?? 0)
         }
       />
+      <pre>{props.fen}</pre>
     </Stack>
   )
 }

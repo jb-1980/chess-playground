@@ -1,4 +1,4 @@
-import { useContext } from "react"
+import { useContext } from "solid-js"
 import { GameContext } from "./context"
 
 export const useGameContext = () => {

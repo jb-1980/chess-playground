@@ -4,34 +4,38 @@ import {
   GetGameError,
   useGetGame,
 } from "../_games._$gameId.review/data/useGetGame"
-import { useParams } from "react-router-dom"
 import { Loader } from "../../components/Loader"
-import { Box } from "@mui/material"
 import { match } from "ts-pattern"
+import { useParams } from "@solidjs/router"
+import { Match, Switch } from "solid-js"
+import { Box } from "@suid/material"
 
-export const Game = () => {
+const Game = () => {
   const { gameId } = useParams()
-  const { data, isLoading, error } = useGetGame(gameId!)
-  if (isLoading || data == undefined) {
-    return (
-      <Box>
-        <Loader />
-      </Box>
-    )
-  }
-
-  if (error) {
-    return match(error)
-      .with(GetGameError.GAME_NOT_FOUND, () => <Box>No Game found</Box>)
-      .with(GetGameError.UNKNOWN_SERVER_ERROR, () => (
-        <Box>Failed to get game</Box>
-      ))
-      .exhaustive()
-  }
-
+  const gameResult = useGetGame(gameId!)
   return (
-    <GameContextProvider game={data}>
-      <Board />
-    </GameContextProvider>
+    <Switch>
+      <Match when={gameResult().isLoading}>
+        <Box>
+          <Loader />
+        </Box>
+      </Match>
+      <Match when={gameResult().error}>
+        <Box>
+          {match(gameResult().error)
+            .with(GetGameError.GAME_NOT_FOUND, () => "No Game found")
+            .with(GetGameError.UNKNOWN_SERVER_ERROR, () => "Failed to get game")
+            .with(undefined, () => "Failed to get game")
+            .exhaustive()}
+        </Box>
+      </Match>
+      <Match when={gameResult().data}>
+        <GameContextProvider game={gameResult().data!}>
+          <Board />
+        </GameContextProvider>
+      </Match>
+    </Switch>
   )
 }
+
+export default Game

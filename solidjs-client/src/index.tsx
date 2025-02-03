@@ -10,6 +10,7 @@ import { GamesRoute } from "./routes/games/route"
 import { GamesJoinRoute } from "./routes/_games.join/route"
 import { LogoutRoute } from "./routes/logout/route"
 import { GameReviewRoute } from "./routes/_games._$gameId.review/route"
+import { GamesIdRoute } from "./routes/_games.$gameId/route"
 
 const wrapper = document.getElementById("root")
 
@@ -18,7 +19,12 @@ if (!wrapper) {
 }
 
 const routes = [
-  RootRoute([GamesRoute(), GamesJoinRoute(), GameReviewRoute()]),
+  RootRoute([
+    GamesRoute(),
+    GamesJoinRoute(),
+    GameReviewRoute(),
+    GamesIdRoute(),
+  ]),
   LoginRoute(),
   LogoutRoute(),
   SignupRoute(),

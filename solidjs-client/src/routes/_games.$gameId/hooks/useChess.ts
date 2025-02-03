@@ -1,8 +1,8 @@
 import { Color, DEFAULT_POSITION, WHITE } from "chess.js"
 import { match } from "ts-pattern"
-import { useReducer } from "react"
 import { Game, GameStatus } from "../../../types/game"
 import { User } from "../../../types/user"
+import { createReducer } from "@solid-primitives/reducer"
 
 type State = {
   /** A singleton of the Chess class */
@@ -117,4 +117,4 @@ export const getChessStateFromGame = (game: Game, playerId: string): State => {
 }
 
 export const useChess = (initialState: State) =>
-  useReducer(reducer, initialState)
+  createReducer(reducer, initialState)
