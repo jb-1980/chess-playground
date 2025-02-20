@@ -14,6 +14,8 @@ import {
 
 import { createContext } from "../middleware/context"
 import { getTestGame } from "../test-utils/game"
+import { getTestContext } from "../middleware/test-util"
+import { getTestUser } from "../test-utils/user"
 
 describe("Queries: Get Games", () => {
   describe("API Layer", () => {
@@ -62,7 +64,7 @@ describe("Queries: Get Games", () => {
 
   describe("Query Layer", () => {
     it("should return a failure result if the loader fails", async () => {
-      const context = createContext()
+      const context = getTestContext()
       context.Loader.GameLoader.getGamesForPlayerId = jest
         .fn()
         .mockResolvedValue(Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID"))
@@ -73,12 +75,12 @@ describe("Queries: Get Games", () => {
     })
 
     it("should return a success result with the game data when the loader succeeds", async () => {
-      const game = getTestGame()
-      const context = createContext()
-      context.Loader.GameLoader.getGamesForPlayerId = jest
-        .fn()
-        .mockResolvedValue(Result.Success([game]))
-      const result = await query_GetGamesForPlayerId("123", context)
+      const user = getTestUser()
+      const game = getTestGame({
+        whitePlayer: user,
+      })
+      const context = getTestContext([user], [game])
+      const result = await query_GetGamesForPlayerId(user.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
       expect(successResult.data).toEqual([game])

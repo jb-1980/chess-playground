@@ -1,20 +1,22 @@
 import {
   Game as DBGame,
+  Move as DBMove,
   GameOutcomes,
-  GameStatus,
-  Outcome,
   User,
 } from "@prisma/client"
 import { faker } from "@faker-js/faker"
 import {
-  Game,
   Color,
   Piece,
   Square,
   Move as GameMove,
+  GameStatus,
 } from "../../../domain/game"
 import { Chess, Move } from "chess.js"
 import prisma from "../client"
+import { seedUser } from "./seed-user"
+import { FullGame } from "../tables/game/game"
+import { getTestMoveValues } from "../../../test-utils/game"
 
 type Overrides = Partial<
   Omit<DBGame, "id" | "whitePlayer" | "blackPlayer" | "GameOutcomes"> & {
@@ -35,91 +37,29 @@ export const randomSan = () => {
   return piece.toUpperCase() + to
 }
 
-export const getTestMoveValues = (
-  moveNumber = 10,
-): {
-  move: GameMove
-  pgn: string
-  status: GameStatus
-} => {
-  const chess = new Chess()
-  let move: Move = chess.moves({ verbose: true })[0]
-
-  while (moveNumber > 0) {
-    const moves = chess.moves({ verbose: true })
-    move = faker.helpers.arrayElement(moves)
-    move = chess.move(move)
-    moveNumber--
-  }
-
-  const { captured, color, piece, promotion, ...rest } = move
-  const newMove = {
-    ...rest,
-    color: move.color === "w" ? Color.WHITE : Color.BLACK,
-    piece: move.piece.toLowerCase() as Piece,
-    ...(captured && { captured: captured as Piece }),
-    ...(promotion && {
-      promotion: promotion as Piece,
-    }),
-  }
-  return {
-    move: newMove,
-    pgn: chess.pgn(),
-    status: chess.isGameOver()
-      ? chess.isInsufficientMaterial()
-        ? GameStatus.INSUFFICIENT_MATERIAL
-        : chess.isStalemate()
-          ? GameStatus.STALEMATE
-          : chess.isThreefoldRepetition()
-            ? GameStatus.THREE_MOVE_REPETITION
-            : chess.isCheckmate()
-              ? GameStatus.CHECKMATE
-              : GameStatus.FIFTY_MOVE_RULE
-      : GameStatus.PLAYING,
-  }
-}
+export const getTestOutcomes = (
+  overrides: Overrides["GameOutcomes"] = {},
+): GameOutcomes => ({
+  id: faker.string.uuid(),
+  gameId: faker.string.uuid(),
+  whiteWinsWhiteRating: 1500,
+  whiteWinsBlackRating: 1500,
+  blackWinsWhiteRating: 1500,
+  blackWinsBlackRating: 1500,
+  drawWhiteRating: 1500,
+  drawBlackRating: 1500,
+  ...overrides,
+})
 
 export const getTestGame = (overrides: Partial<DBGame> = {}): DBGame => {
   return {
     id: faker.string.uuid(),
-    // moves: [],
     pgn: "",
     whitePlayerId: faker.string.uuid(),
     blackPlayerId: faker.string.uuid(),
     outcome: null,
-    // whitePlayer: {
-    //   id: faker.string.uuid(),
-    //   username: "whitePlayer",
-    //   rating: 1500,
-    //   avatarUrl: "",
-    //   ...whitePlayer,
-    // },
-    // blackPlayer: {
-    //   id: faker.string.uuid(),
-    //   username: "blackPlayer",
-    //   rating: 1500,
-    //   avatarUrl: "",
-    //   ...blackPlayer,
-    // },
     status: faker.helpers.objectValue(GameStatus),
     createdAt: new Date(),
-    // outcomes: {
-    //   whiteWins: {
-    //     whiteRating: 1500,
-    //     blackRating: 1500,
-    //     ...whiteWins,
-    //   },
-    //   blackWins: {
-    //     whiteRating: 1500,
-    //     blackRating: 1500,
-    //     ...blackWins,
-    //   },
-    //   draw: {
-    //     whiteRating: 1500,
-    //     blackRating: 1500,
-    //     ...draw,
-    //   },
-    // },
     ...overrides,
   }
 }
@@ -129,4 +69,54 @@ export const seedGame = async (
 ): Promise<DBGame> => {
   const gameDocument = getTestGame(overrides)
   return await prisma.game.create({ data: gameDocument })
+}
+
+export const seedMoves = async (
+  gameId: string,
+  howMany: number = 10,
+  moveHistory: Move[] = [],
+): Promise<DBMove[]> => {
+  const playedMoves = moveHistory.length
+    ? moveHistory
+    : getTestMoveValues(howMany).moveHistory
+  const moves = []
+  for (const move of playedMoves) {
+    const nextMove = await prisma.move.create({
+      data: {
+        gameId,
+        createdAt: new Date(),
+        ...move,
+      },
+    })
+    moves.push(nextMove)
+  }
+  return moves
+}
+
+export const seedFullGame = async (
+  overrides: Partial<
+    DBGame & { moves: Move[]; whitePlayer: User; blackPlayer: User }
+  > = {},
+  moveCount: number = 10,
+): Promise<FullGame> => {
+  const {
+    moves: movesOverride,
+    whitePlayer: whitePlayerOverride,
+    blackPlayer: blackPlayerOverride,
+    ...gameOverrides
+  } = overrides
+  const whitePlayer = whitePlayerOverride ?? (await seedUser())
+  const blackPlayer = blackPlayerOverride ?? (await seedUser())
+  const game = await seedGame({
+    whitePlayerId: whitePlayer.id,
+    blackPlayerId: blackPlayer.id,
+    ...gameOverrides,
+  })
+  const moves = await seedMoves(game.id, moveCount, movesOverride ?? [])
+  return {
+    ...game,
+    moves,
+    whitePlayer,
+    blackPlayer,
+  }
 }

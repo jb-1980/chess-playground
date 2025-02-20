@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb"
-import { Games, GameDocument } from "../game"
+import { Games, GameDocument } from "../collections/game/game"
 import { faker } from "@faker-js/faker"
 import {
   Color,
@@ -9,6 +9,7 @@ import {
   Move as GameMove,
 } from "../../../domain/game"
 import { Chess, Move } from "chess.js"
+import { override } from "ts-pattern/dist/internals/symbols"
 
 type Overrides = Partial<
   Omit<
@@ -82,9 +83,31 @@ export const getTestMoveValues = (
   }
 }
 
+export const getTestOutcomes = (overrides: Overrides["outcomes"] = {}) => {
+  const whiteWins = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides.whiteWins,
+  }
+  const blackWins = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides.blackWins,
+  }
+  const draw = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides.draw,
+  }
+  return {
+    whiteWins,
+    blackWins,
+    draw,
+  }
+}
+
 export const getTestGame = (overrides: Overrides = {}): GameDocument => {
   const { whitePlayer, blackPlayer, outcome, outcomes, ...rest } = overrides
-  const { whiteWins, blackWins, draw } = outcomes || {}
   return {
     _id: new ObjectId(),
     moves: [],
@@ -110,23 +133,7 @@ export const getTestGame = (overrides: Overrides = {}): GameDocument => {
       draw: false,
       ...outcome,
     },
-    outcomes: {
-      whiteWins: {
-        whiteRating: 1500,
-        blackRating: 1500,
-        ...whiteWins,
-      },
-      blackWins: {
-        whiteRating: 1500,
-        blackRating: 1500,
-        ...blackWins,
-      },
-      draw: {
-        whiteRating: 1500,
-        blackRating: 1500,
-        ...draw,
-      },
-    },
+    outcomes: getTestOutcomes(outcomes || {}),
     ...rest,
   }
 }

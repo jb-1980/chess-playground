@@ -14,6 +14,7 @@ import {
 import { createContext } from "../middleware/context"
 import { faker } from "@faker-js/faker"
 import { getTestGame } from "../test-utils/game"
+import { getTestContext } from "../middleware/test-util"
 
 describe("Queries: Get Game By Id", () => {
   afterEach(() => {
@@ -67,7 +68,7 @@ describe("Queries: Get Game By Id", () => {
 
   describe("Query Layer", () => {
     it("should return a failure result if the loader fails", async () => {
-      const context = createContext()
+      const context = getTestContext()
       context.Loader.GameLoader.getGameById = jest
         .fn()
         .mockResolvedValue(Result.Fail("DB_ERROR_WHILE_GETTING_GAME"))
@@ -82,14 +83,8 @@ describe("Queries: Get Game By Id", () => {
 
     it("should return a success result with the game data when the loader succeeds", async () => {
       const game = getTestGame()
-      const context = createContext()
-      context.Loader.GameLoader.getGameById = jest
-        .fn()
-        .mockResolvedValue(Result.Success(game))
-      const result = await query_GetGameById(
-        faker.database.mongodbObjectId(),
-        context,
-      )
+      const context = getTestContext([game.blackPlayer], [game])
+      const result = await query_GetGameById(game.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
       expect(successResult.data).toEqual(game)

@@ -1,2 +1,2 @@
-export * from "./game"
-export * from "./user"
+export * from "./tables/game/game"
+export * from "./tables/user/user"
