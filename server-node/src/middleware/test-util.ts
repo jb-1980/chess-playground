@@ -12,6 +12,7 @@ import { UserLoader } from "./loaders/user-loader"
 import { GameMutator } from "./mutators/game-mutator"
 import { UserMutator } from "./mutators/user-mutator"
 import { Game } from "../repository"
+import { authenticationMiddleware } from "./auth"
 
 export const getTestContext = (users?: User[], games?: Game[]): Context => ({
   user: users ? users[0] : undefined,
@@ -25,5 +26,13 @@ export const getTestContext = (users?: User[], games?: Game[]): Context => ({
       new MockUserMutator(users),
       new MockUserLoader(users),
     ),
+  },
+})
+
+export const getTestMiddleware = () => ({
+  authenticationMiddleware,
+  contextMiddleware: (req: Request, _res: Response, next: NextFunction) => {
+    req.context = getTestContext(req.user ? [req.user] : undefined)
+    next()
   },
 })

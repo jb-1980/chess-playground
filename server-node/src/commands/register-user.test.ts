@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext } from "../middleware/test-util"
+import { Express } from "express"
+import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import { command_RegisterUser } from "./register-user"
 import {
   FailureType,
@@ -12,19 +13,23 @@ import { getTestUser } from "../test-utils/user"
 import { setupExpress } from "../server/setup-express"
 import request from "supertest"
 import * as commandModule from "./register-user"
+import { Routes } from "../routes"
 
 describe("Command::register-user", () => {
   describe("POST /register-user", () => {
+    const app = setupExpress(getTestMiddleware())
+
     beforeEach(() => {
       jest.restoreAllMocks()
     })
     it(`Should return 400 for invalid request body`, async () => {
       // arrange
       const body = {}
-      const app = setupExpress()
 
       // act
-      const response = await request(app).post("/register-user").send(body)
+      const response = await request(app)
+        .post(Routes.RegisterUserCommand)
+        .send(body)
 
       // assert
       expect(response.status).toEqual(400)
@@ -39,17 +44,20 @@ describe("Command::register-user", () => {
         username: faker.internet.userName(),
         password: faker.internet.password(),
       }
-      const app = setupExpress()
 
       // act
-      const response = await request(app).post("/register-user").send(body)
+      const response = await request(app)
+        .post(Routes.RegisterUserCommand)
+        .send(body)
 
       // assert
       expect(response.status).toEqual(500)
       expect(commandSpy).toHaveBeenCalledOnce()
+      expect(commandSpy).toHaveBeenCalledWith(body, expect.anything())
     })
 
     it(`Should return 200 for a successful command`, async () => {
+      // arrange
       const body = {
         username: faker.internet.userName(),
         password: faker.internet.password(),
@@ -59,10 +67,12 @@ describe("Command::register-user", () => {
         .spyOn(commandModule, "command_RegisterUser")
         .mockResolvedValueOnce(Result.Success(getTestUser()))
 
-      const app = setupExpress()
+      // act
+      const response = await request(app)
+        .post(Routes.RegisterUserCommand)
+        .send(body)
 
-      const response = await request(app).post("/register-user").send(body)
-
+      // assert
       expect(response.status).toEqual(200)
       expect(response.body).toContainAllEntries([["token", expect.any(String)]])
       expect(commandSpy).toHaveBeenCalledOnce()

@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken"
 import { User, userSchema } from "../domain/user"
 import { NextFunction, Request, Response } from "express"
+import { Routes } from "../routes"
+import { match } from "ts-pattern"
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -50,16 +52,21 @@ export const authenticationMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  const tokenHeader = req.headers.authorization
-  if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
-    return res.sendStatus(401)
-  }
-  const token = tokenHeader?.split(" ")[1]
-  try {
-    req.user = verifyToken(token)
-    next()
-  } catch (error) {
-    console.error(error)
-    return res.status(401).json({ error: "INVALID_TOKEN" })
-  }
+  match(req.path)
+    .with(Routes.RegisterUserCommand, () => next())
+    .with(Routes.LoginCommand, () => next())
+    .otherwise(() => {
+      const tokenHeader = req.headers.authorization
+      if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+        return res.sendStatus(401)
+      }
+      const token = tokenHeader?.split(" ")[1]
+      try {
+        req.user = verifyToken(token)
+        next()
+      } catch (error) {
+        console.error(error)
+        return res.status(401).json({ error: "INVALID_TOKEN" })
+      }
+    })
 }

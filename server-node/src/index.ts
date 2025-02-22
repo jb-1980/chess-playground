@@ -2,8 +2,13 @@ import "dotenv/config"
 import { createServer } from "node:http"
 import { handleUpgrade } from "./server/websocket"
 import { setupExpress } from "./server/setup-express"
+import { contextMiddleware } from "./middleware/context"
+import { authenticationMiddleware } from "./middleware/auth"
 
-const app = setupExpress()
+const app = setupExpress({
+  contextMiddleware,
+  authenticationMiddleware,
+})
 const server = createServer(app)
 
 server.on("upgrade", handleUpgrade)

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext } from "../middleware/test-util"
+import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import {
   FailureType,
   isFailure,
@@ -15,16 +15,14 @@ import { Express } from "express"
 import { getTestGame, getTestMoveValues } from "../test-utils/game"
 import { DEFAULT_POSITION } from "chess.js"
 import { getTestToken } from "../test-utils/jwt"
+import { Routes } from "../routes"
 
 describe("Command::move", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
   })
   describe("POST /api/commands/move", () => {
-    let app: Express
-    beforeAll(() => {
-      app = setupExpress()
-    })
+    const app = setupExpress(getTestMiddleware())
     it(`Should return 400 for invalid request body`, async () => {
       // arrange
       const body = {}
@@ -32,7 +30,7 @@ describe("Command::move", () => {
 
       // act
       const response = await request(app)
-        .post("/api/commands/move")
+        .post(Routes.MoveCommand)
         .set("Authorization", tokenHeader)
         .send(body)
 
@@ -56,7 +54,7 @@ describe("Command::move", () => {
 
       // act
       const response = await request(app)
-        .post("/api/commands/move")
+        .post(Routes.MoveCommand)
         .set("Authorization", tokenHeader)
         .send(body)
 
@@ -80,7 +78,7 @@ describe("Command::move", () => {
         .mockResolvedValueOnce(Result.Success(moveValues.pgn))
 
       const response = await request(app)
-        .post("/api/commands/move")
+        .post(Routes.MoveCommand)
         .set("Authorization", tokenHeader)
         .send(body)
 

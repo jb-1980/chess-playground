@@ -12,18 +12,18 @@ import {
   SuccessType,
 } from "../lib/result"
 
-import { createContext } from "../middleware/context"
 import { getTestGame } from "../test-utils/game"
-import { getTestContext } from "../middleware/test-util"
+import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import { getTestUser } from "../test-utils/user"
+import { Routes } from "../routes"
 
 describe("Queries: Get Games", () => {
   describe("API Layer", () => {
-    const app = setupExpress()
+    const app = setupExpress(getTestMiddleware())
     const tokenHeader = `Bearer ${getTestToken()}`
     it("should return 400 if the request body is invalid", async () => {
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({})
       expect(response.status).toBe(400)
@@ -35,7 +35,7 @@ describe("Queries: Get Games", () => {
         .mockResolvedValueOnce(Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID"))
 
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({ playerId: "123" })
 
@@ -51,7 +51,7 @@ describe("Queries: Get Games", () => {
         .mockResolvedValueOnce(Result.Success([expectedGame]))
 
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({ playerId: "123" })
 

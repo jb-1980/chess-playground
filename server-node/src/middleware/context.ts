@@ -50,10 +50,6 @@ export const contextMiddleware = (
   _res: Response,
   next: NextFunction,
 ) => {
-  if (process.env.NODE_ENV === "test") {
-    req.context = getTestContext([req.user])
-  } else {
-    req.context = createContext(req.user)
-  }
+  req.context = createContext(req.user)
   next()
 }

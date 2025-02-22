@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext } from "../middleware/test-util"
+import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import {
   FailureType,
   isFailure,
@@ -13,22 +13,21 @@ import request from "supertest"
 import * as commandModule from "./login"
 import { Express } from "express"
 import bcrypt from "bcrypt"
+import { Routes } from "../routes"
 
 describe("Command::login", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
   })
   describe("POST /login", () => {
-    let app: Express
-    beforeAll(() => {
-      app = setupExpress()
-    })
+    const app = setupExpress(getTestMiddleware())
+
     it(`Should return 400 for invalid request body`, async () => {
       // arrange
       const body = {}
 
       // act
-      const response = await request(app).post("/login").send(body)
+      const response = await request(app).post(Routes.LoginCommand).send(body)
 
       // assert
       expect(response.status).toEqual(400)
@@ -45,7 +44,7 @@ describe("Command::login", () => {
       }
 
       // act
-      const response = await request(app).post("/login").send(body)
+      const response = await request(app).post(Routes.LoginCommand).send(body)
 
       // assert
       expect(response.status).toEqual(401)
@@ -64,7 +63,7 @@ describe("Command::login", () => {
         .spyOn(commandModule, "command_LoginUser")
         .mockResolvedValueOnce(Result.Success(token))
 
-      const response = await request(app).post("/login").send(body)
+      const response = await request(app).post(Routes.LoginCommand).send(body)
 
       expect(response.status).toEqual(200)
       expect(response.body).toContainAllEntries([["token", token]])

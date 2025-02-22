@@ -11,21 +11,21 @@ import {
   Result,
   SuccessType,
 } from "../lib/result"
-import { createContext } from "../middleware/context"
 import { faker } from "@faker-js/faker"
 import { getTestGame } from "../test-utils/game"
-import { getTestContext } from "../middleware/test-util"
+import { getTestContext, getTestMiddleware } from "../middleware/test-util"
+import { Routes } from "../routes"
 
 describe("Queries: Get Game By Id", () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
   describe("API Layer", () => {
-    const app = setupExpress()
+    const app = setupExpress(getTestMiddleware())
     const tokenHeader = `Bearer ${getTestToken()}`
     it("should return 400 if the request body is invalid", async () => {
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({})
       expect(response.status).toBe(400)
@@ -38,7 +38,7 @@ describe("Queries: Get Game By Id", () => {
 
       const gameId = faker.database.mongodbObjectId()
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({ gameId })
 
@@ -54,7 +54,7 @@ describe("Queries: Get Game By Id", () => {
         .mockResolvedValueOnce(Result.Success(expectedGame))
 
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({ gameId: expectedGame.id })
 
