@@ -1,6 +1,5 @@
-import { AsyncResult, Result } from "../../lib/result"
-import { Game, GameOutcome, GameStatus, Move } from "../../domain/game"
-import { calculateNewRatings } from "../../lib/chess"
+import { AsyncResult, Result } from "../../../../lib/result"
+import { Game, GameOutcome, GameStatus, Move } from "../../../../domain/game"
 import DataLoader from "dataloader"
 import {
   Game as GameDB,
@@ -8,12 +7,12 @@ import {
   User as UserDB,
   Move as MoveDB,
 } from "@prisma/client"
-import prisma from "./client"
-import { GameLoaderInterface, GameMutatorInterface } from "../loaders"
-import { makeUserDto } from "./user"
-import { User } from "../../domain/user"
+import prisma from "../../client"
+import { DBGameLoader, DBGameMutator } from "../../../loaders"
+import { makeUserDto } from "../user/user"
+import { User } from "../../../../domain/user"
 
-type FullGame = GameDB & {
+export type FullGame = GameDB & {
   whitePlayer: UserDB
   blackPlayer: UserDB
   moves: MoveDB[]
@@ -29,8 +28,8 @@ export const makeGameDTO = (game: FullGame): Game => ({
   createdAt: game.createdAt,
 })
 
-export class GameLoader implements GameLoaderInterface {
-  private _batchGames = new DataLoader<string, Game | null>(async (ids) => {
+export class PostgresGameLoader implements DBGameLoader {
+  batchGames = new DataLoader<string, Game | null>(async (ids) => {
     const games = await prisma.game.findMany({
       select: {
         id: true,
@@ -60,7 +59,7 @@ export class GameLoader implements GameLoaderInterface {
     return ids.map((id) => gamesMap[id] || null)
   })
 
-  private _batchGamesForPlayer = new DataLoader<string, Game[]>(async (ids) => {
+  batchGamesForPlayer = new DataLoader<string, Game[]>(async (ids) => {
     const games = await prisma.game.findMany({
       where: {
         OR: [
@@ -98,90 +97,50 @@ export class GameLoader implements GameLoaderInterface {
     return ids.map((id) => gamesMap[id] || [])
   })
 
-  async getGameById(
-    id: string,
-  ): AsyncResult<Game | null, "DB_ERROR_WHILE_GETTING_GAME"> {
-    try {
-      const game = await this._batchGames.load(id)
-      if (!game) {
-        return Result.Success(null)
-      }
-      return Result.Success(game)
-    } catch (error) {
-      console.error(error)
-      return Result.Fail("DB_ERROR_WHILE_GETTING_GAME", error)
-    }
-  }
+  batchGameOutcomes = new DataLoader<string, GameOutcome>(async (ids) => {
+    const outcomes = await prisma.gameOutcomes.findMany({
+      where: {
+        gameId: { in: [...ids] },
+      },
+    })
 
-  async getGamesForPlayerId(
-    playerId: string,
-  ): AsyncResult<Game[], "DB_ERR_GET_GAMES_FOR_USER_ID"> {
-    try {
-      const games = await this._batchGamesForPlayer.load(playerId)
-      return Result.Success(games)
-    } catch (error) {
-      console.error(error)
-      return Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID", error)
-    }
-  }
+    const outcomesMap = outcomes.reduce(
+      (map, outcome) => {
+        map[outcome.gameId] = {
+          whiteWins: {
+            whiteRating: outcome.whiteWinsWhiteRating,
+            blackRating: outcome.whiteWinsBlackRating,
+          },
+          blackWins: {
+            whiteRating: outcome.blackWinsWhiteRating,
+            blackRating: outcome.blackWinsBlackRating,
+          },
+          draw: {
+            whiteRating: outcome.drawWhiteRating,
+            blackRating: outcome.drawBlackRating,
+          },
+        }
+        return map
+      },
+      {} as Record<string, GameOutcome>,
+    )
 
-  async getGameOutcomes(
-    gameId: string,
-  ): AsyncResult<GameOutcome, "DB_ERR_GET_GAME_OUTCOMES"> {
-    try {
-      const outcomes = await prisma.gameOutcomes.findUnique({
-        where: { gameId },
-      })
-      if (!outcomes) {
-        return Result.Fail("DB_ERR_GET_GAME_OUTCOMES")
-      }
-      return Result.Success({
-        whiteWins: {
-          whiteRating: outcomes.whiteWinsWhiteRating,
-          blackRating: outcomes.whiteWinsBlackRating,
-        },
-        blackWins: {
-          whiteRating: outcomes.blackWinsWhiteRating,
-          blackRating: outcomes.blackWinsBlackRating,
-        },
-        draw: {
-          whiteRating: outcomes.drawWhiteRating,
-          blackRating: outcomes.drawBlackRating,
-        },
-      })
-    } catch (error) {
-      console.error(error)
-      return Result.Fail("DB_ERR_GET_GAME_OUTCOMES", error)
-    }
-  }
+    return ids.map((id) => outcomesMap[id] || null)
+  })
 }
 
-export class GameMutator implements GameMutatorInterface {
-  public async createGame(
-    whiteUser: User,
-    blackUser: User,
+export class PostgresGameMutator implements DBGameMutator {
+  public async insertGame(
+    whitePlayer: User,
+    blackPlayer: User,
+    outcomes: GameOutcome,
   ): AsyncResult<string, "DB_ERR_FAILED_TO_CREATE_GAME"> {
-    const whiteWinsOutcome = calculateNewRatings(
-      whiteUser.rating,
-      blackUser.rating,
-      1,
-    )
-    const blackWinsOutcome = calculateNewRatings(
-      whiteUser.rating,
-      blackUser.rating,
-      0,
-    )
-    const drawOutcome = calculateNewRatings(
-      whiteUser.rating,
-      blackUser.rating,
-      0.5,
-    )
     try {
       const gameId = await prisma.$transaction(async (tx) => {
         const game = await tx.game.create({
           data: {
-            whitePlayerId: whiteUser.id,
-            blackPlayerId: blackUser.id,
+            whitePlayerId: whitePlayer.id,
+            blackPlayerId: whitePlayer.id,
             pgn: "",
             status: GameStatus.PLAYING,
             outcome: null,
@@ -191,12 +150,12 @@ export class GameMutator implements GameMutatorInterface {
         tx.gameOutcomes.create({
           data: {
             gameId: game.id,
-            whiteWinsWhiteRating: whiteWinsOutcome.whiteRating,
-            whiteWinsBlackRating: whiteWinsOutcome.blackRating,
-            blackWinsWhiteRating: blackWinsOutcome.whiteRating,
-            blackWinsBlackRating: blackWinsOutcome.blackRating,
-            drawWhiteRating: drawOutcome.whiteRating,
-            drawBlackRating: drawOutcome.blackRating,
+            whiteWinsWhiteRating: outcomes.whiteWins.whiteRating,
+            whiteWinsBlackRating: outcomes.whiteWins.blackRating,
+            blackWinsWhiteRating: outcomes.blackWins.whiteRating,
+            blackWinsBlackRating: outcomes.blackWins.blackRating,
+            drawWhiteRating: outcomes.draw.whiteRating,
+            drawBlackRating: outcomes.draw.blackRating,
           },
         })
         return game.id
@@ -204,7 +163,7 @@ export class GameMutator implements GameMutatorInterface {
 
       return Result.Success(gameId)
     } catch (error) {
-      console.error(error)
+      console.dir(error, { depth: 6 })
       return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
     }
   }
@@ -214,7 +173,7 @@ export class GameMutator implements GameMutatorInterface {
     move: Move
     status: GameStatus
     pgn: string
-  }): AsyncResult<boolean, "DB_ERROR_ADDING_MOVE_TO_GAME" | "INVALID_MOVE"> {
+  }): AsyncResult<boolean, "DB_ERROR_ADDING_MOVE_TO_GAME"> {
     const { gameId, move, status, pgn } = args
     try {
       const result = await prisma.$transaction(async (tx) => {
@@ -237,7 +196,7 @@ export class GameMutator implements GameMutatorInterface {
 
       return Result.Success(result)
     } catch (error) {
-      console.error(error)
+      console.dir(error, { depth: 6 })
       return Result.Fail("DB_ERROR_ADDING_MOVE_TO_GAME", error)
     }
   }
@@ -260,7 +219,7 @@ export class GameMutator implements GameMutatorInterface {
       })
       return Result.Success(result.outcome !== null)
     } catch (error) {
-      console.error(error)
+      console.dir(error, { depth: 6 })
       return Result.Fail("DB_ERR_SET_OUTCOME", error)
     }
   }

@@ -1,2 +1,2 @@
-export * from "./game"
-export * from "./user"
+export * from "./collections/game/game"
+export * from "./collections/user/user"

@@ -32,19 +32,13 @@ export const getTestMoveValues = (
   move: GameMove
   pgn: string
   status: GameStatus
+  moveHistory: GameMove[]
 } => {
   const chess = new Chess()
   let move: Move = chess.moves({ verbose: true })[0]
-
-  while (moveNumber > 0) {
-    const moves = chess.moves({ verbose: true })
-    move = faker.helpers.arrayElement(moves)
-    move = chess.move(move)
-    moveNumber--
-  }
-
+  const moveHistory = []
   const { captured, color, piece, promotion, ...rest } = move
-  const newMove = {
+  let newMove: GameMove = {
     ...rest,
     color: move.color === "w" ? Color.WHITE : Color.BLACK,
     piece: move.piece.toLowerCase() as Piece,
@@ -53,6 +47,24 @@ export const getTestMoveValues = (
       promotion: promotion as Piece,
     }),
   }
+  while (moveNumber > 0) {
+    const moves = chess.moves({ verbose: true })
+    move = faker.helpers.arrayElement(moves)
+    move = chess.move(move)
+    const { captured, color, piece, promotion, ...rest } = move
+    newMove = {
+      ...rest,
+      color: move.color === "w" ? Color.WHITE : Color.BLACK,
+      piece: move.piece.toLowerCase() as Piece,
+      ...(captured && { captured: captured as Piece }),
+      ...(promotion && {
+        promotion: promotion as Piece,
+      }),
+    }
+    moveHistory.push(newMove)
+    moveNumber--
+  }
+
   return {
     move: newMove,
     pgn: chess.pgn(),
@@ -67,6 +79,7 @@ export const getTestMoveValues = (
               ? GameStatus.CHECKMATE
               : GameStatus.FIFTY_MOVE_RULE
       : GameStatus.PLAYING,
+    moveHistory,
   }
 }
 
