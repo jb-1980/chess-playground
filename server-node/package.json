@@ -6,7 +6,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node ./build/index.js",
-    "test": "jest --forceExit"
+    "test": "jest --forceExit --runInBand",
+    "migrate": "dotenv -e test.env -- prisma migrate dev",
+    "type-check": "tsc --noEmit"
   },
   "author": "joseph",
   "license": "ISC",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.0.0",
+    "@shelf/jest-mongodb": "^4.3.2",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",

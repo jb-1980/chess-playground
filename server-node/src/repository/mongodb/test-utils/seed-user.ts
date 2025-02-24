@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb"
-import { UserDocument, Users } from "../user"
+import { UserDocument, Users } from "../collections/user/user"
 import { faker } from "@faker-js/faker"
 
 export const getTestUserDocument = (

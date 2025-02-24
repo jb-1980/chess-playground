@@ -1,17 +1,30 @@
 import { Router } from "express"
-import { queriesRouter } from "./queries"
-import { handle_registerUser } from "../commands/register-user"
-import { contextMiddleware } from "../middleware/context"
-import { authenticationMiddleware } from "../middleware/auth"
-import { commandsRouter } from "./commands"
-import { handle_LoginUser } from "../commands/login"
+import { commandsRouter, CommandsRoutes } from "./commands"
+import { queriesRouter, QueriesRoutes } from "./queries"
+import { Prefix, PrefixedObjectValues } from "../lib/types"
 
 export const router = Router()
 
-// Special routes that don't require authentication
-router.post("/register-user", contextMiddleware, handle_registerUser)
-router.post("/login", contextMiddleware, handle_LoginUser)
+export const getRoutesWithPrefix = <
+  T extends string,
+  K extends Record<string, string>,
+>(
+  prefix: T,
+  routes: K,
+): PrefixedObjectValues<K, T> => {
+  return Object.entries(routes).reduce(
+    (acc, [key, value]) => {
+      acc[key] = `${prefix}${value}`
+      return acc
+    },
+    {} as Record<string, string>,
+  ) as PrefixedObjectValues<K, T>
+}
 
-router.use("/api", authenticationMiddleware, contextMiddleware)
-router.use("/api/queries", queriesRouter)
-router.use("/api/commands", commandsRouter)
+export const Routes = {
+  ...getRoutesWithPrefix("/commands", CommandsRoutes),
+  ...getRoutesWithPrefix("/queries", QueriesRoutes),
+}
+
+router.use("/queries", queriesRouter)
+router.use("/commands", commandsRouter)

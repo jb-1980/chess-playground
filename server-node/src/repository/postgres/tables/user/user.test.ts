@@ -1,15 +1,9 @@
 import { faker } from "@faker-js/faker"
-import {
-  FailureType,
-  isFailure,
-  isSuccess,
-  SuccessType,
-} from "../../lib/result"
-import { seedUser } from "./test-utils/seed-user"
-import { UserLoader, UserMutator } from "./user"
-import { resetDb } from "./test-utils/reset-db"
-import bcrypt from "bcrypt"
-import prisma from "./client"
+import { isSuccess, SuccessType } from "../../../../lib/result"
+import { PostgresUserLoader, PostgresUserMutator } from "./user"
+import prisma from "../../client"
+import { resetDb } from "../../test-utils/reset-db"
+import { seedUser } from "../../test-utils/seed-user"
 
 describe("Repository::Postgres: User", () => {
   beforeAll(async () => {
@@ -27,17 +21,14 @@ describe("Repository::Postgres: User", () => {
   describe("UserLoader", () => {
     it("should get user by id", async () => {
       // arrange
-      const password = faker.internet.password()
-      const passwordHash = await bcrypt.hash(password, 10)
-      const userLoader = new UserLoader()
-      const user = await seedUser({ passwordHash })
-      // act
-      const result = await userLoader.validateUser(user.username, password)
-      // assert
-      expect(result).toSatisfy(isSuccess)
-      const successResult = result as SuccessType<typeof result>
+      const userLoader = new PostgresUserLoader()
+      const user = await seedUser()
 
-      expect(successResult.data).toContainAllEntries([
+      // act
+      const result = await userLoader.batchUsersById.load(user.id)
+
+      // assert
+      expect(result).toContainAllEntries([
         ["id", user.id],
         ["username", user.username],
         ["rating", user.rating],
@@ -45,51 +36,49 @@ describe("Repository::Postgres: User", () => {
       ])
     })
 
-    it("should return BAD_CREDENTIALS if user not found", async () => {
+    it("should return null if user not found by id", async () => {
       // arrange
-      const userLoader = new UserLoader()
+      const userLoader = new PostgresUserLoader()
       // act
-      const result = await userLoader.validateUser(
-        faker.internet.userName(),
-        faker.internet.password(),
+      const result = await userLoader.batchUsersById.load(
+        faker.database.mongodbObjectId(),
       )
       // assert
-      expect(result).toSatisfy(isFailure)
-      const failResult = result as FailureType<typeof result>
-      expect(failResult.message).toEqual("BAD_CREDENTIALS")
+      expect(result).toBeNull()
     })
 
-    it("should get all users", async () => {
+    it("should load a user by username", async () => {
       // arrange
-      const userLoader = new UserLoader()
-      const user1 = await seedUser()
-      const user2 = await seedUser()
+      const userLoader = new PostgresUserLoader()
+      const user = await seedUser()
       // act
-      const result = await userLoader.getUsersByIds([user1.id, user2.id])
+      const result = await userLoader.batchUsersByUsername.load(user.username)
       // assert
-      expect(result).toSatisfy(isSuccess)
-      const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toContainAllValues([
-        expect.objectContaining({
-          id: user1.id,
-          username: user1.username,
-          rating: user1.rating,
-          avatarUrl: user1.avatarUrl,
-        }),
-        expect.objectContaining({
-          id: user2.id,
-          username: user2.username,
-          rating: user2.rating,
-          avatarUrl: user2.avatarUrl,
-        }),
+      expect(result).toContainAllEntries([
+        ["id", user.id],
+        ["username", user.username],
+        ["rating", user.rating],
+        ["avatarUrl", user.avatarUrl],
+        ["passwordHash", user.passwordHash],
       ])
+    })
+
+    it("should return null if user not found by username", async () => {
+      // arrange
+      const userLoader = new PostgresUserLoader()
+      // act
+      const result = await userLoader.batchUsersByUsername.load(
+        faker.internet.userName(),
+      )
+      // assert
+      expect(result).toBeNull()
     })
   })
 
   describe("UserMutator", () => {
     it("should create a user", async () => {
       // arrange
-      const userMutator = new UserMutator()
+      const userMutator = new PostgresUserMutator()
       const username = faker.internet.userName()
       // act
       const result = await userMutator.createUser(
@@ -109,7 +98,7 @@ describe("Repository::Postgres: User", () => {
 
     it("should update a user's rating", async () => {
       // arrange
-      const userMutator = new UserMutator()
+      const userMutator = new PostgresUserMutator()
       const user = await seedUser()
       const newRating = user.rating + 100
       // act
