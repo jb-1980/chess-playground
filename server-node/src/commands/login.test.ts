@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import {
   FailureType,
   isFailure,
@@ -14,6 +13,8 @@ import * as commandModule from "./login"
 import { Express } from "express"
 import bcrypt from "bcrypt"
 import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Command::login", () => {
   beforeEach(() => {
@@ -75,7 +76,7 @@ describe("Command::login", () => {
     it("should return a token for a valid login", async () => {
       // arrange
       const user = getTestUser()
-      const context = getTestContext([user])
+      const context = getTestContext({ users: [user] })
       jest
         .spyOn(bcrypt, "compare")
         .mockImplementation(() => Promise.resolve(true))
@@ -95,7 +96,7 @@ describe("Command::login", () => {
     it("should fail with invalid password", async () => {
       // arrange
       const user = getTestUser()
-      const context = getTestContext([user])
+      const context = getTestContext({ users: [user] })
       jest
         .spyOn(bcrypt, "compare")
         .mockImplementation(() => Promise.resolve(false))

@@ -3,7 +3,7 @@ import { z, ZodError } from "zod"
 import { signToken } from "../middleware/auth"
 import { AsyncResult, isSuccess, Result } from "../lib/result"
 import { User } from "../domain/user"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 
 const RegisterUserSchema = z.object({
   username: z.string(),

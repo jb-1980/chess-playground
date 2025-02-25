@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext } from "../middleware/test-util"
 import {
   FailureType,
   isFailure,
@@ -10,6 +9,7 @@ import {
 import { getTestUser } from "../test-utils/user"
 
 import * as commandModule from "./create-game"
+import { getTestContext } from "../test-utils/context"
 
 describe("Command::create-game", () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe("Command::create-game", () => {
     it("should return a success result", async () => {
       // arrange
       const users = [getTestUser(), getTestUser()]
-      const context = getTestContext(users)
+      const context = getTestContext({ users })
       // act
       const result = await commandModule.command_CreateGame(
         [users[0].id, users[1].id],

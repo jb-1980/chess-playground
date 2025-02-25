@@ -2,7 +2,7 @@ import "dotenv/config"
 import { createServer } from "node:http"
 import { handleUpgrade } from "./server/websocket"
 import { setupExpress } from "./server/setup-express"
-import { contextMiddleware } from "./middleware/context"
+import { contextMiddleware } from "./middleware/context/context"
 import { authenticationMiddleware } from "./middleware/auth"
 
 const app = setupExpress({

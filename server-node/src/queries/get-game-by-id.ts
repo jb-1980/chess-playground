@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { AsyncResult, isFailure, Result } from "../lib/result"
 import { Game } from "../domain/game"
 import { z, ZodError } from "zod"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 
 const GetGameRequestSchema = z.object({
   gameId: z.string(),

@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker"
-import { isSuccess, SuccessType } from "../../lib/result"
-import { getTestGame } from "../../test-utils/game"
-import { MockGameLoader } from "../../repository/test-utils"
 import { GameLoader } from "./game-loader"
+import { getTestGame } from "../../../test-utils/game"
+import { isSuccess, SuccessType } from "../../../lib/result"
+import { MockGameLoader } from "../../../test-utils/db-injectors"
 
 describe("GameLoader", () => {
   it("should get a game when given a valid id", async () => {

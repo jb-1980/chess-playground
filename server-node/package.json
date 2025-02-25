@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node ./build/index.js",
-    "test": "jest --forceExit --runInBand",
+    "test": "jest --detectOpenHandles --runInBand",
     "migrate": "dotenv -e test.env -- prisma migrate dev",
     "type-check": "tsc --noEmit"
   },

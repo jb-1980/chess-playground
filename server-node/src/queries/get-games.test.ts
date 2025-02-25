@@ -13,9 +13,10 @@ import {
 } from "../lib/result"
 
 import { getTestGame } from "../test-utils/game"
-import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import { getTestUser } from "../test-utils/user"
 import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Queries: Get Games", () => {
   describe("API Layer", () => {
@@ -79,7 +80,7 @@ describe("Queries: Get Games", () => {
       const game = getTestGame({
         whitePlayer: user,
       })
-      const context = getTestContext([user], [game])
+      const context = getTestContext({ users: [user], games: [game] })
       const result = await query_GetGamesForPlayerId(user.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>

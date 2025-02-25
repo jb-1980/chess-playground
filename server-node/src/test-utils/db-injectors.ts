@@ -5,14 +5,13 @@ import {
   DBUserLoader,
   DBUserMutator,
   UserWithPasswordHash,
-} from "./loaders"
+} from "../repository/loaders"
 import { User } from "../domain/user"
 import { Result } from "../lib/result"
 import { getTestUser } from "../test-utils/user"
 import { Game, GameOutcome } from "../domain/game"
-import { getTestGame } from "../test-utils/game"
 import { faker } from "@faker-js/faker"
-import { getTestOutcomes } from "./mongodb/test-utils/seed-game"
+import { getTestOutcomes } from "./game"
 
 export class MockUserMutator implements DBUserMutator {
   private _users: Map<string, User>

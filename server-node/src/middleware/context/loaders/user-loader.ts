@@ -1,6 +1,6 @@
-import { AsyncResult, User } from "../../repository"
-import { Result } from "../../lib/result"
-import { DBUserLoader } from "../../repository/loaders"
+import { AsyncResult, User } from "../../../repository"
+import { Result } from "../../../lib/result"
+import { DBUserLoader } from "../../../repository/loaders"
 import bcrypt from "bcrypt"
 
 export class UserLoader {

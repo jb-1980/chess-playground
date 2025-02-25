@@ -1,7 +1,5 @@
 import { faker } from "@faker-js/faker"
-import { Express } from "express"
-import { getTestContext, getTestMiddleware } from "../middleware/test-util"
-import { command_RegisterUser } from "./register-user"
+
 import {
   FailureType,
   isFailure,
@@ -14,6 +12,8 @@ import { setupExpress } from "../server/setup-express"
 import request from "supertest"
 import * as commandModule from "./register-user"
 import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Command::register-user", () => {
   describe("POST /register-user", () => {
@@ -84,7 +84,7 @@ describe("Command::register-user", () => {
       // arrange
       const context = getTestContext()
       // act
-      const result = await command_RegisterUser(
+      const result = await commandModule.command_RegisterUser(
         {
           username: faker.internet.userName(),
           password: faker.internet.password(),
@@ -104,10 +104,10 @@ describe("Command::register-user", () => {
     it("should not create a user if the username is taken", async () => {
       // arrange
       const user = getTestUser()
-      const context = getTestContext([user])
+      const context = getTestContext({ users: [user] })
 
       // act
-      const result = await command_RegisterUser(
+      const result = await commandModule.command_RegisterUser(
         {
           username: user.username,
           password: faker.internet.password(),

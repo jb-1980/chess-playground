@@ -3,6 +3,7 @@ import { isSuccess, SuccessType } from "../../../../lib/result"
 import { seedUser } from "../../test-utils/seed-user"
 import { MongoDBUserLoader, MongoDBUserMutator, Users } from "./user"
 import { resetDb } from "../../test-utils/reset-db"
+import { mongoClient } from "../../connection"
 
 describe("Repository::MongoDB: User", () => {
   beforeAll(async () => {
@@ -15,6 +16,7 @@ describe("Repository::MongoDB: User", () => {
 
   afterAll(async () => {
     await resetDb()
+    await mongoClient.close()
   })
 
   describe("UserLoader", () => {

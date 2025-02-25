@@ -2,14 +2,12 @@ import { faker } from "@faker-js/faker"
 import { isSuccess, SuccessType } from "../../../../lib/result"
 import { resetDb } from "../../test-utils/reset-db"
 import { makeGameDTO, MongoDBGameLoader, MongoDBGameMutator } from "./game"
-import {
-  seedGame,
-  getTestMoveValues,
-  getTestOutcomes,
-} from "../../test-utils/seed-game"
+import { seedGame } from "../../test-utils/seed-game"
 import { ObjectId } from "mongodb"
 import { Color, Move } from "../../../../domain/game"
 import { getTestUser } from "../../../../test-utils/user"
+import { getTestMoveValues, getTestOutcomes } from "../../../../test-utils/game"
+import { mongoClient } from "../../connection"
 
 describe("Repository::MongoDB: Game", () => {
   beforeAll(async () => {
@@ -22,6 +20,7 @@ describe("Repository::MongoDB: Game", () => {
 
   afterAll(async () => {
     await resetDb()
+    await mongoClient.close()
   })
 
   describe("GameLoader", () => {

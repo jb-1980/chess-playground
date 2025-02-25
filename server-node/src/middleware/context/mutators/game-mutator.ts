@@ -1,8 +1,8 @@
-import { DBGameMutator } from "../../repository"
-import { calculateNewRatings } from "../../lib/chess"
-import { AsyncResult } from "../../lib/result"
-import { GameStatus, Move } from "../../domain/game"
-import { User } from "../../domain/user"
+import { DBGameMutator } from "../../../repository"
+import { calculateNewRatings } from "../../../lib/chess"
+import { AsyncResult } from "../../../lib/result"
+import { GameStatus, Move } from "../../../domain/game"
+import { User } from "../../../domain/user"
 
 export class GameMutator {
   constructor(private mutator: DBGameMutator) {}

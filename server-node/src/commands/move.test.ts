@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker"
-import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import {
   FailureType,
   isFailure,
@@ -16,6 +15,8 @@ import { getTestGame, getTestMoveValues } from "../test-utils/game"
 import { DEFAULT_POSITION } from "chess.js"
 import { getTestToken } from "../test-utils/jwt"
 import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Command::move", () => {
   beforeEach(() => {
@@ -100,7 +101,11 @@ describe("Command::move", () => {
         whitePlayer: whiteTurn ? user : undefined,
         blackPlayer: whiteTurn ? undefined : user,
       })
-      const context = getTestContext([user], [game])
+      const context = getTestContext({
+        authUser: user,
+        users: [user],
+        games: [game],
+      })
 
       // act
       const result = await commandModule.command_Move(
@@ -127,7 +132,7 @@ describe("Command::move", () => {
         whitePlayer: whiteTurn ? user : undefined,
         blackPlayer: whiteTurn ? undefined : user,
       })
-      const context = getTestContext([user], [game])
+      const context = getTestContext({ users: [user], games: [game] })
       const invalidMove = {
         ...moveValues.move,
         before: DEFAULT_POSITION,
@@ -152,7 +157,7 @@ describe("Command::move", () => {
       // arrange
       const user = getTestUser()
       const moveValues = getTestMoveValues()
-      const context = getTestContext([user])
+      const context = getTestContext({ users: [user] })
 
       // act
       const result = await commandModule.command_Move(
@@ -178,7 +183,7 @@ describe("Command::move", () => {
         whitePlayer: whiteTurn ? undefined : user,
         blackPlayer: whiteTurn ? user : undefined,
       })
-      const context = getTestContext([user], [game])
+      const context = getTestContext({ users: [user], games: [game] })
 
       // act
       const result = await commandModule.command_Move(

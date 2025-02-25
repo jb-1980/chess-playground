@@ -1,6 +1,6 @@
 import { AsyncResult, isFailure, Result } from "../lib/result"
 import { User } from "../domain/user"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 
 export const command_CreateGame = async (
   playerIds: [string, string],

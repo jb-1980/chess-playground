@@ -13,8 +13,9 @@ import {
 } from "../lib/result"
 import { faker } from "@faker-js/faker"
 import { getTestGame } from "../test-utils/game"
-import { getTestContext, getTestMiddleware } from "../middleware/test-util"
 import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Queries: Get Game By Id", () => {
   afterEach(() => {
@@ -83,7 +84,10 @@ describe("Queries: Get Game By Id", () => {
 
     it("should return a success result with the game data when the loader succeeds", async () => {
       const game = getTestGame()
-      const context = getTestContext([game.blackPlayer], [game])
+      const context = getTestContext({
+        users: [game.blackPlayer],
+        games: [game],
+      })
       const result = await query_GetGameById(game.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>

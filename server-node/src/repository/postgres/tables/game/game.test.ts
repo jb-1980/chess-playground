@@ -2,7 +2,10 @@ import { faker } from "@faker-js/faker"
 import { isSuccess, SuccessType } from "../../../../lib/result"
 import { resetDb } from "../../test-utils/reset-db"
 import { makeGameDTO, PostgresGameLoader, PostgresGameMutator } from "./game"
-import { getTestOutcomes, seedFullGame } from "../../test-utils/seed-game"
+import {
+  getTestPostgresOutcomes,
+  seedFullGame,
+} from "../../test-utils/seed-game"
 import { Color, Move } from "../../../../domain/game"
 import { seedUser } from "../../test-utils/seed-user"
 import { getTestMoveValues } from "../../../../test-utils/game"
@@ -81,7 +84,7 @@ describe("Repository::Postgres: Game", () => {
       const gameMutator = new PostgresGameMutator()
       const whitePlayer = await seedUser()
       const blackPlayer = await seedUser()
-      const outcomes = getTestOutcomes()
+      const outcomes = getTestPostgresOutcomes()
       // act
       const result = await gameMutator.insertGame(whitePlayer, blackPlayer, {
         whiteWins: {

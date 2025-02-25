@@ -4,11 +4,11 @@ import {
   isFailure,
   isSuccess,
   SuccessType,
-} from "../../lib/result"
-import { MockUserLoader } from "../../repository/test-utils"
-import { getTestUser } from "../../test-utils/user"
+} from "../../../lib/result"
+import { getTestUser } from "../../../test-utils/user"
 import { UserLoader } from "./user-loader"
 import bcrypt from "bcrypt"
+import { MockUserLoader } from "../../../test-utils/db-injectors"
 
 describe("UserLoader", () => {
   afterEach(() => {

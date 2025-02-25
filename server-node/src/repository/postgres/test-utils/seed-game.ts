@@ -27,17 +27,7 @@ type Overrides = Partial<
   }
 >
 
-export const randomSan = () => {
-  const piece = faker.helpers.objectValue(Piece)
-  const to = faker.helpers.objectValue(Square.enum)
-  if (piece === Piece.PAWN) {
-    return to
-  }
-
-  return piece.toUpperCase() + to
-}
-
-export const getTestOutcomes = (
+export const getTestPostgresOutcomes = (
   overrides: Overrides["GameOutcomes"] = {},
 ): GameOutcomes => ({
   id: faker.string.uuid(),
@@ -51,7 +41,9 @@ export const getTestOutcomes = (
   ...overrides,
 })
 
-export const getTestGame = (overrides: Partial<DBGame> = {}): DBGame => {
+export const getTestPostgresGame = (
+  overrides: Partial<DBGame> = {},
+): DBGame => {
   return {
     id: faker.string.uuid(),
     pgn: "",
@@ -67,7 +59,7 @@ export const getTestGame = (overrides: Partial<DBGame> = {}): DBGame => {
 export const seedGame = async (
   overrides: Partial<DBGame> = {},
 ): Promise<DBGame> => {
-  const gameDocument = getTestGame(overrides)
+  const gameDocument = getTestPostgresGame(overrides)
   return await prisma.game.create({ data: gameDocument })
 }
 

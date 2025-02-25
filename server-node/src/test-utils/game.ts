@@ -6,6 +6,7 @@ import {
   Square,
   Move as GameMove,
   Game,
+  GameOutcome,
 } from "../domain/game"
 import { Chess, Move } from "chess.js"
 
@@ -24,6 +25,37 @@ export const randomSan = () => {
   }
 
   return piece.toUpperCase() + to
+}
+
+export const getTestOutcomes = (
+  overrides?: Partial<
+    Omit<GameOutcome, "whiteWins" | "blackWins" | "draw"> & {
+      whiteWins: Partial<GameOutcome["whiteWins"]>
+      blackWins: Partial<GameOutcome["blackWins"]>
+      draw: Partial<GameOutcome["draw"]>
+    }
+  >,
+) => {
+  const whiteWins = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides?.whiteWins,
+  }
+  const blackWins = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides?.blackWins,
+  }
+  const draw = {
+    whiteRating: 1500,
+    blackRating: 1500,
+    ...overrides?.draw,
+  }
+  return {
+    whiteWins,
+    blackWins,
+    draw,
+  }
 }
 
 export const getTestMoveValues = (

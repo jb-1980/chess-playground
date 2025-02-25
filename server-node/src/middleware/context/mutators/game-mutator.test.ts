@@ -1,9 +1,9 @@
 import { GameMutator } from "./game-mutator"
 import { faker } from "@faker-js/faker"
-import { isSuccess, SuccessType } from "../../lib/result"
-import { getTestUser } from "../../test-utils/user"
-import { getTestGame, getTestMoveValues } from "../../test-utils/game"
-import { MockGameMutator } from "../../repository/test-utils"
+import { isSuccess, SuccessType } from "../../../lib/result"
+import { getTestUser } from "../../../test-utils/user"
+import { getTestGame, getTestMoveValues } from "../../../test-utils/game"
+import { MockGameMutator } from "../../../test-utils/db-injectors"
 
 describe("GameMutator", () => {
   it("should create a game", async () => {

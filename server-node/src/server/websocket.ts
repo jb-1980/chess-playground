@@ -3,7 +3,7 @@ import { IncomingMessage } from "node:http"
 import internal from "node:stream"
 import { z } from "zod"
 import { match } from "ts-pattern"
-import { Context, createContext } from "../middleware/context"
+import { Context, createContext } from "../middleware/context/context"
 import { verifyToken } from "../middleware/auth"
 import { User } from "../domain/user"
 import {

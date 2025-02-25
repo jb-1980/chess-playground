@@ -4,10 +4,13 @@ import {
   isFailure,
   isSuccess,
   SuccessType,
-} from "../../lib/result"
+} from "../../../lib/result"
 import { UserMutator } from "./user-mutator"
-import { MockUserLoader, MockUserMutator } from "../../repository/test-utils"
-import { getTestUser } from "../../test-utils/user"
+import { getTestUser } from "../../../test-utils/user"
+import {
+  MockUserLoader,
+  MockUserMutator,
+} from "../../../test-utils/db-injectors"
 
 describe("UserMutator", () => {
   it("should create a user", async () => {

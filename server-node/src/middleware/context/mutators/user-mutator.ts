@@ -1,6 +1,6 @@
-import { User } from "../../domain/user"
-import { AsyncResult, Result } from "../../lib/result"
-import { DBUserLoader, DBUserMutator } from "../../repository"
+import { User } from "../../../domain/user"
+import { AsyncResult, Result } from "../../../lib/result"
+import { DBUserLoader, DBUserMutator } from "../../../repository"
 import bcrypt from "bcrypt"
 
 export class UserMutator {

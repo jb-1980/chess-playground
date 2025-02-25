@@ -1,6 +1,6 @@
-import { AsyncResult, Game, GameOutcome } from "../../repository"
-import { Result } from "../../lib/result"
-import { DBGameLoader } from "../../repository/loaders"
+import { Game, GameOutcome } from "../../../domain/game"
+import { Result } from "../../../lib/result"
+import { AsyncResult, DBGameLoader } from "../../../repository"
 
 export class GameLoader {
   constructor(private loader: DBGameLoader) {}
