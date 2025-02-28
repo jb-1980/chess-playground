@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import { z, ZodError } from "zod"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 import { Color, GameStatus, Move, moveSchema } from "../domain/game"
 import { createPgnFromMoves, getStatus, validateMove } from "../lib/chess"
 import { pubsub } from "../server/websocket"

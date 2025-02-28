@@ -17,7 +17,7 @@ export const register: NonNullable<MutationResolvers["register"]> = async (
 
   const user = userResult.data
   const parsedUser = {
-    id: user._id.toHexString(),
+    id: user._id,
     username: user.username,
     rating: user.rating,
     avatarUrl: user.avatarUrl,

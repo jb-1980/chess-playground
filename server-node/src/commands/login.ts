@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { z, ZodError } from "zod"
 import { signToken } from "../middleware/auth"
 import { AsyncResult, isFailure, Result } from "../lib/result"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 
 const RegisterUserSchema = z.object({
   username: z.string(),

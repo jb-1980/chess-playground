@@ -11,20 +11,22 @@ import {
   Result,
   SuccessType,
 } from "../lib/result"
-import { createContext } from "../middleware/context"
 import { faker } from "@faker-js/faker"
 import { getTestGame } from "../test-utils/game"
+import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Queries: Get Game By Id", () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
   describe("API Layer", () => {
-    const app = setupExpress()
+    const app = setupExpress(getTestMiddleware())
     const tokenHeader = `Bearer ${getTestToken()}`
     it("should return 400 if the request body is invalid", async () => {
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({})
       expect(response.status).toBe(400)
@@ -37,7 +39,7 @@ describe("Queries: Get Game By Id", () => {
 
       const gameId = faker.database.mongodbObjectId()
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({ gameId })
 
@@ -53,7 +55,7 @@ describe("Queries: Get Game By Id", () => {
         .mockResolvedValueOnce(Result.Success(expectedGame))
 
       const response = await request(app)
-        .post("/api/queries/get-game-by-id")
+        .post(Routes.GetGameByIdQuery)
         .set("Authorization", tokenHeader)
         .send({ gameId: expectedGame.id })
 
@@ -67,7 +69,7 @@ describe("Queries: Get Game By Id", () => {
 
   describe("Query Layer", () => {
     it("should return a failure result if the loader fails", async () => {
-      const context = createContext()
+      const context = getTestContext()
       context.Loader.GameLoader.getGameById = jest
         .fn()
         .mockResolvedValue(Result.Fail("DB_ERROR_WHILE_GETTING_GAME"))
@@ -82,14 +84,11 @@ describe("Queries: Get Game By Id", () => {
 
     it("should return a success result with the game data when the loader succeeds", async () => {
       const game = getTestGame()
-      const context = createContext()
-      context.Loader.GameLoader.getGameById = jest
-        .fn()
-        .mockResolvedValue(Result.Success(game))
-      const result = await query_GetGameById(
-        faker.database.mongodbObjectId(),
-        context,
-      )
+      const context = getTestContext({
+        users: [game.blackPlayer],
+        games: [game],
+      })
+      const result = await query_GetGameById(game.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
       expect(successResult.data).toEqual(game)

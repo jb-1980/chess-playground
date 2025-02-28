@@ -1,7 +1,5 @@
-import { ObjectId } from "mongodb"
-
 export type GameUserDocument = {
-  _id: ObjectId
+  _id: string
   username: string
   rating: number
   avatarUrl: string
@@ -29,7 +27,6 @@ export type GameDocument = {
   whitePlayer: GameUserDocument
   blackPlayer: GameUserDocument
   status: string
-  createdAt: Date
   outcome: {
     winner: string | null
     draw: boolean

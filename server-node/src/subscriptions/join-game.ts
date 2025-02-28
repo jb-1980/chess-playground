@@ -8,7 +8,7 @@ import {
 } from "../lib/pubsub"
 import { isFailure } from "../lib/result"
 import { shiftSet } from "../lib/set-utils"
-import { Context } from "../middleware/context"
+import { Context } from "../middleware/context/context"
 import { ExtWebSocket, pubsub } from "../server/websocket"
 
 const placeInQueue = (playerId: string, context: Context) =>

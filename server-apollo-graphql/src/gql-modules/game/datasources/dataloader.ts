@@ -1,56 +1,59 @@
 import DataLoader from "dataloader"
-import { ObjectId } from "mongodb"
+import { ObjectId, WithId } from "mongodb"
 import { GameDocument, GameUserDocument, MoveDocument } from "./data-schema"
 import { Games } from "./games-collection"
 import { AsyncResult, Result } from "../../../lib/result"
 import { calculateNewRatings } from "../../../lib/chess"
 import { UserDocument } from "../../user/datasources/data-schema"
 import { GameStatus, Move } from "../../types.generated"
+import { TDocument } from "../../../database/collection"
 
 export class GameLoader {
-  private _batchGames = new DataLoader<string, GameDocument | null>(
-    async (ids) => {
-      const games = await Games.find({
-        _id: { $in: ids },
-      }).toArray()
+  private _batchGames = new DataLoader<
+    string,
+    WithId<TDocument<GameDocument>> | null
+  >(async (ids) => {
+    const games = await Games.find({
+      _id: { $in: ids },
+    }).toArray()
 
-      const gamesMap = games.reduce(
-        (map, game) => {
-          map[game._id.toString()] = game
-          return map
-        },
-        {} as Record<string, GameDocument>,
-      )
+    const gamesMap = games.reduce(
+      (map, game) => {
+        map[game._id.toString()] = game
+        return map
+      },
+      {} as Record<string, WithId<TDocument<GameDocument>>>,
+    )
 
-      return ids.map((id) => gamesMap[id] || null)
-    },
-  )
+    return ids.map((id) => gamesMap[id] || null)
+  })
 
-  private _batchGamesForPlayer = new DataLoader<string, GameDocument[]>(
-    async (ids) => {
-      const games = await Games.find({
-        $or: [
-          { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
-          { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
-        ],
-      }).toArray()
+  private _batchGamesForPlayer = new DataLoader<
+    string,
+    WithId<TDocument<GameDocument>>[]
+  >(async (ids) => {
+    const games = await Games.find({
+      $or: [
+        { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+        { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+      ],
+    }).toArray()
 
-      const gamesMap = games.reduce(
-        (map, game) => {
-          const whitePlayerId = game.whitePlayer._id.toString()
-          const blackPlayerId = game.blackPlayer._id.toString()
-          map[whitePlayerId] = map[whitePlayerId] || []
-          map[blackPlayerId] = map[blackPlayerId] || []
-          map[whitePlayerId].push(game)
-          map[blackPlayerId].push(game)
-          return map
-        },
-        {} as Record<string, GameDocument[]>,
-      )
+    const gamesMap = games.reduce(
+      (map, game) => {
+        const whitePlayerId = game.whitePlayer._id.toString()
+        const blackPlayerId = game.blackPlayer._id.toString()
+        map[whitePlayerId] = map[whitePlayerId] || []
+        map[blackPlayerId] = map[blackPlayerId] || []
+        map[whitePlayerId].push(game)
+        map[blackPlayerId].push(game)
+        return map
+      },
+      {} as Record<string, WithId<TDocument<GameDocument>>[]>,
+    )
 
-      return ids.map((id) => gamesMap[id] || [])
-    },
-  )
+    return ids.map((id) => gamesMap[id] || [])
+  })
 
   async getGameById(
     id: string,
@@ -61,6 +64,7 @@ export class GameLoader {
         this._batchGames.clear(id)
       }
       const game = await this._batchGames.load(id)
+
       return Result.Success(game)
     } catch (error) {
       console.error(error)
@@ -85,7 +89,7 @@ const toGameUserFromUserDocument = (user: UserDocument): GameUserDocument => ({
   _id: user._id,
   username: user.username,
   rating: user.rating,
-  avatarUrl: user.avatarUrl,
+  avatarUrl: user.avatarUrl ?? "",
 })
 
 export class GameMutator {
@@ -118,7 +122,6 @@ export class GameMutator {
         moves: [],
         pgn: "",
         status: GameStatus.PLAYING,
-        createdAt: new Date(),
         outcome: {
           winner: null,
           draw: false,

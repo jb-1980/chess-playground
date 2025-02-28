@@ -12,16 +12,19 @@ import {
   SuccessType,
 } from "../lib/result"
 
-import { createContext } from "../middleware/context"
 import { getTestGame } from "../test-utils/game"
+import { getTestUser } from "../test-utils/user"
+import { Routes } from "../routes"
+import { getTestMiddleware } from "../test-utils/middleware"
+import { getTestContext } from "../test-utils/context"
 
 describe("Queries: Get Games", () => {
   describe("API Layer", () => {
-    const app = setupExpress()
+    const app = setupExpress(getTestMiddleware())
     const tokenHeader = `Bearer ${getTestToken()}`
     it("should return 400 if the request body is invalid", async () => {
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({})
       expect(response.status).toBe(400)
@@ -33,7 +36,7 @@ describe("Queries: Get Games", () => {
         .mockResolvedValueOnce(Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID"))
 
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({ playerId: "123" })
 
@@ -49,7 +52,7 @@ describe("Queries: Get Games", () => {
         .mockResolvedValueOnce(Result.Success([expectedGame]))
 
       const response = await request(app)
-        .post("/api/queries/get-games")
+        .post(Routes.GetGamesQuery)
         .set("Authorization", tokenHeader)
         .send({ playerId: "123" })
 
@@ -62,7 +65,7 @@ describe("Queries: Get Games", () => {
 
   describe("Query Layer", () => {
     it("should return a failure result if the loader fails", async () => {
-      const context = createContext()
+      const context = getTestContext()
       context.Loader.GameLoader.getGamesForPlayerId = jest
         .fn()
         .mockResolvedValue(Result.Fail("DB_ERR_GET_GAMES_FOR_USER_ID"))
@@ -73,12 +76,12 @@ describe("Queries: Get Games", () => {
     })
 
     it("should return a success result with the game data when the loader succeeds", async () => {
-      const game = getTestGame()
-      const context = createContext()
-      context.Loader.GameLoader.getGamesForPlayerId = jest
-        .fn()
-        .mockResolvedValue(Result.Success([game]))
-      const result = await query_GetGamesForPlayerId("123", context)
+      const user = getTestUser()
+      const game = getTestGame({
+        whitePlayer: user,
+      })
+      const context = getTestContext({ users: [user], games: [game] })
+      const result = await query_GetGamesForPlayerId(user.id, context)
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
       expect(successResult.data).toEqual([game])

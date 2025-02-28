@@ -1,12 +1,13 @@
 import { faker } from "@faker-js/faker"
-import { isSuccess, SuccessType } from "../../lib/result"
-import { resetDb } from "./test-utils/reset-db"
-import { GameLoader, GameMutator, makeGameDTO } from "./game"
-import { seedGame, getTestMoveValues } from "./test-utils/seed-game"
+import { isSuccess, SuccessType } from "../../../../lib/result"
+import { resetDb } from "../../test-utils/reset-db"
+import { makeGameDTO, MongoDBGameLoader, MongoDBGameMutator } from "./game"
+import { seedGame } from "../../test-utils/seed-game"
 import { ObjectId } from "mongodb"
-import { getTestUserDocument } from "./test-utils/seed-user"
-import { Color, Move } from "../../domain/game"
-import { getTestUser } from "../../test-utils/user"
+import { Color, Move } from "../../../../domain/game"
+import { getTestUser } from "../../../../test-utils/user"
+import { getTestMoveValues, getTestOutcomes } from "../../../../test-utils/game"
+import { mongoClient } from "../../connection"
 
 describe("Repository::MongoDB: Game", () => {
   beforeAll(async () => {
@@ -19,21 +20,20 @@ describe("Repository::MongoDB: Game", () => {
 
   afterAll(async () => {
     await resetDb()
+    await mongoClient.close()
   })
 
   describe("GameLoader", () => {
     it("should get game by id", async () => {
       // arrange
-      const gameLoader = new GameLoader()
+      const gameLoader = new MongoDBGameLoader()
       const game = await seedGame()
       // act
-      const result = await gameLoader.getGameById(game._id.toHexString())
+      const result = await gameLoader.batchGames.load(game._id.toHexString())
       // assert
-      expect(result).toSatisfy(isSuccess)
-      const successResult = result as SuccessType<typeof result>
 
       const expectedGame = makeGameDTO(game)
-      expect(successResult.data).toContainAllEntries([
+      expect(result).toContainAllEntries([
         ["id", expectedGame.id],
         ["moves", expectedGame.moves],
         ["pgn", expectedGame.pgn],
@@ -46,20 +46,18 @@ describe("Repository::MongoDB: Game", () => {
 
     it("should return null if game not found", async () => {
       // arrange
-      const gameLoader = new GameLoader()
+      const gameLoader = new MongoDBGameLoader()
       // act
-      const result = await gameLoader.getGameById(
+      const result = await gameLoader.batchGames.load(
         faker.database.mongodbObjectId(),
       )
       // assert
-      expect(result).toSatisfy(isSuccess)
-      const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toBeNull()
+      expect(result).toBeNull()
     })
 
     it("should get all games for a player", async () => {
       // arrange
-      const gameLoader = new GameLoader()
+      const gameLoader = new MongoDBGameLoader()
       const game1 = await seedGame({
         whitePlayer: { _id: new ObjectId() },
       })
@@ -70,13 +68,11 @@ describe("Repository::MongoDB: Game", () => {
         whitePlayer: { _id: new ObjectId() },
       })
       // act
-      const result = await gameLoader.getGamesForPlayerId(
+      const result = await gameLoader.batchGamesForPlayer.load(
         game1.whitePlayer._id.toHexString(),
       )
       // assert
-      expect(result).toSatisfy(isSuccess)
-      const successResult = result as SuccessType<typeof result>
-      expect(successResult.data).toContainAllValues([
+      expect(result).toContainAllValues([
         makeGameDTO(game1),
         makeGameDTO(game2),
       ])
@@ -86,26 +82,31 @@ describe("Repository::MongoDB: Game", () => {
   describe("GameMutator", () => {
     it("should create a new game", async () => {
       // arrange
-      const gameMutator = new GameMutator()
+      const gameMutator = new MongoDBGameMutator()
       const whitePlayer = getTestUser()
       const blackPlayer = getTestUser()
+      const outcomes = getTestOutcomes()
       // act
-      const result = await gameMutator.createGame(whitePlayer, blackPlayer)
+      const result = await gameMutator.insertGame(
+        whitePlayer,
+        blackPlayer,
+        outcomes,
+      )
       // assert
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
       const gameId = successResult.data
       expect(gameId).toBeString()
-      const gameLoader = new GameLoader()
-      const gameResult = await gameLoader.getGameById(gameId)
-      expect(gameResult).toSatisfy(isSuccess)
-      const game = gameResult as SuccessType<typeof gameResult>
-      expect(game.data).not.toBeNull()
+
+      const gameLoader = new MongoDBGameLoader()
+      const game = await gameLoader.batchGames.load(gameId)
+
+      expect(game).not.toBeNull()
     })
 
     it("should add a move to a game", async () => {
       // arrange
-      const gameMutator = new GameMutator()
+      const gameMutator = new MongoDBGameMutator()
       const game = await seedGame()
       const { move, pgn, status } = getTestMoveValues()
       // act
@@ -118,26 +119,25 @@ describe("Repository::MongoDB: Game", () => {
       // assert
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
-      const updatedGame = successResult.data
-      expect(updatedGame).toBeTrue()
+      const wasGameUpdated = successResult.data
+      expect(wasGameUpdated).toBeTrue()
 
-      const gameLoader = new GameLoader()
-      const gameResult = await gameLoader.getGameById(game._id.toHexString())
-      expect(gameResult).toSatisfy(isSuccess)
-      const gameData = gameResult as SuccessType<typeof gameResult>
-      const gameDocument = gameData.data
+      const gameLoader = new MongoDBGameLoader()
+      const updatedGame = await gameLoader.batchGames.load(
+        game._id.toHexString(),
+      )
       // @ts-expect-error, it is safe to assume that moves is not empty
-      const { createdAt, ...lastMove } = gameDocument?.moves.at(-1) as Move
-      expect(gameDocument).not.toBeNull()
+      const { createdAt, ...lastMove } = updatedGame?.moves.at(-1) as Move
+      expect(updatedGame).not.toBeNull()
       expect(lastMove).toMatchObject(move)
       expect(createdAt).toBeDate()
-      expect(gameDocument?.pgn).toEqual(pgn)
-      expect(gameDocument?.status).toEqual(status)
+      expect(updatedGame?.pgn).toEqual(pgn)
+      expect(updatedGame?.status).toEqual(status)
     })
 
     it("should set the outcome of a game", async () => {
       // arrange
-      const gameMutator = new GameMutator()
+      const gameMutator = new MongoDBGameMutator()
       const game = await seedGame()
       const isDraw = faker.datatype.boolean()
       const outcome = {
@@ -153,15 +153,8 @@ describe("Repository::MongoDB: Game", () => {
       // assert
       expect(result).toSatisfy(isSuccess)
       const successResult = result as SuccessType<typeof result>
-      const gameOutcome = successResult.data
-      expect(gameOutcome).toBeTrue()
-
-      const gameLoader = new GameLoader()
-      const gameResult = await gameLoader.getGameById(game._id.toHexString())
-      expect(gameResult).toSatisfy(isSuccess)
-      const gameData = gameResult as SuccessType<typeof gameResult>
-      const gameDocument = gameData.data
-      expect(gameDocument).not.toBeNull()
+      const wasGameOutcomeSet = successResult.data
+      expect(wasGameOutcomeSet).toBeTrue()
     })
   })
 })
