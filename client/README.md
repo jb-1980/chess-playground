@@ -1,7 +1,15 @@
+# Chess Playground Client
+
+This is a simple app to demonstrate some basic coding concepts around creating
+an app that can interact with an API and display the data in a dev-friendly
+way. Essentially, it is a place for me to explore and experiment with ideas as I
+continually strive to improve my craft.
+
 ## Patterns
 
-The app is principally organized around routes. I find this most intutive for
-front-end applications as it allows for a clear separation of concerns and
+The app is principally organized around routes. I was initially inspired by this pattern
+when playing around with Remix, and found the ["Convential Route Folder"](https://remix.run/docs/en/main/discussion/routes#conventional-route-folders).
+I find this most intutive for front-end applications as it allows for a clear separation of concerns and
 makes it easy to reason about the app's structure: You want to know where the code
 for a particular page is? Look in the routes directory for that route.
 
@@ -18,11 +26,11 @@ Some of the patterns to look for:
   - Any other components would be in the components directory.
   - A `styles.css` file that is imported into the main component to style it.
   - A `models.ts` file that would contain domain models for the route.
-  - A `data` directory that would contain any data fetching logic for the route. (Not implemented in this app)
-  - A `hooks` directory that would contain any custom hooks for the route. (Not implemented in this app)
-  - A `utils` directory that would contain any utility functions for the route. (Not implemented in this app)
+  - A `data` directory that would contain any data fetching logic for the route.
+  - A `hooks` directory that would contain any custom hooks for the route.
+  - A `utils` directory that would contain any utility functions for the route.
 - Global items are at the root level, similar to the route:
-  - `components`: directory that would have UI components like buttons, cards, spinners, or any other custom UI components that don't fit within a specific route.
+  - `components`: directory that would have UI components like buttons, cards, spinners, or any other custom UI components that you would expect to be consumed by the entire app.
   - `styles.css`: global styles for the app.
   - `models.ts`: global models for the app.
   - `context`: directory that would contain any global context providers for the app, like a `UserContext` or `ThemeContext`.
@@ -40,3 +48,15 @@ Some of the patterns to look for:
   be leveraged to get data into the the route, as well as mutate data in the route.
   I have not fully explored these features yet, but I think they could be very
   powerful.
+
+
+### You know what is cool?
+
+I wanted to explore the idea of decoupling from certain technologies. I took as an experiment implementing
+the data fetching using a graphql backend and regular express backend that returns json. Then I wanted to minimize
+the dependence on those technologies, and see what would be the minimal amount of code difference necessary.
+
+You will find that each route has a data directory, with code to use GraphQL via Apollo Client, and code to use 
+a REST-ful api via React Query. Of course, there is some crazy conditionals that would not exist when not trying
+to maintain two techs at the same time, but I learning a lot about the value of a buffer layer that makes it easier
+to migrate to something else when it is not deeply integrated into every part of the app.
