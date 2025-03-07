@@ -116,6 +116,7 @@ export class GameMutator {
     )
     try {
       const response = await Games.insertOne({
+        _id: new ObjectId().toHexString(),
         whitePlayer,
         blackPlayer,
         moves: [],

@@ -49,6 +49,7 @@ Some of the patterns to look for:
   I have not fully explored these features yet, but I think they could be very
   powerful.
 
+
 ### You know what is cool?
 
 I wanted to explore the idea of decoupling from certain technologies. I took as an experiment implementing
