@@ -18,7 +18,6 @@ export const useHandleLogin = (): (() => {
   error: LoginError | undefined
 }) => {
   const mutation = useLoginWithReactQuery()
-
   const mutate = async (
     username: string,
     password: string,
