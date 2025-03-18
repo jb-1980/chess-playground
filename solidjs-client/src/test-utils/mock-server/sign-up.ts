@@ -9,7 +9,7 @@ type SuccessResponse = {
 
 type UnauthorizedResponse = {
   data: { error: string }
-  status: 401
+  status: 409
 }
 
 type ServerErrorResponse = {
@@ -17,11 +17,11 @@ type ServerErrorResponse = {
   status: 500
 }
 
-export const loginHandler = <
+export const signupHandler = <
   T extends SuccessResponse | UnauthorizedResponse | ServerErrorResponse,
 >(
   response: T,
 ) =>
-  http.post<{}, T>(`${API_ROOT}/login`, async () => {
+  http.post<{}, T>(`${API_ROOT}/register-user`, async () => {
     return HttpResponse.json(response.data, { status: response.status })
   })

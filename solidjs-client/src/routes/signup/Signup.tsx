@@ -1,6 +1,6 @@
 import { useNavigate } from "@solidjs/router"
 import { storeToken } from "../../lib/token"
-import { useSignupWithReactQuery } from "./data/react-query/useSignupWithReactQuery"
+import { useSignup } from "./data/useSignup"
 import {
   Button,
   Link,
@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@suid/material"
+import { Show } from "solid-js"
 
 export const Signup = () => {
   const navigate = useNavigate()
@@ -19,19 +20,17 @@ export const Signup = () => {
   }
   const btnstyle = { margin: "8px 0" }
 
-  const signupHandlers = useSignupWithReactQuery()
+  const signupHandlers = useSignup()
 
-  console.log({ signupHandlers })
   const onSubmit = (e: SubmitEvent) => {
     e.preventDefault()
 
-    console.log({ inthefunction: signupHandlers })
     const form = e.currentTarget as HTMLFormElement
     const formData = new FormData(form)
     const username = formData.get("username") as string
     const password = formData.get("password") as string
 
-    signupHandlers.mutate(
+    signupHandlers().mutate(
       { username, password },
       {
         onSuccess: (data) => {
@@ -58,11 +57,11 @@ export const Signup = () => {
             <Typography align="center" variant="h3">
               Sign Up
             </Typography>
-            {signupHandlers.isError && (
+            <Show when={signupHandlers().error}>
               <Typography variant="subtitle2" color="error">
-                {signupHandlers.error.message}
+                {signupHandlers().error?.message}
               </Typography>
-            )}
+            </Show>
             <TextField
               label="Username"
               placeholder="Enter username"
@@ -88,7 +87,7 @@ export const Signup = () => {
               type="submit"
               style={btnstyle}
               fullWidth
-              disabled={signupHandlers.isPending}
+              disabled={signupHandlers().isLoading}
             >
               Register
             </Button>
