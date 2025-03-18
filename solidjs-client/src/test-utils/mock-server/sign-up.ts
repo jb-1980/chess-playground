@@ -22,6 +22,6 @@ export const signupHandler = <
 >(
   response: T,
 ) =>
-  http.post<{}, T>(`${API_ROOT}/register-user`, async () => {
+  http.post<{}, T>(`${API_ROOT}/commands/register-user`, async () => {
     return HttpResponse.json(response.data, { status: response.status })
   })

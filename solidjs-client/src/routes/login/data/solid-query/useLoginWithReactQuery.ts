@@ -11,7 +11,7 @@ export const useLoginWithReactQuery = () => {
     { username: string; password: string }
   >(() => ({
     mutationFn: (data) =>
-      fetch(`${import.meta.env.VITE_API_URL}/login`, {
+      fetch(`${import.meta.env.VITE_API_URL}/commands/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

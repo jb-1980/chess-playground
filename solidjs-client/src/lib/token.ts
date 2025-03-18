@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode"
 import { User } from "../types/user"
 
-type JWT = User & {
+export type JWT = User & {
   sub: string
   iat: number
   exp: number

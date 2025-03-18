@@ -1,5 +1,5 @@
 import { Button, Stack, Typography } from "@suid/material"
-import { useUserContext } from "../Root/context"
+import { useUserContext } from "../context"
 import { A } from "@solidjs/router"
 
 const Home = () => {

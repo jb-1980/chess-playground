@@ -22,6 +22,6 @@ export const loginHandler = <
 >(
   response: T,
 ) =>
-  http.post<{}, T>(`${API_ROOT}/login`, async () => {
+  http.post<{}, T>(`${API_ROOT}/commands/login`, async () => {
     return HttpResponse.json(response.data, { status: response.status })
   })

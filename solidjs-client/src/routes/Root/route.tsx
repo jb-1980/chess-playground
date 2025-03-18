@@ -1,4 +1,4 @@
-import { NoMatch } from "./NoMatch"
+import { NoMatch } from "./components/NoMatch"
 import { RouteConfigFunction } from "../types"
 import { lazy } from "solid-js"
 
@@ -10,7 +10,7 @@ export const RootRoute: RouteConfigFunction = (childRoutes) => {
       ...(childRoutes ?? []),
       {
         path: "/", // This is the default route
-        component: lazy(() => import("./Home")),
+        component: lazy(() => import("./components/Home")),
       },
       {
         path: "*",

@@ -33,7 +33,7 @@ export const useSignup = (): (() => {
     { username: string; password: string }
   >(() => ({
     mutationFn: (data) =>
-      fetch(`${import.meta.env.VITE_API_URL}/register-user`, {
+      fetch(`${import.meta.env.VITE_API_URL}/commands/register-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

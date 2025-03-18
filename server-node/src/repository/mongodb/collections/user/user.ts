@@ -7,7 +7,7 @@ import { DBUserLoader, DBUserMutator } from "../../../loaders"
 import { User } from "../../../../domain/user"
 
 export type UserDocument = {
-  _id: ObjectId
+  _id: ObjectId | string
   username: string
   passwordHash: string
   rating: number
@@ -23,7 +23,7 @@ export const Users = MongoCollection<UserDocument>("users")
 export const makeUserDto = (
   user: Omit<UserDocument, "passwordHash">,
 ): User => ({
-  id: user._id.toHexString(),
+  id: typeof user._id === "string" ? user._id : user._id.toHexString(),
   username: user.username,
   rating: user.rating,
   avatarUrl: user.avatarUrl,
@@ -74,12 +74,17 @@ export class MongoDBUserMutator implements DBUserMutator {
   ): AsyncResult<User, "DB_ERR_FAILED_TO_CREATE_USER"> {
     try {
       const { insertedId } = await Users.insertOne({
+        _id: new ObjectId().toHexString(),
         username,
         passwordHash,
         rating: 1200,
+        avatarUrl: "",
       })
       return Result.Success({
-        id: insertedId.toHexString(),
+        id:
+          insertedId instanceof ObjectId
+            ? insertedId.toHexString()
+            : insertedId,
         username,
         rating: 1200,
       })

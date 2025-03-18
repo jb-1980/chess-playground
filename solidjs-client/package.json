@@ -31,10 +31,13 @@
     "ts-pattern": "^5.6.2"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/user-event": "^14.6.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "jsdom": "^26.0.0",
+    "jsonwebtoken": "^9.0.2",
     "msw": "^2.7.3",
     "typescript": "~5.6.2",
     "vite": "^6.0.5",

@@ -1,4 +1,4 @@
-import { NoMatch } from "../Root/NoMatch"
+import { NoMatch } from "../Root/components/NoMatch"
 import { RouteConfigFunction } from "../types"
 import { Signup } from "./Signup"
 
