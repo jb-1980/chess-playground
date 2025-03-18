@@ -1,11 +1,4 @@
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  JSX,
-  Match,
-  Switch,
-} from "solid-js"
+import { createContext, createMemo, JSX, Match, Switch } from "solid-js"
 import { decodeToken, retrieveToken } from "../../../lib/token"
 
 import { User } from "../../../types/user"
