@@ -1,4 +1,4 @@
-import { renderHook } from "@solidjs/testing-library"
+import { waitFor } from "@solidjs/testing-library"
 import {
   describe,
   it,
@@ -8,16 +8,10 @@ import {
   afterAll,
   afterEach,
 } from "vitest"
-import { useSignup, SignupError } from "./useSignup"
-import { DatasourceProvider } from "../../../datasources/datasource-provider"
-
-import { ParentComponent } from "solid-js"
+import { createSignup, SignupError } from "./createSignup"
 import { mockServer } from "../../../test-utils/mock-server/server"
 import { signupHandler } from "../../../test-utils/mock-server/sign-up"
-
-const wrapper: ParentComponent = (props) => (
-  <DatasourceProvider>{props.children}</DatasourceProvider>
-)
+import { renderApiHook } from "../../../test-utils/WrapApiHook"
 
 describe("useSignup", () => {
   beforeAll(async () => {
@@ -43,7 +37,7 @@ describe("useSignup", () => {
         status: 200,
       }),
     )
-    const { result } = renderHook(() => useSignup(), { wrapper })
+    const { result } = renderApiHook(createSignup)
     const onSuccess = vi.fn(({ token: successToken }) => successToken)
 
     // act
@@ -77,29 +71,25 @@ describe("useSignup", () => {
         status: 409,
       }),
     )
-    const { result } = renderHook(() => useSignup(), { wrapper })
+    const { result } = renderApiHook(createSignup)
     const onSuccess = vi.fn()
     // act
-    await new Promise<void>((resolve) =>
-      result().mutate(
-        { username: "username", password: "password" },
-        {
-          onSuccess: (data) => {
-            onSuccess(data)
-            resolve()
-          },
-          onError: () => {
-            resolve()
-          },
+    result().mutate(
+      { username: "username", password: "password" },
+      {
+        onSuccess: (data) => {
+          onSuccess(data)
         },
-      ),
+      },
     )
 
     // assert
-    expect(onSuccess).not.toHaveBeenCalled()
-    expect(result().data).toBeUndefined()
-    expect(result().isLoading).toBe(false)
-    expect(result().error?.message).toBe(SignupError.IncorrectUsername)
+    await waitFor(() => {
+      expect(onSuccess).not.toHaveBeenCalled()
+      expect(result().data).toBeUndefined()
+      expect(result().isLoading).toBe(false)
+      expect(result().error).toBe(SignupError.IncorrectUsername)
+    })
   })
 
   it("should handle unknown server error", async () => {
@@ -112,28 +102,25 @@ describe("useSignup", () => {
         status: 500,
       }),
     )
-    const { result } = renderHook(() => useSignup(), { wrapper })
+    const { result } = renderApiHook(createSignup)
     const onSuccess = vi.fn()
     // act
-    await new Promise<void>((resolve) =>
-      result().mutate(
-        { username: "username", password: "password" },
-        {
-          onSuccess: (data) => {
-            onSuccess(data)
-            resolve()
-          },
-          onError: () => {
-            resolve()
-          },
+
+    result().mutate(
+      { username: "username", password: "password" },
+      {
+        onSuccess: (data) => {
+          onSuccess(data)
         },
-      ),
+      },
     )
 
     // assert
-    expect(onSuccess).not.toHaveBeenCalled()
-    expect(result().data).toBeUndefined()
-    expect(result().isLoading).toBe(false)
-    expect(result().error?.message).toBe(SignupError.ServerError)
+    await waitFor(() => {
+      expect(onSuccess).not.toHaveBeenCalled()
+      expect(result().data).toBeUndefined()
+      expect(result().isLoading).toBe(false)
+      expect(result().error).toBe(SignupError.ServerError)
+    })
   })
 })

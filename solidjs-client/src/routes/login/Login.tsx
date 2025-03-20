@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@suid/material"
 import { storeToken } from "../../lib/token"
-import { useHandleLogin } from "./data/useHandleLogin"
+import { createHandleLogin } from "./data/createHandleLogin"
 import { useNavigate } from "@solidjs/router"
 
 export const Login = () => {
@@ -18,7 +18,7 @@ export const Login = () => {
   }
   const btnstyle = { margin: "8px 0" }
 
-  const loginHandlers = useHandleLogin()
+  const loginHandlers = createHandleLogin()
 
   const onSubmit = (e: SubmitEvent) => {
     e.preventDefault()

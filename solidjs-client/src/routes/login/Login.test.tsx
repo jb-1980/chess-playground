@@ -8,11 +8,11 @@ const mockLoginMutation = vi.hoisted(() =>
     cb("testtoken")
   }),
 )
-vi.mock(import("./data/useHandleLogin"), async (importOriginal) => {
+vi.mock(import("./data/createHandleLogin"), async (importOriginal) => {
   const original = await importOriginal()
   return {
     ...original,
-    useHandleLogin: () => () => ({
+    createHandleLogin: () => () => ({
       data: null,
       mutate: mockLoginMutation,
       isLoading: false,

@@ -1,4 +1,4 @@
-import { useLoginWithReactQuery } from "./solid-query/useLoginWithReactQuery"
+import { createApiMutation } from "../../../lib/api-handlers"
 
 export enum LoginError {
   INCORRECT_USERNAME_OR_PASSWORD = "Incorrect username or password",
@@ -9,21 +9,26 @@ type MutationFn = (
   username: string,
   password: string,
   onSuccess: (data: string) => void,
-) => Promise<void>
+) => void
 
-export const useHandleLogin = (): (() => {
+type LoginHandler = () => {
   mutate: MutationFn
   data: string | undefined | null
   isLoading: boolean
   error: LoginError | undefined
-}) => {
-  const mutation = useLoginWithReactQuery()
-  const mutate = async (
+}
+
+export const createHandleLogin = (): LoginHandler => {
+  const mutation = createApiMutation<
+    { username: string; password: string },
+    { token: string }
+  >("/commands/login")
+  const mutate = (
     username: string,
     password: string,
     onSuccess: (data: string) => void,
   ) => {
-    await mutation.mutateAsync(
+    mutation.mutate(
       { username, password },
       {
         onSuccess: (data) => {
@@ -38,7 +43,7 @@ export const useHandleLogin = (): (() => {
     data: mutation.error ? null : mutation.data?.token,
     isLoading: mutation.isPending,
     error: mutation.error
-      ? mutation.error.message === "Invalid credentials"
+      ? mutation.error.status === 401
         ? LoginError.INCORRECT_USERNAME_OR_PASSWORD
         : LoginError.UNKNOWN_SERVER_ERROR
       : undefined,

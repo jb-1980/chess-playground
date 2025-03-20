@@ -1,6 +1,6 @@
 import { useNavigate } from "@solidjs/router"
 import { storeToken } from "../../lib/token"
-import { useSignup } from "./data/useSignup"
+import { createSignup } from "./data/createSignup"
 import {
   Button,
   Link,
@@ -20,7 +20,7 @@ export const Signup = () => {
   }
   const btnstyle = { margin: "8px 0" }
 
-  const signupHandlers = useSignup()
+  const signupHandlers = createSignup()
 
   const onSubmit = (e: SubmitEvent) => {
     e.preventDefault()
@@ -59,7 +59,7 @@ export const Signup = () => {
             </Typography>
             <Show when={signupHandlers().error}>
               <Typography variant="subtitle2" color="error">
-                {signupHandlers().error?.message}
+                {signupHandlers().error}
               </Typography>
             </Show>
             <TextField

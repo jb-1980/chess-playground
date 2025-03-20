@@ -1,6 +1,4 @@
-import { http, HttpResponse } from "msw"
-
-const API_ROOT = import.meta.env.VITE_API_URL
+import { testHandler } from "./server"
 
 type SuccessResponse = {
   data: { token: string }
@@ -17,11 +15,6 @@ type ServerErrorResponse = {
   status: 500
 }
 
-export const signupHandler = <
-  T extends SuccessResponse | UnauthorizedResponse | ServerErrorResponse,
->(
-  response: T,
-) =>
-  http.post<{}, T>(`${API_ROOT}/commands/register-user`, async () => {
-    return HttpResponse.json(response.data, { status: response.status })
-  })
+export const signupHandler = (
+  response: SuccessResponse | UnauthorizedResponse | ServerErrorResponse,
+) => testHandler("/commands/register-user", response)

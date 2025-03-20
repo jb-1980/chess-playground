@@ -26,16 +26,17 @@ describe("Signup Component", () => {
         options.onSuccess?.({ token: "testtoken" })
       },
     )
-    vi.spyOn(await import("./data/useSignup"), "useSignup").mockImplementation(
-      () => () => {
-        return {
-          data: undefined,
-          mutate: mockRegisterMutation,
-          isLoading: false,
-          error: null,
-        }
-      },
-    )
+    vi.spyOn(
+      await import("./data/createSignup"),
+      "createSignup",
+    ).mockImplementation(() => () => {
+      return {
+        data: undefined,
+        mutate: mockRegisterMutation,
+        isLoading: false,
+        error: null,
+      }
+    })
     const user = userEvent.setup()
     render(() => <Signup />)
 

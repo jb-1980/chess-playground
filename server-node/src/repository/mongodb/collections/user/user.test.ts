@@ -26,13 +26,11 @@ describe("Repository::MongoDB: User", () => {
       const user = await seedUser()
 
       // act
-      const result = await userLoader.batchUsersById.load(
-        user._id.toHexString(),
-      )
+      const result = await userLoader.batchUsersById.load(user._id.toString())
 
       // assert
       expect(result).toContainAllEntries([
-        ["id", user._id.toHexString()],
+        ["id", user._id.toString()],
         ["username", user.username],
         ["rating", user.rating],
         ["avatarUrl", user.avatarUrl],
@@ -58,7 +56,7 @@ describe("Repository::MongoDB: User", () => {
       const result = await userLoader.batchUsersByUsername.load(user.username)
       // assert
       expect(result).toContainAllEntries([
-        ["id", user._id.toHexString()],
+        ["id", user._id.toString()],
         ["username", user.username],
         ["rating", user.rating],
         ["avatarUrl", user.avatarUrl],

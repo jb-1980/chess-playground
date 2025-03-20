@@ -2,8 +2,8 @@ import { GameContextProvider } from "./context/context"
 import { Board } from "./components/board"
 import {
   GetGameError,
-  useGetGame,
-} from "../_games._$gameId.review/data/useGetGame"
+  createGetGame,
+} from "../_games._$gameId.review/data/createGetGame"
 import { Loader } from "../../components/Loader"
 import { match } from "ts-pattern"
 import { useParams } from "@solidjs/router"
@@ -12,7 +12,7 @@ import { Box } from "@suid/material"
 
 const Game = () => {
   const { gameId } = useParams()
-  const gameResult = useGetGame(gameId!)
+  const gameResult = createGetGame(gameId!)
   return (
     <Switch>
       <Match when={gameResult().isLoading}>

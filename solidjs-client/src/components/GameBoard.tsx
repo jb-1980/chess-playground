@@ -17,7 +17,7 @@ interface ChessgroundProps {
   whitePlayer: User | null
   blackPlayer: User | null
   myColor: Color
-  onPieceDrop: (orig: Key, dest: Key, capturedPiece?: Piece) => void
+  onPieceDrop?: (orig: Key, dest: Key, capturedPiece?: Piece) => void
 }
 
 export const GameBoard = (props: ChessgroundProps) => {

@@ -8,7 +8,7 @@ import {
   ResponseMessageType,
   useObserveGameSocket,
 } from "../data/websocket/useObserveGameSocket"
-import { createMove } from "../data/solid-query/createMove"
+import { createMove } from "../data/createMove"
 import { Game } from "../../../types/game"
 import { createContext, createEffect, JSXElement } from "solid-js"
 import { useParams } from "@solidjs/router"

@@ -56,7 +56,6 @@ export const authenticationMiddleware = (
     .with(Routes.RegisterUserCommand, () => next())
     .with(Routes.LoginCommand, () => next())
     .otherwise(() => {
-      console.log(req.path, "path", Routes)
       const tokenHeader = req.headers.authorization
       if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
         return res.sendStatus(401)
