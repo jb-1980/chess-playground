@@ -1,9 +1,12 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
-import { mockServer, testHandler } from "../test-utils/mock-server/server"
 import { faker } from "@faker-js/faker"
-import { renderApiHook } from "../test-utils/WrapApiHook"
 import { createApiQuery, isApiError } from "./api-handlers"
-import { waitFor } from "@solidjs/testing-library"
+import {
+  mockServer,
+  renderApiHook,
+  testHandler,
+  waitFor,
+} from "@test-utils/index"
 
 describe("api-handlers", () => {
   beforeAll(async () => {

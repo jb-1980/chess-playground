@@ -20,8 +20,7 @@ vi.mock(import("./data/createHandleLogin"), async (importOriginal) => {
     }),
   }
 })
-import { render, screen } from "@solidjs/testing-library"
-import userEvent from "@testing-library/user-event"
+import { render, userEvent, screen } from "@test-utils/index"
 import { Login } from "./Login"
 import { describe, it, expect, vi } from "vitest"
 

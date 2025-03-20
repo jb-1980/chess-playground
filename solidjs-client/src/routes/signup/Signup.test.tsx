@@ -1,5 +1,4 @@
-import { render, screen } from "@solidjs/testing-library"
-import userEvent from "@testing-library/user-event"
+import { render, userEvent, screen } from "@test-utils/index"
 import { Signup } from "./Signup"
 import { describe, it, expect, vi } from "vitest"
 

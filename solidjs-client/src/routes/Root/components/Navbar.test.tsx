@@ -1,11 +1,16 @@
 import { describe, expect, it, vi } from "vitest"
-import { getMockUser } from "../../../test-utils/mock-user"
-import { getMockToken } from "../../../test-utils/mock-auth-token"
-import { render, screen, waitFor } from "@solidjs/testing-library"
+
 import { createMemoryHistory, MemoryRouter, Route } from "@solidjs/router"
 import { UserProvider } from "../context"
 import { Navbar } from "./Navbar"
-import userEvent from "@testing-library/user-event"
+import {
+  getMockToken,
+  getMockUser,
+  render,
+  screen,
+  userEvent,
+  waitFor,
+} from "@test-utils/index"
 
 describe("Navbar", () => {
   it("renders the Navbar component", async () => {

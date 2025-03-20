@@ -1,11 +1,13 @@
 import { waitFor } from "@solidjs/testing-library"
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest"
-import { mockServer } from "../../../test-utils/mock-server/server"
-import { gameHandlers } from "../../../test-utils/mock-server/game"
-import { getMockGame } from "../../../test-utils/mock-game"
 import { createGetGame, GetGameError } from "./createGetGame"
 import { faker } from "@faker-js/faker"
-import { renderApiHook } from "../../../test-utils/WrapApiHook"
+import {
+  gameHandlers,
+  getMockGame,
+  mockServer,
+  renderApiHook,
+} from "@test-utils/index"
 
 describe("createGetGame", () => {
   beforeAll(async () => {

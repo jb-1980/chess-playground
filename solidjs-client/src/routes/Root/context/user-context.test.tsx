@@ -1,10 +1,14 @@
 import { createMemoryHistory, MemoryRouter, Route } from "@solidjs/router"
 import { describe, expect, it, vi } from "vitest"
 import { UserProvider } from "./user-context"
-import { render, waitFor, screen } from "@solidjs/testing-library"
-import { getMockToken } from "../../../test-utils/mock-auth-token"
 import { useUserContext } from "./useUserContext"
-import { getMockUser } from "../../../test-utils/mock-user"
+import {
+  screen,
+  getMockToken,
+  getMockUser,
+  render,
+  waitFor,
+} from "@test-utils/index"
 
 describe("UserContext", () => {
   it("should redirect to /login when no user token is found", async () => {

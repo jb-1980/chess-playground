@@ -1,4 +1,3 @@
-import { waitFor } from "@solidjs/testing-library"
 import {
   describe,
   it,
@@ -9,9 +8,9 @@ import {
   afterEach,
 } from "vitest"
 import { createHandleLogin, LoginError } from "./createHandleLogin"
-import { mockServer } from "../../../test-utils/mock-server/server"
-import { loginHandler } from "../../../test-utils/mock-server/login"
-import { renderApiHook } from "../../../test-utils/WrapApiHook"
+import { loginHandler, mockServer } from "@test-utils/mock-server"
+import { renderApiHook } from "@test-utils/WrapApiHook"
+import { waitFor } from "@test-utils/index"
 
 describe("createHandleLogin", () => {
   beforeAll(async () => {

@@ -1,10 +1,8 @@
-import { render, screen } from "@solidjs/testing-library"
 import { describe, expect, it, vi } from "vitest"
 import Home from "./Home"
 import { UserProvider } from "../context"
-import { getMockUser } from "../../../test-utils/mock-user"
-import { getMockToken } from "../../../test-utils/mock-auth-token"
 import { MemoryRouter, Route } from "@solidjs/router"
+import { getMockToken, getMockUser, render, screen } from "@test-utils/index"
 
 describe("Home", () => {
   it("should render the Home component", async () => {
