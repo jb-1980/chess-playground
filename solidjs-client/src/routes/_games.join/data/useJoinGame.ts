@@ -24,7 +24,6 @@ export const useJoinGame = (
 } => {
   const lastJsonMessage = useJoinGameSocket(playerId)
 
-  console.log("lastJsonMessage", lastJsonMessage())
   const msg = match(lastJsonMessage())
     .with({ type: ResponseMessageType.ERROR }, () => null)
     .with({ type: ResponseMessageType.JOIN_GAME_RESPONSE }, ({ payload }) => ({

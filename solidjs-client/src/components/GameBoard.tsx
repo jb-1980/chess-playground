@@ -45,7 +45,6 @@ export const GameBoard = (props: ChessgroundProps) => {
     on(
       () => props.fen,
       (fen) => {
-        console.log("setting fen", fen)
         api?.set({ fen })
       },
       { defer: true },

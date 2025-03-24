@@ -37,14 +37,11 @@ export const GameContextProvider = (props: {
     to: string
     promotion?: string
   }): boolean => {
-    console.log({ gameState: gameState() })
     if (gameState().turn !== gameState().myColor) {
       return false
     }
     try {
       // will throw an "Illegal move" error if the move is invalid
-      console.log({ moves: chess.moves() })
-      console.log({ chess })
       const _move = chess.move(move)
       const _status = getStatus(chess)
       dispatch({

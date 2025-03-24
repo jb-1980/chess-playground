@@ -38,7 +38,6 @@ export const useJoinGameSocket = (playerId: string) => {
     }),
   )
   ws.addEventListener("message", (event) => {
-    console.log("event.data", event.data)
     setLastJsonMessage(JSON.parse(event.data))
   })
 

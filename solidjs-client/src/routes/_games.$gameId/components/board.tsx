@@ -9,14 +9,12 @@ export const Board = () => {
   const gameContext = useGameContext()
 
   function onDrop(orig: Key, dest: Key) {
-    console.log("onDrop", orig, dest)
     const move = {
       from: orig,
       to: dest,
       // promotion: "Q",
     }
     const result = gameContext().onMove(move)
-    console.log("result", result)
     return result !== null
   }
 
