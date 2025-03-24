@@ -1,4 +1,4 @@
-import { createEffect, createSignal } from "solid-js"
+import { createSignal } from "solid-js"
 import { retrieveToken } from "../../../../lib/token"
 import { createWS } from "@solid-primitives/websocket"
 export enum ResponseMessageType {
