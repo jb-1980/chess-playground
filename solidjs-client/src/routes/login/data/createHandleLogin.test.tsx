@@ -8,9 +8,8 @@ import {
   afterEach,
 } from "vitest"
 import { createHandleLogin, LoginError } from "./createHandleLogin"
-import { loginHandler, mockServer } from "@test-utils/mock-server"
-import { renderApiHook } from "@test-utils/WrapApiHook"
-import { waitFor } from "@test-utils/index"
+import { loginHandler, mockServer, renderApiHook } from "@test-utils"
+import { waitFor } from "@test-utils"
 
 describe("createHandleLogin", () => {
   beforeAll(async () => {

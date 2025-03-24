@@ -7,7 +7,7 @@ import {
   getMockGame,
   mockServer,
   renderApiHook,
-} from "@test-utils/index"
+} from "@test-utils"
 
 describe("createGetGame", () => {
   beforeAll(async () => {

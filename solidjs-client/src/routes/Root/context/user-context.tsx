@@ -6,7 +6,7 @@ import { Navigate } from "@solidjs/router"
 
 export const UserContext = createContext<User | undefined>(undefined)
 
-export const UserProvider = (props: { children: JSX.Element }) => {
+export const UserProvider = (props: { children?: JSX.Element }) => {
   const userMemo = createMemo(() => {
     const token = retrieveToken()
     if (!token) {

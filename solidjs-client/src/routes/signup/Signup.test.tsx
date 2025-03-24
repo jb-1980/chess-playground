@@ -1,4 +1,4 @@
-import { render, userEvent, screen } from "@test-utils/index"
+import { render, userEvent, screen } from "@test-utils"
 import { Signup } from "./Signup"
 import { describe, it, expect, vi } from "vitest"
 

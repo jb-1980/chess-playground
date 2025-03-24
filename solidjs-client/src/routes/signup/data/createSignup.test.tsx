@@ -8,12 +8,7 @@ import {
   afterEach,
 } from "vitest"
 import { createSignup, SignupError } from "./createSignup"
-import {
-  mockServer,
-  renderApiHook,
-  signupHandler,
-  waitFor,
-} from "@test-utils/index"
+import { mockServer, renderApiHook, signupHandler, waitFor } from "@test-utils"
 
 describe("useSignup", () => {
   beforeAll(async () => {

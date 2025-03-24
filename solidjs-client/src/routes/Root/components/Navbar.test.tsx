@@ -1,38 +1,28 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { createMemoryHistory, MemoryRouter, Route } from "@solidjs/router"
-import { UserProvider } from "../context"
 import { Navbar } from "./Navbar"
 import {
   getMockToken,
   getMockUser,
-  render,
+  renderWithMemoryRouter,
   screen,
   userEvent,
   waitFor,
-} from "@test-utils/index"
+} from "@test-utils"
 
 describe("Navbar", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
   it("renders the Navbar component", async () => {
     // arrange
     const user = getMockUser()
-    vi.spyOn(
-      await import("../../../lib/token"),
-      "retrieveToken",
-    ).mockReturnValue(getMockToken(user))
     // act
-    render(() => (
-      <MemoryRouter>
-        <Route
-          path="/"
-          component={() => (
-            <UserProvider>
-              <Navbar />
-            </UserProvider>
-          )}
-        />
-      </MemoryRouter>
-    ))
+    renderWithMemoryRouter({
+      userProvider: true,
+      mockRetrieveToken: vi.fn().mockReturnValue(getMockToken(user)),
+      routes: { path: "/", component: Navbar },
+    })
 
     const homeButton = screen.getByRole("button", { name: "Home" })
     const gamesButton = screen.getByRole("button", { name: "Games" })
@@ -47,26 +37,12 @@ describe("Navbar", () => {
   it("navigates to the home page when the home button is clicked", async () => {
     // arrange
     const user = userEvent.setup()
-    vi.spyOn(
-      await import("../../../lib/token"),
-      "retrieveToken",
-    ).mockReturnValue(getMockToken())
-
-    const history = createMemoryHistory()
-    history.set({ value: "/games" })
-
-    render(() => (
-      <MemoryRouter history={history}>
-        <Route
-          path="*"
-          component={() => (
-            <UserProvider>
-              <Navbar />
-            </UserProvider>
-          )}
-        />
-      </MemoryRouter>
-    ))
+    const { history } = renderWithMemoryRouter({
+      initialPath: "/games",
+      userProvider: true,
+      mockRetrieveToken: vi.fn().mockReturnValue(getMockToken()),
+      routes: { path: "*", component: Navbar },
+    })
 
     const homeButton = screen.getByRole("button", { name: "Home" })
     const startingRoute = history.get()
@@ -84,26 +60,12 @@ describe("Navbar", () => {
   it("navigates to the games page when the games button is clicked", async () => {
     // arrange
     const user = userEvent.setup()
-    vi.spyOn(
-      await import("../../../lib/token"),
-      "retrieveToken",
-    ).mockReturnValue(getMockToken())
 
-    const history = createMemoryHistory()
-    history.set({ value: "/" })
-
-    render(() => (
-      <MemoryRouter history={history}>
-        <Route
-          path="*"
-          component={() => (
-            <UserProvider>
-              <Navbar />
-            </UserProvider>
-          )}
-        />
-      </MemoryRouter>
-    ))
+    const { history } = renderWithMemoryRouter({
+      userProvider: true,
+      mockRetrieveToken: vi.fn().mockReturnValue(getMockToken()),
+      routes: { path: "*", component: Navbar },
+    })
 
     const gamesButton = screen.getByRole("button", { name: "Games" })
     const startingRoute = history.get()
@@ -122,26 +84,12 @@ describe("Navbar", () => {
     // arrange
     const userActions = userEvent.setup()
     const user = getMockUser()
-    vi.spyOn(
-      await import("../../../lib/token"),
-      "retrieveToken",
-    ).mockReturnValue(getMockToken(user))
 
-    const history = createMemoryHistory()
-    history.set({ value: "/" })
-
-    render(() => (
-      <MemoryRouter history={history}>
-        <Route
-          path="*"
-          component={() => (
-            <UserProvider>
-              <Navbar />
-            </UserProvider>
-          )}
-        />
-      </MemoryRouter>
-    ))
+    const { history } = renderWithMemoryRouter({
+      userProvider: true,
+      mockRetrieveToken: vi.fn().mockReturnValue(getMockToken(user)),
+      routes: { path: "*", component: Navbar },
+    })
 
     const userButton = screen.getByText(user.username)
     const startingRoute = history.get()
@@ -163,26 +111,12 @@ describe("Navbar", () => {
     // arrange
     const userActions = userEvent.setup()
     const user = getMockUser()
-    vi.spyOn(
-      await import("../../../lib/token"),
-      "retrieveToken",
-    ).mockReturnValue(getMockToken(user))
 
-    const history = createMemoryHistory()
-    history.set({ value: "/" })
-
-    render(() => (
-      <MemoryRouter history={history}>
-        <Route
-          path="*"
-          component={() => (
-            <UserProvider>
-              <Navbar />
-            </UserProvider>
-          )}
-        />
-      </MemoryRouter>
-    ))
+    const { history } = renderWithMemoryRouter({
+      userProvider: true,
+      mockRetrieveToken: vi.fn().mockReturnValue(getMockToken(user)),
+      routes: { path: "*", component: Navbar },
+    })
 
     const userButton = screen.getByText(user.username)
     const startingRoute = history.get()

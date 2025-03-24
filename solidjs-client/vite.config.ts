@@ -11,7 +11,7 @@ const viteConfig = defineViteConfig({
 const vitestConfig = defineVitestConfig({
   resolve: {
     alias: {
-      "@test-utils": path.resolve(__dirname, "./src/test-utils"),
+      "@test-utils": path.resolve(__dirname, "./src/test-utils/index.js"),
     },
   },
   test: {

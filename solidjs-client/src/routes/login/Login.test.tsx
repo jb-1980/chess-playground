@@ -20,7 +20,7 @@ vi.mock(import("./data/createHandleLogin"), async (importOriginal) => {
     }),
   }
 })
-import { render, userEvent, screen } from "@test-utils/index"
+import { render, userEvent, screen } from "@test-utils"
 import { Login } from "./Login"
 import { describe, it, expect, vi } from "vitest"
 

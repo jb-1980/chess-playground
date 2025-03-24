@@ -1,12 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
 import { faker } from "@faker-js/faker"
 import { createApiQuery, isApiError } from "./api-handlers"
-import {
-  mockServer,
-  renderApiHook,
-  testHandler,
-  waitFor,
-} from "@test-utils/index"
+import { mockServer, renderApiHook, testHandler, waitFor } from "@test-utils"
 
 describe("api-handlers", () => {
   beforeAll(async () => {
@@ -51,9 +46,7 @@ describe("api-handlers", () => {
       }
       mockServer.use(testHandler(path, response))
       const { result } = renderApiHook(() =>
-        createApiQuery<null, (typeof response)["data"]>(path, null, {
-          retry: false,
-        }),
+        createApiQuery<null, (typeof response)["data"]>(path),
       )
       await waitFor(
         () => {
