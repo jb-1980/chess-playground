@@ -8,7 +8,7 @@ import {
 export const Game: GameResolvers = {
   /* Implement Game resolver logic here */
 
-  id: async ({ _id }) => _id.toHexString(),
+  id: ({ _id }) => _id.toString(),
   moves: ({ moves }, _arg, _ctx) => {
     /* Game.moves resolver is required because Game.moves and GameMapper.moves are not compatible */
     return moves.map((move) => ({
@@ -27,11 +27,11 @@ export const Game: GameResolvers = {
   },
   blackPlayer: ({ blackPlayer }, _arg, _ctx) => {
     /* Game.blackPlayer resolver is required because Game.blackPlayer and GameMapper.blackPlayer are not compatible */
-    return { ...blackPlayer, id: blackPlayer._id.toHexString() }
+    return { ...blackPlayer, id: blackPlayer._id.toString() }
   },
   whitePlayer: ({ whitePlayer }, _arg, _ctx) => {
     /* Game.whitePlayer resolver is required because Game.whitePlayer and GameMapper.whitePlayer are not compatible */
-    return { ...whitePlayer, id: whitePlayer._id.toHexString() }
+    return { ...whitePlayer, id: whitePlayer._id.toString() }
   },
   date: async ({ createdAt }) => createdAt.toISOString().slice(0, 10),
 }
