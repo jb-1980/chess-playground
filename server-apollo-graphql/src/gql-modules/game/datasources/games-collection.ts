@@ -1,6 +1,11 @@
-import { MongoCollection } from "../../../database/collection"
-import { GameStatus } from "../../types.generated"
-import { GameDocument } from "./data-schema"
+import DataLoader from "dataloader"
+import { MongoCollection, TDocument } from "../../../database/collection"
+import { GameStatus, Move } from "../../types.generated"
+import { GameDocument, GameUserDocument } from "./data-schema"
+import { DBGameLoader, DBGameMutator } from "./types"
+import { WithId } from "mongodb"
+import { UserDocument } from "../../user/datasources"
+import { AsyncResult, Result } from "../../../lib/result"
 
 export const Games = new MongoCollection<GameDocument>("games")
 
@@ -180,3 +185,137 @@ await Games.initialize({
     },
   },
 })
+
+export class MongoDBGameLoader implements DBGameLoader {
+  batchGames = new DataLoader<string, WithId<TDocument<GameDocument>> | null>(
+    async (ids) => {
+      const games = await Games.find({
+        _id: { $in: ids },
+      }).toArray()
+
+      const gamesMap = games.reduce(
+        (map, game) => {
+          map[game._id.toString()] = game
+          return map
+        },
+        {} as Record<string, WithId<TDocument<GameDocument>>>,
+      )
+
+      return ids.map((id) => gamesMap[id] || null)
+    },
+  )
+
+  batchGamesForPlayer = new DataLoader<
+    string,
+    WithId<TDocument<GameDocument>>[]
+  >(async (ids) => {
+    const games = await Games.find({
+      $or: [
+        { "whitePlayer._id": { $in: ids } },
+        { "blackPlayer._id": { $in: ids } },
+      ],
+    }).toArray()
+
+    const gamesMap = games.reduce(
+      (map, game) => {
+        const whitePlayerId = game.whitePlayer._id.toString()
+        const blackPlayerId = game.blackPlayer._id.toString()
+        map[whitePlayerId] = map[whitePlayerId] || []
+        map[blackPlayerId] = map[blackPlayerId] || []
+        map[whitePlayerId].push(game)
+        map[blackPlayerId].push(game)
+        return map
+      },
+      {} as Record<string, WithId<TDocument<GameDocument>>[]>,
+    )
+
+    return ids.map((id) => gamesMap[id] || [])
+  })
+}
+
+const toGameUserFromUserDocument = (user: UserDocument): GameUserDocument => ({
+  _id: user._id,
+  username: user.username,
+  rating: user.rating,
+  avatarUrl: user.avatarUrl ?? "",
+})
+
+export class MongoDBGameMutator implements DBGameMutator {
+  async insertGame(
+    whitePlayer: UserDocument,
+    blackPlayer: UserDocument,
+    outcomes: GameDocument["outcomes"],
+  ): AsyncResult<string, "DB_ERR_FAILED_TO_CREATE_GAME"> {
+    try {
+      const response = await Games.insertOne({
+        whitePlayer: toGameUserFromUserDocument(whitePlayer),
+        blackPlayer: toGameUserFromUserDocument(blackPlayer),
+        moves: [],
+        pgn: "",
+        status: GameStatus.PLAYING,
+        outcome: {
+          winner: null,
+          draw: false,
+        },
+        outcomes,
+      })
+      return Result.Success(response.insertedId.toString())
+    } catch (error) {
+      console.dir(error, { depth: 6 })
+      return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
+    }
+  }
+  async addMoveToGame(args: {
+    gameId: string
+    move: Move
+    status: GameStatus
+    pgn: string
+  }): AsyncResult<boolean, "DB_ERROR_ADDING_MOVE_TO_GAME"> {
+    const { gameId, move, status, pgn } = args
+    try {
+      const { acknowledged } = await Games.updateOne(
+        { _id: gameId },
+        {
+          $push: {
+            moves: {
+              ...move,
+              createdAt: new Date(),
+            },
+          },
+          $set: { status, pgn },
+        },
+        {
+          ignoreUndefined: true,
+        },
+      )
+
+      return Result.Success(acknowledged)
+    } catch (error) {
+      console.dir(error, { depth: 6 })
+      return Result.Fail("DB_ERROR_ADDING_MOVE_TO_GAME", error)
+    }
+  }
+  public async setOutcome(
+    gameId: string,
+    winner: string | null,
+    draw: boolean,
+  ): AsyncResult<boolean, "DB_ERR_SET_OUTCOME"> {
+    try {
+      const { acknowledged } = await Games.updateOne(
+        { _id: gameId },
+        {
+          $set: {
+            outcome: {
+              winner,
+              draw,
+            },
+          },
+        },
+      )
+      return Result.Success(acknowledged)
+    } catch (error) {
+      console.error(error)
+      return Result.Fail("DB_ERR_SET_OUTCOME", error)
+    }
+  }
+}

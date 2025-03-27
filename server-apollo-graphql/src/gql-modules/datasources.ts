@@ -1,5 +1,15 @@
-import { GameLoader, GameMutator } from './game/datasources/dataloader'
-import { UserLoader, UserMutator } from './user/datasources/dataloader'
+import {
+  MongoDBGameLoader,
+  MongoDBGameMutator,
+} from "./game/datasources/games-collection"
+import { GameLoader } from "./game/datasources/loader"
+import { GameMutator } from "./game/datasources/mutator"
+import {
+  UserLoader,
+  UserMutator,
+  MongoDBUserMutator,
+  MongoUserDataLoader,
+} from "./user/datasources"
 
 /** Generates the data sources for the apollo server. DataLoader instances are
  * per-request, so they are not shared between requests. This function ensures
@@ -7,10 +17,13 @@ import { UserLoader, UserMutator } from './user/datasources/dataloader'
  */
 export const generateDataLoaders = () => {
   return {
-    GameLoader: new GameLoader(),
-    GameMutator: new GameMutator(),
-    UserLoader: new UserLoader(),
-    UserMutator: new UserMutator(),
+    GameLoader: new GameLoader(new MongoDBGameLoader()),
+    GameMutator: new GameMutator(new MongoDBGameMutator()),
+    UserLoader: new UserLoader(new MongoUserDataLoader()),
+    UserMutator: new UserMutator(
+      new MongoDBUserMutator(),
+      new MongoUserDataLoader(),
+    ),
   }
 }
 

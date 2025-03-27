@@ -1,3 +1,6 @@
+import { WithId } from "mongodb"
+import { TDocument } from "../../../database/collection"
+
 export type GameUserDocument = {
   _id: string
   username: string
@@ -20,6 +23,21 @@ export type MoveDocument = {
   createdAt: Date
 }
 
+export type GameOutcomes = {
+  whiteWins: {
+    whiteRating: number
+    blackRating: number
+  }
+  blackWins: {
+    whiteRating: number
+    blackRating: number
+  }
+  draw: {
+    whiteRating: number
+    blackRating: number
+  }
+}
+
 export type GameDocument = {
   _id: string
   moves: MoveDocument[]
@@ -31,18 +49,7 @@ export type GameDocument = {
     winner: string | null
     draw: boolean
   }
-  outcomes: {
-    whiteWins: {
-      whiteRating: number
-      blackRating: number
-    }
-    blackWins: {
-      whiteRating: number
-      blackRating: number
-    }
-    draw: {
-      whiteRating: number
-      blackRating: number
-    }
-  }
+  outcomes: GameOutcomes
 }
+
+export type MongoGameDocument = WithId<TDocument<GameDocument>>
