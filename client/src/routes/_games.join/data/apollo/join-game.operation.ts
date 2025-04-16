@@ -4,18 +4,18 @@ import { gql } from "@apollo/client"
 import * as Apollo from "@apollo/client"
 const defaultOptions = {} as const
 export type JoinGameSubscriptionVariables = Types.Exact<{
-  playerId: Types.Scalars["ID"]["input"]
+  playerId: Types.Scalars["ObjectID"]["input"]
 }>
 
 export type JoinGameSubscription = {
   __typename: "Subscription"
   joinGame:
     | { __typename: "JoinGameErrorMsg"; message: Types.JoinGameError }
-    | { __typename: "JoinGameMsg"; gameId: string }
+    | { __typename: "JoinGameMsg"; gameId: any }
 }
 
 export const JoinGameDocument = gql`
-  subscription JoinGame($playerId: ID!) {
+  subscription JoinGame($playerId: ObjectID!) {
     joinGame(playerId: $playerId) {
       ... on JoinGameMsg {
         gameId

@@ -1,4 +1,5 @@
 scalar LocalDate
+scalar ObjectID
 
 interface Error {
   message: String!

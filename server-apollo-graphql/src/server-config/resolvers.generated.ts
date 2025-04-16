@@ -8,6 +8,8 @@ import { move as Mutation_move } from "./../gql-modules/game/resolvers/Mutation/
 import { register as Mutation_register } from "./../gql-modules/user/resolvers/Mutation/register"
 import { joinGame as Subscription_joinGame } from "./../gql-modules/game/resolvers/Subscription/joinGame"
 import { observeGame as Subscription_observeGame } from "./../gql-modules/game/resolvers/Subscription/observeGame"
+import { CreateGameErrorResult } from "./../gql-modules/game/resolvers/CreateGameErrorResult"
+import { CreateGameSuccessResult } from "./../gql-modules/game/resolvers/CreateGameSuccessResult"
 import { Game } from "./../gql-modules/game/resolvers/Game"
 import { GameUser } from "./../gql-modules/game/resolvers/GameUser"
 import { GetGameError } from "./../gql-modules/game/resolvers/GetGameError"
@@ -24,7 +26,7 @@ import { ObserveGameMsg } from "./../gql-modules/game/resolvers/ObserveGameMsg"
 import { RegisterError } from "./../gql-modules/user/resolvers/RegisterError"
 import { RegisterSuccess } from "./../gql-modules/user/resolvers/RegisterSuccess"
 import { User } from "./../gql-modules/user/resolvers/User"
-import { LocalDateResolver } from "graphql-scalars"
+import { LocalDateResolver, ObjectIDResolver } from "graphql-scalars"
 export const resolvers: Resolvers = {
   Query: { game: Query_game, gamesForPlayerId: Query_gamesForPlayerId },
   Mutation: {
@@ -37,6 +39,8 @@ export const resolvers: Resolvers = {
     joinGame: Subscription_joinGame,
     observeGame: Subscription_observeGame,
   },
+  CreateGameErrorResult: CreateGameErrorResult,
+  CreateGameSuccessResult: CreateGameSuccessResult,
   Game: Game,
   GameUser: GameUser,
   GetGameError: GetGameError,
@@ -54,4 +58,5 @@ export const resolvers: Resolvers = {
   RegisterSuccess: RegisterSuccess,
   User: User,
   LocalDate: LocalDateResolver,
+  ObjectID: ObjectIDResolver,
 }

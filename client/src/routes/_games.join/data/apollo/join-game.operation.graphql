@@ -1,4 +1,4 @@
-subscription JoinGame($playerId: ID!) {
+subscription JoinGame($playerId: ObjectID!) {
   joinGame(playerId: $playerId) {
     ... on JoinGameMsg {
       gameId

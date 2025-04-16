@@ -91,6 +91,7 @@ export class UserMutator {
         username,
         passwordHash,
         rating: 1200,
+        avatarUrl: "",
       })
       return Result.Success({
         _id: insertedId,

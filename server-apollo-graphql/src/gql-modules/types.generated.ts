@@ -35,12 +35,13 @@ export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
 }
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string | number }
+  ID: { input: string; output: string }
   String: { input: string; output: string }
   Boolean: { input: boolean; output: boolean }
   Int: { input: number; output: number }
   Float: { input: number; output: number }
   LocalDate: { input: string; output: string }
+  ObjectID: { input: string; output: string }
 }
 
 export enum Color {
@@ -48,6 +49,27 @@ export enum Color {
   b = "b",
   /** WHITE */
   w = "w",
+}
+
+export enum CreateGameError {
+  /** 500 error when trying to create a new game in the DB */
+  FAILED_TO_CREATE_GAME = "FAILED_TO_CREATE_GAME",
+  /** Player is already in an active game */
+  PLAYER_IN_ACTIVE_GAME = "PLAYER_IN_ACTIVE_GAME",
+}
+
+export type CreateGameErrorResult = {
+  __typename?: "CreateGameErrorResult"
+  /** Error message */
+  message: CreateGameError
+}
+
+export type CreateGameResult = CreateGameErrorResult | CreateGameSuccessResult
+
+export type CreateGameSuccessResult = {
+  __typename?: "CreateGameSuccessResult"
+  /** Game ID */
+  gameId: Scalars["ObjectID"]["output"]
 }
 
 export type Error = {
@@ -58,7 +80,7 @@ export type Game = {
   __typename?: "Game"
   blackPlayer: GameUser
   date: Scalars["LocalDate"]["output"]
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   moves: Array<Move>
   pgn: Scalars["String"]["output"]
   status: GameStatus
@@ -83,7 +105,7 @@ export enum GameStatus {
 export type GameUser = {
   __typename?: "GameUser"
   avatarUrl?: Maybe<Scalars["String"]["output"]>
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   rating: Scalars["Int"]["output"]
   username: Scalars["String"]["output"]
 }
@@ -131,7 +153,7 @@ export type JoinGameErrorMsg = {
 export type JoinGameMsg = {
   __typename?: "JoinGameMsg"
   /** Game ID */
-  gameId: Scalars["ID"]["output"]
+  gameId: Scalars["ObjectID"]["output"]
 }
 
 export type JoinMsg = JoinGameErrorMsg | JoinGameMsg
@@ -228,14 +250,14 @@ export type MoveSuccessResult = {
 
 export type Mutation = {
   __typename?: "Mutation"
-  createGame?: Maybe<Scalars["ID"]["output"]>
+  createGame: CreateGameResult
   login: LoginResult
-  move?: Maybe<MoveResult>
+  move: MoveResult
   register: RegisterResult
 }
 
 export type MutationcreateGameArgs = {
-  playerId: Scalars["ID"]["input"]
+  playerId: Scalars["ObjectID"]["input"]
 }
 
 export type MutationloginArgs = {
@@ -244,7 +266,7 @@ export type MutationloginArgs = {
 }
 
 export type MutationmoveArgs = {
-  gameId: Scalars["ID"]["input"]
+  gameId: Scalars["ObjectID"]["input"]
   move: MoveInput
 }
 
@@ -281,11 +303,11 @@ export type Query = {
 }
 
 export type QuerygameArgs = {
-  id: Scalars["ID"]["input"]
+  id: Scalars["ObjectID"]["input"]
 }
 
 export type QuerygamesForPlayerIdArgs = {
-  id: Scalars["ID"]["input"]
+  id: Scalars["ObjectID"]["input"]
 }
 
 export type RegisterError = {
@@ -376,29 +398,29 @@ export type Subscription = {
 }
 
 export type SubscriptionjoinGameArgs = {
-  playerId: Scalars["ID"]["input"]
+  playerId: Scalars["ObjectID"]["input"]
 }
 
 export type SubscriptionobserveGameArgs = {
-  gameId: Scalars["ID"]["input"]
+  gameId: Scalars["ObjectID"]["input"]
 }
 
 export type User = {
   __typename?: "User"
   avatarUrl?: Maybe<Scalars["String"]["output"]>
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   rating: Scalars["Float"]["output"]
   username: Scalars["String"]["output"]
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
 
-export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>
-}
-export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
-  | ResolverFn<TResult, TParent, TContext, TArgs>
-  | ResolverWithResolve<TResult, TParent, TContext, TArgs>
+export type Resolver<
+  TResult,
+  TParent = {},
+  TContext = {},
+  TArgs = {},
+> = ResolverFn<TResult, TParent, TContext, TArgs>
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -498,6 +520,11 @@ export type DirectiveResolverFn<
 
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
+  CreateGameResult:
+    | (Omit<CreateGameErrorResult, "message"> & {
+        message: _RefType["CreateGameError"]
+      } & { __typename: "CreateGameErrorResult" })
+    | (CreateGameSuccessResult & { __typename: "CreateGameSuccessResult" })
   GetGameResult:
     | (GameMapper & { __typename: "Game" })
     | (Omit<GetGameError, "message"> & {
@@ -537,10 +564,21 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> =
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Color: ResolverTypeWrapper<"w" | "b">
+  CreateGameError: ResolverTypeWrapper<
+    "FAILED_TO_CREATE_GAME" | "PLAYER_IN_ACTIVE_GAME"
+  >
+  CreateGameErrorResult: ResolverTypeWrapper<
+    Omit<CreateGameErrorResult, "message"> & {
+      message: ResolversTypes["CreateGameError"]
+    }
+  >
+  CreateGameResult: ResolverTypeWrapper<
+    ResolversUnionTypes<ResolversTypes>["CreateGameResult"]
+  >
+  CreateGameSuccessResult: ResolverTypeWrapper<CreateGameSuccessResult>
   Error: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>["Error"]>
   String: ResolverTypeWrapper<Scalars["String"]["output"]>
   Game: ResolverTypeWrapper<GameMapper>
-  ID: ResolverTypeWrapper<Scalars["ID"]["output"]>
   GameStatus: ResolverTypeWrapper<
     | "NOT_STARTED"
     | "JOINING"
@@ -621,6 +659,7 @@ export type ResolversTypes = {
   >
   MoveSuccessResult: ResolverTypeWrapper<MoveSuccessResult>
   Mutation: ResolverTypeWrapper<{}>
+  ObjectID: ResolverTypeWrapper<Scalars["ObjectID"]["output"]>
   ObserveGameMsg: ResolverTypeWrapper<
     Omit<ObserveGameMsg, "game"> & { game: ResolversTypes["Game"] }
   >
@@ -705,10 +744,12 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  CreateGameErrorResult: CreateGameErrorResult
+  CreateGameResult: ResolversUnionTypes<ResolversParentTypes>["CreateGameResult"]
+  CreateGameSuccessResult: CreateGameSuccessResult
   Error: ResolversInterfaceTypes<ResolversParentTypes>["Error"]
   String: Scalars["String"]["output"]
   Game: GameMapper
-  ID: Scalars["ID"]["output"]
   GameUser: GameUser
   Int: Scalars["Int"]["output"]
   GetGameError: GetGameError
@@ -731,6 +772,7 @@ export type ResolversParentTypes = {
   MoveResult: ResolversUnionTypes<ResolversParentTypes>["MoveResult"]
   MoveSuccessResult: MoveSuccessResult
   Mutation: {}
+  ObjectID: Scalars["ObjectID"]["output"]
   ObserveGameMsg: Omit<ObserveGameMsg, "game"> & {
     game: ResolversParentTypes["Game"]
   }
@@ -749,6 +791,41 @@ export type ColorResolvers = EnumResolverSignature<
   ResolversTypes["Color"]
 >
 
+export type CreateGameErrorResolvers = EnumResolverSignature<
+  { FAILED_TO_CREATE_GAME?: any; PLAYER_IN_ACTIVE_GAME?: any },
+  ResolversTypes["CreateGameError"]
+>
+
+export type CreateGameErrorResultResolvers<
+  ContextType = ApolloContextType,
+  ParentType extends
+    ResolversParentTypes["CreateGameErrorResult"] = ResolversParentTypes["CreateGameErrorResult"],
+> = {
+  message?: Resolver<ResolversTypes["CreateGameError"], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type CreateGameResultResolvers<
+  ContextType = ApolloContextType,
+  ParentType extends
+    ResolversParentTypes["CreateGameResult"] = ResolversParentTypes["CreateGameResult"],
+> = {
+  __resolveType?: TypeResolveFn<
+    "CreateGameErrorResult" | "CreateGameSuccessResult",
+    ParentType,
+    ContextType
+  >
+}
+
+export type CreateGameSuccessResultResolvers<
+  ContextType = ApolloContextType,
+  ParentType extends
+    ResolversParentTypes["CreateGameSuccessResult"] = ResolversParentTypes["CreateGameSuccessResult"],
+> = {
+  gameId?: Resolver<ResolversTypes["ObjectID"], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
 export type ErrorResolvers<
   ContextType = ApolloContextType,
   ParentType extends
@@ -765,7 +842,7 @@ export type GameResolvers<
 > = {
   blackPlayer?: Resolver<ResolversTypes["GameUser"], ParentType, ContextType>
   date?: Resolver<ResolversTypes["LocalDate"], ParentType, ContextType>
-  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  id?: Resolver<ResolversTypes["ObjectID"], ParentType, ContextType>
   moves?: Resolver<Array<ResolversTypes["Move"]>, ParentType, ContextType>
   pgn?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   status?: Resolver<ResolversTypes["GameStatus"], ParentType, ContextType>
@@ -797,7 +874,7 @@ export type GameUserResolvers<
     ResolversParentTypes["GameUser"] = ResolversParentTypes["GameUser"],
 > = {
   avatarUrl?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
-  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  id?: Resolver<ResolversTypes["ObjectID"], ParentType, ContextType>
   rating?: Resolver<ResolversTypes["Int"], ParentType, ContextType>
   username?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
@@ -890,7 +967,7 @@ export type JoinGameMsgResolvers<
   ParentType extends
     ResolversParentTypes["JoinGameMsg"] = ResolversParentTypes["JoinGameMsg"],
 > = {
-  gameId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  gameId?: Resolver<ResolversTypes["ObjectID"], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -1007,7 +1084,7 @@ export type MutationResolvers<
     ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
 > = {
   createGame?: Resolver<
-    Maybe<ResolversTypes["ID"]>,
+    ResolversTypes["CreateGameResult"],
     ParentType,
     ContextType,
     RequireFields<MutationcreateGameArgs, "playerId">
@@ -1019,7 +1096,7 @@ export type MutationResolvers<
     RequireFields<MutationloginArgs, "password" | "username">
   >
   move?: Resolver<
-    Maybe<ResolversTypes["MoveResult"]>,
+    ResolversTypes["MoveResult"],
     ParentType,
     ContextType,
     RequireFields<MutationmoveArgs, "gameId" | "move">
@@ -1030,6 +1107,11 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationregisterArgs, "password" | "username">
   >
+}
+
+export interface ObjectIDScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["ObjectID"], any> {
+  name: "ObjectID"
 }
 
 export type ObserveGameMsgResolvers<
@@ -1192,7 +1274,7 @@ export type UserResolvers<
     ResolversParentTypes["User"] = ResolversParentTypes["User"],
 > = {
   avatarUrl?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
-  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  id?: Resolver<ResolversTypes["ObjectID"], ParentType, ContextType>
   rating?: Resolver<ResolversTypes["Float"], ParentType, ContextType>
   username?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
@@ -1200,6 +1282,10 @@ export type UserResolvers<
 
 export type Resolvers<ContextType = ApolloContextType> = {
   Color?: ColorResolvers
+  CreateGameError?: CreateGameErrorResolvers
+  CreateGameErrorResult?: CreateGameErrorResultResolvers<ContextType>
+  CreateGameResult?: CreateGameResultResolvers<ContextType>
+  CreateGameSuccessResult?: CreateGameSuccessResultResolvers<ContextType>
   Error?: ErrorResolvers<ContextType>
   Game?: GameResolvers<ContextType>
   GameStatus?: GameStatusResolvers
@@ -1224,6 +1310,7 @@ export type Resolvers<ContextType = ApolloContextType> = {
   MoveResult?: MoveResultResolvers<ContextType>
   MoveSuccessResult?: MoveSuccessResultResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
+  ObjectID?: GraphQLScalarType
   ObserveGameMsg?: ObserveGameMsgResolvers<ContextType>
   Piece?: PieceResolvers
   Query?: QueryResolvers<ContextType>

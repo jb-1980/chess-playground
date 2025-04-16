@@ -12,7 +12,7 @@ type JoinGameErrorMsg {
 
 type JoinGameMsg {
   "Game ID"
-  gameId: ID!
+  gameId: ObjectID!
 }
 
 type ObserveGameMsg {
@@ -24,7 +24,7 @@ union JoinMsg = JoinGameErrorMsg | JoinGameMsg
 
 extend type Subscription {
   "Get into the queue to join a new game, responds with the game id"
-  joinGame(playerId: ID!): JoinMsg!
+  joinGame(playerId: ObjectID!): JoinMsg!
   "Observe a game"
-  observeGame(gameId: ID!): ObserveGameMsg!
+  observeGame(gameId: ObjectID!): ObserveGameMsg!
 }

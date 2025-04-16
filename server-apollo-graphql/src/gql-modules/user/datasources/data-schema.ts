@@ -1,3 +1,6 @@
+import { WithId } from "mongodb"
+import { TDocument } from "../../../database/collection"
+
 export type UserDocument = {
   _id: string
   username: string
@@ -5,3 +8,5 @@ export type UserDocument = {
   rating: number
   avatarUrl?: string
 }
+
+export type MongoUserDocument = WithId<TDocument<UserDocument>>

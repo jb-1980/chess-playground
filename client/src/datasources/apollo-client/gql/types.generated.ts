@@ -26,6 +26,7 @@ export type Scalars = {
   Int: { input: number; output: number }
   Float: { input: number; output: number }
   LocalDate: { input: string; output: string }
+  ObjectID: { input: any; output: any }
 }
 
 export type Color =
@@ -33,6 +34,26 @@ export type Color =
   | "b"
   /** WHITE */
   | "w"
+
+export type CreateGameError =
+  /** 500 error when trying to create a new game in the DB */
+  | "FAILED_TO_CREATE_GAME"
+  /** Player is already in an active game */
+  | "PLAYER_IN_ACTIVE_GAME"
+
+export type CreateGameErrorResult = {
+  __typename?: "CreateGameErrorResult"
+  /** Error message */
+  message: CreateGameError
+}
+
+export type CreateGameResult = CreateGameErrorResult | CreateGameSuccessResult
+
+export type CreateGameSuccessResult = {
+  __typename?: "CreateGameSuccessResult"
+  /** Game ID */
+  gameId: Scalars["ObjectID"]["output"]
+}
 
 export type Error = {
   message: Scalars["String"]["output"]
@@ -42,7 +63,7 @@ export type Game = {
   __typename?: "Game"
   blackPlayer: GameUser
   date: Scalars["LocalDate"]["output"]
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   moves: Array<Move>
   pgn: Scalars["String"]["output"]
   status: GameStatus
@@ -66,7 +87,7 @@ export type GameStatus =
 export type GameUser = {
   __typename?: "GameUser"
   avatarUrl?: Maybe<Scalars["String"]["output"]>
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   rating: Scalars["Int"]["output"]
   username: Scalars["String"]["output"]
 }
@@ -112,7 +133,7 @@ export type JoinGameErrorMsg = {
 export type JoinGameMsg = {
   __typename?: "JoinGameMsg"
   /** Game ID */
-  gameId: Scalars["ID"]["output"]
+  gameId: Scalars["ObjectID"]["output"]
 }
 
 export type JoinMsg = JoinGameErrorMsg | JoinGameMsg
@@ -208,14 +229,14 @@ export type MoveSuccessResult = {
 
 export type Mutation = {
   __typename?: "Mutation"
-  createGame?: Maybe<Scalars["ID"]["output"]>
+  createGame: CreateGameResult
   login: LoginResult
-  move?: Maybe<MoveResult>
+  move: MoveResult
   register: RegisterResult
 }
 
 export type MutationCreateGameArgs = {
-  playerId: Scalars["ID"]["input"]
+  playerId: Scalars["ObjectID"]["input"]
 }
 
 export type MutationLoginArgs = {
@@ -224,7 +245,7 @@ export type MutationLoginArgs = {
 }
 
 export type MutationMoveArgs = {
-  gameId: Scalars["ID"]["input"]
+  gameId: Scalars["ObjectID"]["input"]
   move: MoveInput
 }
 
@@ -260,11 +281,11 @@ export type Query = {
 }
 
 export type QueryGameArgs = {
-  id: Scalars["ID"]["input"]
+  id: Scalars["ObjectID"]["input"]
 }
 
 export type QueryGamesForPlayerIdArgs = {
-  id: Scalars["ID"]["input"]
+  id: Scalars["ObjectID"]["input"]
 }
 
 export type RegisterError = {
@@ -354,17 +375,17 @@ export type Subscription = {
 }
 
 export type SubscriptionJoinGameArgs = {
-  playerId: Scalars["ID"]["input"]
+  playerId: Scalars["ObjectID"]["input"]
 }
 
 export type SubscriptionObserveGameArgs = {
-  gameId: Scalars["ID"]["input"]
+  gameId: Scalars["ObjectID"]["input"]
 }
 
 export type User = {
   __typename?: "User"
   avatarUrl?: Maybe<Scalars["String"]["output"]>
-  id: Scalars["ID"]["output"]
+  id: Scalars["ObjectID"]["output"]
   rating: Scalars["Float"]["output"]
   username: Scalars["String"]["output"]
 }

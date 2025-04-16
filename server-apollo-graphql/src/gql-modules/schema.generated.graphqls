@@ -10,6 +10,34 @@ enum Color {
   w
 }
 
+enum CreateGameError {
+  """
+  500 error when trying to create a new game in the DB
+  """
+  FAILED_TO_CREATE_GAME
+
+  """
+  Player is already in an active game
+  """
+  PLAYER_IN_ACTIVE_GAME
+}
+
+type CreateGameErrorResult {
+  """
+  Error message
+  """
+  message: CreateGameError!
+}
+
+union CreateGameResult = CreateGameErrorResult | CreateGameSuccessResult
+
+type CreateGameSuccessResult {
+  """
+  Game ID
+  """
+  gameId: ObjectID!
+}
+
 interface Error {
   message: String!
 }
@@ -17,7 +45,7 @@ interface Error {
 type Game {
   blackPlayer: GameUser!
   date: LocalDate!
-  id: ID!
+  id: ObjectID!
   moves: [Move!]!
   pgn: String!
   status: GameStatus!
@@ -41,7 +69,7 @@ enum GameStatus {
 
 type GameUser {
   avatarUrl: String
-  id: ID!
+  id: ObjectID!
   rating: Int!
   username: String!
 }
@@ -91,7 +119,7 @@ type JoinGameMsg {
   """
   Game ID
   """
-  gameId: ID!
+  gameId: ObjectID!
 }
 
 union JoinMsg = JoinGameErrorMsg | JoinGameMsg
@@ -266,11 +294,13 @@ type MoveSuccessResult {
 }
 
 type Mutation {
-  createGame(playerId: ID!): ID
+  createGame(playerId: ObjectID!): CreateGameResult!
   login(password: String!, username: String!): LoginResult!
-  move(gameId: ID!, move: MoveInput!): MoveResult
+  move(gameId: ObjectID!, move: MoveInput!): MoveResult!
   register(password: String!, username: String!): RegisterResult!
 }
+
+scalar ObjectID
 
 type ObserveGameMsg {
   """
@@ -312,8 +342,8 @@ enum Piece {
 }
 
 type Query {
-  game(id: ID!): GetGameResult!
-  gamesForPlayerId(id: ID!): GetGamesForPlayerIdResult!
+  game(id: ObjectID!): GetGameResult!
+  gamesForPlayerId(id: ObjectID!): GetGamesForPlayerIdResult!
 }
 
 type RegisterError {
@@ -397,17 +427,17 @@ type Subscription {
   """
   Get into the queue to join a new game, responds with the game id
   """
-  joinGame(playerId: ID!): JoinMsg!
+  joinGame(playerId: ObjectID!): JoinMsg!
 
   """
   Observe a game
   """
-  observeGame(gameId: ID!): ObserveGameMsg!
+  observeGame(gameId: ObjectID!): ObserveGameMsg!
 }
 
 type User {
   avatarUrl: String
-  id: ID!
+  id: ObjectID!
   rating: Float!
   username: String!
 }

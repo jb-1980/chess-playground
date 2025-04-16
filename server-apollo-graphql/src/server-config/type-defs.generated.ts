@@ -8,6 +8,11 @@ export const typeDefs = {
       directives: [],
     },
     {
+      kind: "ScalarTypeDefinition",
+      name: { kind: "Name", value: "ObjectID" },
+      directives: [],
+    },
+    {
       kind: "InterfaceTypeDefinition",
       name: { kind: "Name", value: "Error" },
       interfaces: [],
@@ -43,7 +48,7 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
@@ -69,7 +74,7 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
@@ -103,13 +108,19 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
             },
           ],
-          type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "CreateGameResult" },
+            },
+          },
           directives: [],
         },
         {
@@ -123,7 +134,7 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
@@ -142,8 +153,11 @@ export const typeDefs = {
             },
           ],
           type: {
-            kind: "NamedType",
-            name: { kind: "Name", value: "MoveResult" },
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "MoveResult" },
+            },
           },
           directives: [],
         },
@@ -248,7 +262,7 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
@@ -279,7 +293,7 @@ export const typeDefs = {
                 kind: "NonNullType",
                 type: {
                   kind: "NamedType",
-                  name: { kind: "Name", value: "ID" },
+                  name: { kind: "Name", value: "ObjectID" },
                 },
               },
               directives: [],
@@ -954,7 +968,10 @@ export const typeDefs = {
           arguments: [],
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "ObjectID" },
+            },
           },
           directives: [],
         },
@@ -1002,7 +1019,10 @@ export const typeDefs = {
           arguments: [],
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "ObjectID" },
+            },
           },
           directives: [],
         },
@@ -1388,6 +1408,96 @@ export const typeDefs = {
     },
     {
       kind: "EnumTypeDefinition",
+      name: { kind: "Name", value: "CreateGameError" },
+      directives: [],
+      values: [
+        {
+          kind: "EnumValueDefinition",
+          description: {
+            kind: "StringValue",
+            value: "500 error when trying to create a new game in the DB",
+            block: false,
+          },
+          name: { kind: "Name", value: "FAILED_TO_CREATE_GAME" },
+          directives: [],
+        },
+        {
+          kind: "EnumValueDefinition",
+          description: {
+            kind: "StringValue",
+            value: "Player is already in an active game",
+            block: false,
+          },
+          name: { kind: "Name", value: "PLAYER_IN_ACTIVE_GAME" },
+          directives: [],
+        },
+      ],
+    },
+    {
+      kind: "ObjectTypeDefinition",
+      name: { kind: "Name", value: "CreateGameErrorResult" },
+      interfaces: [],
+      directives: [],
+      fields: [
+        {
+          kind: "FieldDefinition",
+          description: {
+            kind: "StringValue",
+            value: "Error message",
+            block: false,
+          },
+          name: { kind: "Name", value: "message" },
+          arguments: [],
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "CreateGameError" },
+            },
+          },
+          directives: [],
+        },
+      ],
+    },
+    {
+      kind: "ObjectTypeDefinition",
+      name: { kind: "Name", value: "CreateGameSuccessResult" },
+      interfaces: [],
+      directives: [],
+      fields: [
+        {
+          kind: "FieldDefinition",
+          description: { kind: "StringValue", value: "Game ID", block: false },
+          name: { kind: "Name", value: "gameId" },
+          arguments: [],
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "ObjectID" },
+            },
+          },
+          directives: [],
+        },
+      ],
+    },
+    {
+      kind: "UnionTypeDefinition",
+      name: { kind: "Name", value: "CreateGameResult" },
+      directives: [],
+      types: [
+        {
+          kind: "NamedType",
+          name: { kind: "Name", value: "CreateGameErrorResult" },
+        },
+        {
+          kind: "NamedType",
+          name: { kind: "Name", value: "CreateGameSuccessResult" },
+        },
+      ],
+    },
+    {
+      kind: "EnumTypeDefinition",
       name: { kind: "Name", value: "GetGameErrorType" },
       directives: [],
       values: [
@@ -1567,7 +1677,10 @@ export const typeDefs = {
           arguments: [],
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "ObjectID" },
+            },
           },
           directives: [],
         },
@@ -1620,7 +1733,10 @@ export const typeDefs = {
           arguments: [],
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "ObjectID" },
+            },
           },
           directives: [],
         },

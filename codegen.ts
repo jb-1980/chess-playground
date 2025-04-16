@@ -24,7 +24,7 @@ const config: CodegenConfig = {
       typeDefsFilePath: "../server-config/type-defs.generated.ts",
       typesPluginsConfig: {
         contextType: "../server-config/context#ApolloContextType",
-
+        makeResolverTypeCallable: true,
         enumsAsTypes: false,
       },
       scalarsModule: "graphql-scalars",

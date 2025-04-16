@@ -1,3 +1,6 @@
+import { WithId } from "mongodb"
+import { TDocument } from "../../../database/collection"
+
 export type GameUserDocument = {
   _id: string
   username: string
@@ -46,3 +49,5 @@ export type GameDocument = {
     }
   }
 }
+
+export type MongoGameDocument = WithId<TDocument<GameDocument>>

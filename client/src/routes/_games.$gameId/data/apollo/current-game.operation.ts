@@ -4,7 +4,7 @@ import { gql } from "@apollo/client"
 import * as Apollo from "@apollo/client"
 const defaultOptions = {} as const
 export type MoveMutationVariables = Types.Exact<{
-  gameId: Types.Scalars["ID"]["input"]
+  gameId: Types.Scalars["ObjectID"]["input"]
   move: Types.MoveInput
 }>
 
@@ -13,11 +13,10 @@ export type MoveMutation = {
   move:
     | { __typename: "MoveErrorResult"; message: Types.MoveError }
     | { __typename: "MoveSuccessResult"; newPGN: string }
-    | null
 }
 
 export type ObserveGameSubscriptionVariables = Types.Exact<{
-  gameId: Types.Scalars["ID"]["input"]
+  gameId: Types.Scalars["ObjectID"]["input"]
 }>
 
 export type ObserveGameSubscription = {
@@ -26,7 +25,7 @@ export type ObserveGameSubscription = {
     __typename: "ObserveGameMsg"
     game: {
       __typename: "Game"
-      id: string
+      id: any
       pgn: string
       status: Types.GameStatus
       moves: Array<{
@@ -45,14 +44,14 @@ export type ObserveGameSubscription = {
       }>
       whitePlayer: {
         __typename: "GameUser"
-        id: string
+        id: any
         rating: number
         username: string
         avatarUrl: string | null
       }
       blackPlayer: {
         __typename: "GameUser"
-        id: string
+        id: any
         rating: number
         username: string
         avatarUrl: string | null
@@ -62,7 +61,7 @@ export type ObserveGameSubscription = {
 }
 
 export const MoveDocument = gql`
-  mutation Move($gameId: ID!, $move: MoveInput!) {
+  mutation Move($gameId: ObjectID!, $move: MoveInput!) {
     move(gameId: $gameId, move: $move) {
       ... on MoveErrorResult {
         message
@@ -112,7 +111,7 @@ export type MoveMutationOptions = Apollo.BaseMutationOptions<
   MoveMutationVariables
 >
 export const ObserveGameDocument = gql`
-  subscription ObserveGame($gameId: ID!) {
+  subscription ObserveGame($gameId: ObjectID!) {
     observeGame(gameId: $gameId) {
       game {
         id

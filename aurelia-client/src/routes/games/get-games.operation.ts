@@ -2,7 +2,7 @@ import * as Types from "../../resources/apollo-client/types.generated"
 
 import { gql } from "@apollo/client/core"
 export type GetGamesQueryVariables = Types.Exact<{
-  playerId: Types.Scalars["ID"]["input"]
+  playerId: Types.Scalars["ObjectID"]["input"]
 }>
 
 export type GetGamesQuery = {
@@ -12,7 +12,7 @@ export type GetGamesQuery = {
         __typename: "GetGamesForPlayer"
         games: Array<{
           __typename: "Game"
-          id: string
+          id: any
           pgn: string
           status: Types.GameStatus
           date: string
@@ -32,14 +32,14 @@ export type GetGamesQuery = {
           }>
           whitePlayer: {
             __typename: "GameUser"
-            id: string
+            id: any
             rating: number
             username: string
             avatarUrl: string | null
           }
           blackPlayer: {
             __typename: "GameUser"
-            id: string
+            id: any
             rating: number
             username: string
             avatarUrl: string | null
@@ -53,7 +53,7 @@ export type GetGamesQuery = {
 }
 
 export const GetGamesDocument = /*#__PURE__*/ gql`
-  query GetGames($playerId: ID!) {
+  query GetGames($playerId: ObjectID!) {
     gamesForPlayerId(id: $playerId) {
       ... on GetGamesForPlayerIdError {
         message

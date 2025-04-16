@@ -48,7 +48,26 @@ type MoveSuccessResult {
 
 union MoveResult = MoveErrorResult | MoveSuccessResult
 
+enum CreateGameError {
+  "500 error when trying to create a new game in the DB"
+  FAILED_TO_CREATE_GAME
+  "Player is already in an active game"
+  PLAYER_IN_ACTIVE_GAME
+}
+
+type CreateGameErrorResult {
+  "Error message"
+  message: CreateGameError!
+}
+
+type CreateGameSuccessResult {
+  "Game ID"
+  gameId: ObjectID!
+}
+
+union CreateGameResult = CreateGameErrorResult | CreateGameSuccessResult
+
 extend type Mutation {
-  createGame(playerId: ID!): ID
-  move(gameId: ID!, move: MoveInput!): MoveResult
+  createGame(playerId: ObjectID!): CreateGameResult!
+  move(gameId: ObjectID!, move: MoveInput!): MoveResult!
 }

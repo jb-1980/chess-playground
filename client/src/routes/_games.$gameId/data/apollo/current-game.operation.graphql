@@ -1,4 +1,4 @@
-mutation Move($gameId: ID!, $move: MoveInput!) {
+mutation Move($gameId: ObjectID!, $move: MoveInput!) {
   move(gameId: $gameId, move: $move) {
     ... on MoveErrorResult {
       message
@@ -9,7 +9,7 @@ mutation Move($gameId: ID!, $move: MoveInput!) {
   }
 }
 
-subscription ObserveGame($gameId: ID!) {
+subscription ObserveGame($gameId: ObjectID!) {
   observeGame(gameId: $gameId) {
     game {
       id

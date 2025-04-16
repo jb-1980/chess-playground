@@ -13,10 +13,14 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.7",
-    "typescript": "^5.6.2"
+    "jest-extended": "^4.0.2",
+    "typescript": "^5.6.2",
+    "vitest": "^3.0.9",
+    "vitest-environment-mongodb": "^1.0.1"
   },
   "type": "module",
   "dependencies": {

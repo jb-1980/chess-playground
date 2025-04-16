@@ -21,6 +21,6 @@ type GetGamesForPlayer {
 union GetGamesForPlayerIdResult = GetGamesForPlayerIdError | GetGamesForPlayer
 
 extend type Query {
-  game(id: ID!): GetGameResult!
-  gamesForPlayerId(id: ID!): GetGamesForPlayerIdResult!
+  game(id: ObjectID!): GetGameResult!
+  gamesForPlayerId(id: ObjectID!): GetGamesForPlayerIdResult!
 }

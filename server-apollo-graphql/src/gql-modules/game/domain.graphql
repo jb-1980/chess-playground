@@ -73,14 +73,14 @@ enum GameStatus {
 }
 
 type GameUser {
-  id: ID!
+  id: ObjectID!
   rating: Int!
   username: String!
   avatarUrl: String
 }
 
 type Game {
-  id: ID!
+  id: ObjectID!
   moves: [Move!]!
   pgn: String!
   whitePlayer: GameUser!

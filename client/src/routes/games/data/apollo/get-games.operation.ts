@@ -4,7 +4,7 @@ import { gql } from "@apollo/client"
 import * as Apollo from "@apollo/client"
 const defaultOptions = {} as const
 export type GetGamesQueryVariables = Types.Exact<{
-  playerId: Types.Scalars["ID"]["input"]
+  playerId: Types.Scalars["ObjectID"]["input"]
 }>
 
 export type GetGamesQuery = {
@@ -14,7 +14,7 @@ export type GetGamesQuery = {
         __typename: "GetGamesForPlayer"
         games: Array<{
           __typename: "Game"
-          id: string
+          id: any
           pgn: string
           status: Types.GameStatus
           moves: Array<{
@@ -33,14 +33,14 @@ export type GetGamesQuery = {
           }>
           whitePlayer: {
             __typename: "GameUser"
-            id: string
+            id: any
             rating: number
             username: string
             avatarUrl: string | null
           }
           blackPlayer: {
             __typename: "GameUser"
-            id: string
+            id: any
             rating: number
             username: string
             avatarUrl: string | null
@@ -54,7 +54,7 @@ export type GetGamesQuery = {
 }
 
 export const GetGamesDocument = gql`
-  query GetGames($playerId: ID!) {
+  query GetGames($playerId: ObjectID!) {
     gamesForPlayerId(id: $playerId) {
       ... on GetGamesForPlayerIdError {
         message

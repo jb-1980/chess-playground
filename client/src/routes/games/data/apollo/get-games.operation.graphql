@@ -1,4 +1,4 @@
-query GetGames($playerId: ID!) {
+query GetGames($playerId: ObjectID!) {
   gamesForPlayerId(id: $playerId) {
     ... on GetGamesForPlayerIdError {
       message

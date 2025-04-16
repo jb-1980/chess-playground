@@ -1,5 +1,8 @@
 import { ObjectId } from "mongodb"
-import type { MutationResolvers } from "./../../../types.generated"
+import {
+  CreateGameError,
+  type MutationResolvers,
+} from "./../../../types.generated"
 import { pubsub } from "../../../../pubsub"
 const Queue = new Set<string>()
 const PlayersInActiveGames = new Set<string>()
@@ -18,7 +21,10 @@ export const createGame: NonNullable<MutationResolvers["createGame"]> = async (
   _ctx,
 ) => {
   if (PlayersInActiveGames.has(playerId)) {
-    throw new Error("Player is already in an active game")
+    return {
+      __typename: "CreateGameErrorResult",
+      message: CreateGameError.PLAYER_IN_ACTIVE_GAME,
+    }
   }
 
   // check if this user has already joined the queue
@@ -45,7 +51,10 @@ export const createGame: NonNullable<MutationResolvers["createGame"]> = async (
       pubsub.publish(`JOIN_GAME${waitingPlayerId}`, {
         joinGame: gameId,
       })
-      return gameId
+      return {
+        __typename: "CreateGameSuccessResult",
+        gameId,
+      }
     }
   }
   return null

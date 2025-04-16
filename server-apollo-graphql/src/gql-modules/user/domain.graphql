@@ -1,5 +1,5 @@
 type User {
-  id: ID!
+  id: ObjectID!
   username: String!
   rating: Float!
   avatarUrl: String
