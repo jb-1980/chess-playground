@@ -1,6 +1,11 @@
 import DataLoader from "dataloader"
 import { ObjectId, WithId } from "mongodb"
-import { GameDocument, GameUserDocument, MoveDocument } from "./data-schema"
+import {
+  GameDocument,
+  GameUserDocument,
+  MongoGameDocument,
+  MoveDocument,
+} from "./data-schema"
 import { Games } from "./games-collection"
 import { AsyncResult, Result } from "../../../lib/result"
 import { calculateNewRatings } from "../../../lib/chess"
@@ -9,56 +14,54 @@ import { GameStatus, Move } from "../../types.generated"
 import { TDocument } from "../../../database/collection"
 
 export class GameLoader {
-  private _batchGames = new DataLoader<
-    string,
-    WithId<TDocument<GameDocument>> | null
-  >(async (ids) => {
-    const games = await Games.find({
-      _id: { $in: ids },
-    }).toArray()
+  private _batchGames = new DataLoader<string, MongoGameDocument | null>(
+    async (ids) => {
+      const games = await Games.find({
+        _id: { $in: ids },
+      }).toArray()
 
-    const gamesMap = games.reduce(
-      (map, game) => {
-        map[game._id.toString()] = game
-        return map
-      },
-      {} as Record<string, WithId<TDocument<GameDocument>>>,
-    )
+      const gamesMap = games.reduce(
+        (map, game) => {
+          map[game._id.toString()] = game
+          return map
+        },
+        {} as Record<string, MongoGameDocument>,
+      )
 
-    return ids.map((id) => gamesMap[id] || null)
-  })
+      return ids.map((id) => gamesMap[id] || null)
+    },
+  )
 
-  private _batchGamesForPlayer = new DataLoader<
-    string,
-    WithId<TDocument<GameDocument>>[]
-  >(async (ids) => {
-    const games = await Games.find({
-      $or: [
-        { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
-        { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
-      ],
-    }).toArray()
+  private _batchGamesForPlayer = new DataLoader<string, MongoGameDocument[]>(
+    async (ids) => {
+      const games = await Games.find({
+        $or: [
+          { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+          { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+        ],
+      }).toArray()
 
-    const gamesMap = games.reduce(
-      (map, game) => {
-        const whitePlayerId = game.whitePlayer._id.toString()
-        const blackPlayerId = game.blackPlayer._id.toString()
-        map[whitePlayerId] = map[whitePlayerId] || []
-        map[blackPlayerId] = map[blackPlayerId] || []
-        map[whitePlayerId].push(game)
-        map[blackPlayerId].push(game)
-        return map
-      },
-      {} as Record<string, WithId<TDocument<GameDocument>>[]>,
-    )
+      const gamesMap = games.reduce(
+        (map, game) => {
+          const whitePlayerId = game.whitePlayer._id.toString()
+          const blackPlayerId = game.blackPlayer._id.toString()
+          map[whitePlayerId] = map[whitePlayerId] || []
+          map[blackPlayerId] = map[blackPlayerId] || []
+          map[whitePlayerId].push(game)
+          map[blackPlayerId].push(game)
+          return map
+        },
+        {} as Record<string, MongoGameDocument[]>,
+      )
 
-    return ids.map((id) => gamesMap[id] || [])
-  })
+      return ids.map((id) => gamesMap[id] || [])
+    },
+  )
 
   async getGameById(
     id: string,
     clearCache = false,
-  ): AsyncResult<GameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> {
+  ): AsyncResult<MongoGameDocument | null, "DB_ERROR_WHILE_GETTING_GAME"> {
     try {
       if (clearCache) {
         this._batchGames.clear(id)
@@ -74,7 +77,7 @@ export class GameLoader {
 
   async getGamesForPlayerId(
     playerId: string,
-  ): AsyncResult<GameDocument[], "DB_ERR_GET_GAMES_FOR_USER_ID"> {
+  ): AsyncResult<MongoGameDocument[], "DB_ERR_GET_GAMES_FOR_USER_ID"> {
     try {
       const games = await this._batchGamesForPlayer.load(playerId)
       return Result.Success(games)

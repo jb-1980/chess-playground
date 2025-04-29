@@ -1,4 +1,4 @@
-import { GameDocument, GameUserDocument } from './datasources/data-schema'
+import { GameUserDocument, MongoGameDocument } from "./datasources/data-schema"
 
 export type GameUser = GameUserDocument
-export type GameMapper = GameDocument
+export type GameMapper = MongoGameDocument
