@@ -1,15 +1,8 @@
 import { useNavigate } from "@solidjs/router"
 import { storeToken } from "../../lib/token"
 import { createSignup } from "./data/createSignup"
-import {
-  Button,
-  Link,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@suid/material"
 import { Show } from "solid-js"
+import { Button, Link, Paper, Stack, TextField, Typography } from "@/ui"
 
 export const Signup = () => {
   const navigate = useNavigate()
@@ -51,10 +44,10 @@ export const Signup = () => {
         "min-width": "100vw",
       }}
     >
-      <Paper elevation={10} style={paperStyle}>
+      <Paper elevation={12} style={paperStyle}>
         <form onSubmit={onSubmit}>
-          <Stack direction="column" spacing={3}>
-            <Typography align="center" variant="h3">
+          <Stack direction="column" gap={3}>
+            <Typography align="center" variant="h3" class="uppercase">
               Sign Up
             </Typography>
             <Show when={signupHandlers().error}>
@@ -65,8 +58,7 @@ export const Signup = () => {
             <TextField
               label="Username"
               placeholder="Enter username"
-              variant="outlined"
-              fullWidth
+              // variant="outlined"
               required
               autoComplete="username"
               name="username"
@@ -75,18 +67,15 @@ export const Signup = () => {
               label="Password"
               placeholder="Enter password"
               type="password"
-              variant="outlined"
+              // variant="outlined"
               autoComplete="current-password"
-              fullWidth
               required
               name="password"
             />
 
             <Button
-              variant="contained"
               type="submit"
               style={btnstyle}
-              fullWidth
               disabled={signupHandlers().isLoading}
             >
               Register

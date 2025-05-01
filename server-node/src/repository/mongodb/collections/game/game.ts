@@ -8,11 +8,11 @@ import { DBGameMutator, DBGameLoader } from "../../../loaders"
 import { User } from "../../../../domain/user"
 
 type GameUser = Pick<Omit<User, "id">, "username" | "rating" | "avatarUrl"> & {
-  _id: ObjectId
+  _id: string
 }
 
 export type GameDocument = {
-  _id: ObjectId
+  _id: string
   moves: (Move & { createdAt: Date })[]
   pgn: string
   whitePlayer: GameUser
@@ -42,7 +42,7 @@ export type GameDocument = {
 export const Games = MongoCollection<GameDocument>("games")
 
 const toGameUserFromUser = (user: User): GameUser => ({
-  _id: new ObjectId(user.id),
+  _id: user.id,
   username: user.username,
   rating: user.rating,
   avatarUrl: user.avatarUrl,
@@ -55,7 +55,7 @@ const toGameUserFromUser = (user: User): GameUser => ({
  * @returns Game
  */
 export const makeGameDTO = (game: GameDocument): Game => ({
-  id: game._id.toHexString(),
+  id: game._id.toString(),
   moves: game.moves,
   pgn: game.pgn,
   whitePlayer: makeUserDto(game.whitePlayer),
@@ -67,7 +67,7 @@ export const makeGameDTO = (game: GameDocument): Game => ({
 export class MongoDBGameLoader implements DBGameLoader {
   batchGames = new DataLoader<string, Game | null>(async (ids) => {
     const games = await Games.find({
-      _id: { $in: ids.map((id) => new ObjectId(id)) },
+      _id: { $in: ids },
     }).toArray()
 
     const gamesMap = games.reduce(
@@ -85,8 +85,8 @@ export class MongoDBGameLoader implements DBGameLoader {
   batchGamesForPlayer = new DataLoader<string, Game[]>(async (ids) => {
     const games = await Games.find({
       $or: [
-        { "whitePlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
-        { "blackPlayer._id": { $in: ids.map((id) => new ObjectId(id)) } },
+        { "whitePlayer._id": { $in: ids } },
+        { "blackPlayer._id": { $in: ids } },
       ],
     }).toArray()
 
@@ -108,7 +108,7 @@ export class MongoDBGameLoader implements DBGameLoader {
 
   batchGameOutcomes = new DataLoader<string, GameOutcome>(async (ids) => {
     const games = await Games.find({
-      _id: { $in: ids.map((id) => new ObjectId(id)) },
+      _id: { $in: ids },
     }).toArray()
 
     const outcomesMap = games.reduce(
@@ -148,7 +148,7 @@ export class MongoDBGameMutator implements DBGameMutator {
         },
         outcomes,
       })
-      return Result.Success(response.insertedId.toHexString())
+      return Result.Success(response.insertedId.toString())
     } catch (error) {
       console.dir(error, { depth: 6 })
       return Result.Fail("DB_ERR_FAILED_TO_CREATE_GAME", error)
@@ -163,7 +163,7 @@ export class MongoDBGameMutator implements DBGameMutator {
     const { gameId, move, status, pgn } = args
     try {
       const { acknowledged } = await Games.updateOne(
-        { _id: new ObjectId(gameId) },
+        { _id: gameId },
         {
           $push: {
             moves: {
@@ -191,7 +191,7 @@ export class MongoDBGameMutator implements DBGameMutator {
   ): AsyncResult<boolean, "DB_ERR_SET_OUTCOME"> {
     try {
       const { acknowledged } = await Games.updateOne(
-        { _id: new ObjectId(gameId) },
+        { _id: gameId },
         {
           $set: {
             outcome: {

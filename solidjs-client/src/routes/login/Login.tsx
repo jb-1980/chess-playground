@@ -1,11 +1,4 @@
-import {
-  Button,
-  Link,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@suid/material"
+import { Button, Link, Paper, Stack, TextField, Typography } from "@/ui"
 import { storeToken } from "../../lib/token"
 import { createHandleLogin } from "./data/createHandleLogin"
 import { useNavigate } from "@solidjs/router"
@@ -44,22 +37,22 @@ export const Login = () => {
         "min-width": "100vw",
       }}
     >
-      <Paper elevation={10} style={paperStyle}>
+      <Paper elevation={12} style={paperStyle}>
         <form onSubmit={onSubmit}>
-          <Stack direction="column" spacing={3}>
-            <Typography align="center" variant="h3">
+          <Stack direction="column" gap={3}>
+            <Typography align="center" variant="h3" class="uppercase">
               Sign In
             </Typography>
             {loginHandlers().error && (
-              <Typography variant="subtitle2" color="error">
+              <Typography variant="subtitle2" as="p" color="error">
                 {loginHandlers().error}
               </Typography>
             )}
             <TextField
               label="Username"
               placeholder="Enter username"
-              variant="outlined"
-              fullWidth
+              // variant="outlined"
+              // fullWidth
               required
               autoComplete="username"
               name="username"
@@ -68,17 +61,15 @@ export const Login = () => {
               label="Password"
               placeholder="Enter password"
               type="password"
-              variant="outlined"
+              // variant="outlined"
               autoComplete="current-password"
-              fullWidth
+              // fullWidth
               required
               name="password"
             />
 
             <Button
-              variant="contained"
               style={btnstyle}
-              fullWidth
               type="submit"
               disabled={loginHandlers().isLoading}
             >

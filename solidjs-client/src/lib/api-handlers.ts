@@ -92,7 +92,7 @@ export const createApiQuery = <TRequestData, TResponseData>(
   return createQuery<TResponseData, APIError>(() => ({
     queryKey: [path, data],
     queryFn: async () => await fetchData(data),
-    ...(process.env.VITEST == "true" ? { retry: false } : {}),
+    ...(import.meta.env.VITEST == "true" ? { retry: false } : {}),
     ...options,
   }))
 }

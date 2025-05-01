@@ -24,8 +24,8 @@ describe("Navbar", () => {
       routes: { path: "/", component: Navbar },
     })
 
-    const homeButton = screen.getByRole("button", { name: "Home" })
-    const gamesButton = screen.getByRole("button", { name: "Games" })
+    const homeButton = screen.getByRole("link", { name: "Home" })
+    const gamesButton = screen.getByRole("link", { name: "Games" })
     const userButton = screen.getByText(user.username)
 
     // assert
@@ -44,7 +44,7 @@ describe("Navbar", () => {
       routes: { path: "*", component: Navbar },
     })
 
-    const homeButton = screen.getByRole("button", { name: "Home" })
+    const homeButton = screen.getByRole("link", { name: "Home" })
     const startingRoute = history.get()
 
     // act
@@ -67,7 +67,7 @@ describe("Navbar", () => {
       routes: { path: "*", component: Navbar },
     })
 
-    const gamesButton = screen.getByRole("button", { name: "Games" })
+    const gamesButton = screen.getByRole("link", { name: "Games" })
     const startingRoute = history.get()
 
     // act

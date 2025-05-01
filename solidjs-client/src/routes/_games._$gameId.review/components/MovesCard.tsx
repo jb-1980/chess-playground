@@ -1,21 +1,23 @@
-import {
-  Typography,
-  Card,
-  Stack,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  IconButton,
-} from "@suid/material"
 import { WHITE, BLACK } from "chess.js"
 import { Setter, createMemo, JSX, For } from "solid-js"
 import { Game } from "../../../types/game"
 import { getFancySan } from "../lib/get-fancy-san"
-import ArrowBackIosIcon from "@suid/icons-material/ArrowBackIos"
-import KeyboardDoubleArrowLeftIcon from "@suid/icons-material/KeyboardDoubleArrowLeft"
-import ArrowForwardIosIcon from "@suid/icons-material/ArrowForwardIos"
-import KeyboardDoubleArrowRightIcon from "@suid/icons-material/KeyboardDoubleArrowRight"
+import {
+  Card,
+  IconButton,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Typography,
+} from "@/ui"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-solid"
 
 export const MovesCard = (props: {
   game: Game
@@ -60,10 +62,10 @@ export const MovesCard = (props: {
 
   return (
     <div>
-      <Typography variant="h6" sx={{ display: { xs: "none", lg: "inherit" } }}>
+      <Typography variant="h6" class="xs:hidden">
         Moves
       </Typography>
-      <Card sx={{ width: 300, height: 800 }}>
+      <Card style={{ width: "300px", height: "800px" }}>
         <Stack
           style={{
             "overflow-y": "auto",
@@ -128,13 +130,13 @@ export const MovesCard = (props: {
             aria-label="start-of-game"
             onClick={() => props.setMoveIndex(-1)}
           >
-            <KeyboardDoubleArrowLeftIcon />
+            <ChevronsLeft />
           </IconButton>
           <IconButton
             aria-label="back-one-move"
             onClick={() => props.setMoveIndex((i) => (i === -1 ? i : i - 1))}
           >
-            <ArrowBackIosIcon />
+            <ChevronLeft />
           </IconButton>
           <IconButton
             aria-label="forward-one-move"
@@ -144,13 +146,13 @@ export const MovesCard = (props: {
               )
             }
           >
-            <ArrowForwardIosIcon />
+            <ChevronRight />
           </IconButton>
           <IconButton
             aria-label="end-of-game"
             onClick={() => props.setMoveIndex(props.game.moves.length - 1)}
           >
-            <KeyboardDoubleArrowRightIcon />
+            <ChevronsRight />
           </IconButton>
         </Stack>
       </Card>
@@ -206,7 +208,7 @@ export const MobileMovesCard = (props: {
       direction="row"
       justifyContent="center"
       alignItems="center"
-      width="100%"
+      style={{ width: "100%" }}
     >
       <Stack direction="row" style={{ "margin-right": "auto" }}>
         <IconButton
@@ -214,14 +216,14 @@ export const MobileMovesCard = (props: {
           onClick={() => props.setMoveIndex(-1)}
           style={{ padding: 0 }}
         >
-          <KeyboardDoubleArrowLeftIcon />
+          <ChevronsLeft />
         </IconButton>
         <IconButton
           aria-label="back-one-move"
           onClick={() => props.setMoveIndex((i) => (i === -1 ? i : i - 1))}
           style={{ padding: 0 }}
         >
-          <ArrowBackIosIcon />
+          <ChevronLeft />
         </IconButton>
       </Stack>
       <Stack direction="row" gap={1}>
@@ -265,14 +267,14 @@ export const MobileMovesCard = (props: {
           }
           style={{ padding: 0 }}
         >
-          <ArrowForwardIosIcon />
+          <ChevronRight />
         </IconButton>
         <IconButton
           aria-label="end-of-game"
           onClick={() => props.setMoveIndex(props.game.moves.length - 1)}
           style={{ padding: 0 }}
         >
-          <KeyboardDoubleArrowRightIcon />
+          <ChevronsRight />
         </IconButton>
       </Stack>
     </Stack>
@@ -288,15 +290,14 @@ const MobileMove = (props: {
   const { number, white, black } = props
   return (
     <Stack
-      component="div"
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
+      as="div"
+      direction="row"
+      alignItems="center"
+      style={{
         padding: 0,
         margin: 0,
-        borderBottom: props.active ? "1px solid green" : "none",
-        boxSizing: "border-box",
+        "border-bottom": props.active ? "1px solid green" : "none",
+        "box-sizing": "border-box",
       }}
       gap={0.5}
     >

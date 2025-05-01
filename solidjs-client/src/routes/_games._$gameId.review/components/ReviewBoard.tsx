@@ -2,9 +2,9 @@ import { createSignal } from "solid-js"
 import { Game } from "../../../types/game"
 import { useUserContext } from "../../Root/context"
 import { BLACK, DEFAULT_POSITION, WHITE } from "chess.js"
-import { Stack, Box } from "@suid/material"
 import { GameBoard } from "../../../components/GameBoard"
 import { MobileMovesCard, MovesCard } from "./MovesCard"
+import { Stack } from "@/ui"
 
 export const ReviewBoard = (props: { game: Game }) => {
   const { game } = props
@@ -15,33 +15,32 @@ export const ReviewBoard = (props: { game: Game }) => {
 
   return (
     <Stack
-      direction={{ md: "column", lg: "row" }}
       gap={4}
-      sx={{ alignItems: { md: "center", lg: "flex-start" } }}
+      class="md:flex-col lg:flex-row md:items-center lg:items-start"
       justifyContent="center"
     >
-      <Box sx={{ width: { md: "100%", lg: "75%" } }} maxWidth={800}>
+      <div class="md:w-full lg:w-3/4 max-w-[800px]">
         <GameBoard
           myColor={myColor}
           fen={game.moves[moveIndex()]?.after || DEFAULT_POSITION}
           whitePlayer={game.whitePlayer}
           blackPlayer={game.blackPlayer}
         />
-      </Box>
-      <Box sx={{ display: { xs: "inherit", lg: "none" } }}>
+      </div>
+      <div class="md:hidden">
         <MobileMovesCard
           game={game}
           moveIndex={moveIndex()}
           setMoveIndex={setMoveIndex}
         />
-      </Box>
-      <Box sx={{ display: { xs: "none", lg: "inherit" } }}>
+      </div>
+      <div class="max-md:hidden">
         <MovesCard
           game={game}
           moveIndex={moveIndex()}
           setMoveIndex={setMoveIndex}
         />
-      </Box>
+      </div>
     </Stack>
   )
 }

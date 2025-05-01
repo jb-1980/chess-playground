@@ -1,14 +1,14 @@
-import { Loader } from "../../components/Loader"
+import { Loader } from "@/components/Loader"
 import { JoinGameError } from "./data/useJoinGame"
 import { useUserContext } from "../Root/context"
 import { match } from "ts-pattern"
-import { Navigate, A } from "@solidjs/router"
-import { Box, Link, Stack, Typography } from "@suid/material"
+import { Navigate } from "@solidjs/router"
 import {
   ResponseMessageType,
   useJoinGameSocket,
 } from "./data/websockets/useJoinGameSocket"
 import { Match, Switch } from "solid-js"
+import { Link, Stack, Typography } from "@/ui"
 
 const JoinGame = () => {
   const user = useUserContext()
@@ -42,19 +42,19 @@ const JoinGame = () => {
         <Error error={error()!} />
       </Match>
       <Match when={true}>
-        <Box
-          sx={{
+        <div
+          style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            "justify-content": "center",
+            "align-items": "center",
             height: "calc(100vh - 96px)",
           }}
         >
-          <Stack spacing={2} justifyContent="center" alignItems="center">
+          <Stack gap={2} justifyContent="center" alignItems="center">
             <Loader />
             <Typography variant="h6">Finding opponent...</Typography>
           </Stack>
-        </Box>
+        </div>
       </Match>
     </Switch>
   )
@@ -64,11 +64,10 @@ export default JoinGame
 
 export const Error = ({ error }: { error: JoinGameError }) => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+    <Stack
+      justifyContent="center"
+      alignItems="center"
+      style={{
         height: "calc(100vh - 96px)",
       }}
     >
@@ -86,10 +85,8 @@ export const Error = ({ error }: { error: JoinGameError }) => {
             </Typography>
           ))
           .exhaustive()}
-        <Link component={A} href="/">
-          Back to Home
-        </Link>
+        <Link href="/">Back to Home</Link>
       </Stack>
-    </Box>
+    </Stack>
   )
 }

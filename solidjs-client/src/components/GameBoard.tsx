@@ -3,13 +3,13 @@ import { Api } from "chessground/api"
 import { createEffect, on, onCleanup } from "solid-js"
 import { User } from "../types/user"
 import { Color } from "chess.js"
-import { Stack, Typography } from "@suid/material"
 
 import "./assets/chessground.base.css"
 // the included colour theme is quite ugly :/
 import "./assets/chessground.brown.css"
 import "./assets/chessground.cburnett.css"
 import { Key, Piece } from "chessground/types"
+import { Stack, Typography } from "@/ui"
 
 interface ChessgroundProps {
   style?: string
@@ -56,7 +56,7 @@ export const GameBoard = (props: ChessgroundProps) => {
   })
 
   return (
-    <Stack width="100%">
+    <Stack style={{ width: "100%" }}>
       <NameLabel
         name={
           boardOrientation() === "white"
@@ -87,14 +87,13 @@ export const GameBoard = (props: ChessgroundProps) => {
             : (props.blackPlayer?.rating ?? 0)
         }
       />
-      <pre>{props.fen}</pre>
     </Stack>
   )
 }
 
 export const NameLabel = (props: { name: string; rating: number }) => {
   return (
-    <Typography variant="h6" sx={{ flex: 0 }}>
+    <Typography variant="h6" style={{ flex: 0 }}>
       {props.name} ({props.rating})
     </Typography>
   )

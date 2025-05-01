@@ -27,7 +27,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@test-utils": ["src/test-utils/index.ts"]
+      "@test-utils": ["./src/test-utils/index.ts"],
+      "@/ui": ["./src/components/ui/index.ts"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

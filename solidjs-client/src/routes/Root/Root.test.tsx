@@ -20,7 +20,7 @@ describe("Root", () => {
       </MemoryRouter>
     ))
 
-    const homeButton = screen.getByRole("button", { name: "Home" })
+    const homeButton = screen.getByRole("link", { name: "Home" })
 
     // assert
     expect(homeButton).toBeInTheDocument()

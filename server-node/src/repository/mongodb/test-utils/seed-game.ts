@@ -26,18 +26,18 @@ type Overrides = Partial<
 export const getTestMongoDBGame = (overrides: Overrides = {}): GameDocument => {
   const { whitePlayer, blackPlayer, outcome, outcomes, ...rest } = overrides
   return {
-    _id: new ObjectId(),
+    _id: faker.database.mongodbObjectId(),
     moves: [],
     pgn: "",
     whitePlayer: {
-      _id: new ObjectId(),
+      _id: faker.database.mongodbObjectId(),
       username: "whitePlayer",
       rating: 1500,
       avatarUrl: "",
       ...whitePlayer,
     },
     blackPlayer: {
-      _id: new ObjectId(),
+      _id: faker.database.mongodbObjectId(),
       username: "blackPlayer",
       rating: 1500,
       avatarUrl: "",

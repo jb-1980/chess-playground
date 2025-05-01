@@ -2,10 +2,9 @@ import { WHITE } from "chess.js"
 import { useGameContext } from "../context"
 import { match, P } from "ts-pattern"
 import { GameStatus } from "../../../types/game"
-import CloseIcon from "@suid/icons-material/Close"
 import { A, useParams } from "@solidjs/router"
 import { createSignal } from "solid-js"
-import { Button, Dialog, IconButton, Stack, Typography } from "@suid/material"
+import { Button, Dialog, Stack, Typography } from "@/ui"
 
 export const GameOverDialog = () => {
   const { gameId } = useParams()
@@ -27,30 +26,12 @@ export const GameOverDialog = () => {
 
   const winner = () => (contextValues().turn === WHITE ? "Black" : "White")
   return (
-    <Dialog
-      open={gameOver() && !dismissed}
-      PaperProps={{
-        style: { padding: "20px", "text-align": "center", width: "300px" },
-      }}
-      onClose={() => setDismissed(true)}
-    >
-      <IconButton
-        aria-label="close"
-        onClick={() => setDismissed(true)}
-        sx={{
-          position: "absolute",
-          right: 8,
-          top: 8,
-          color: (theme) => theme.palette.grey[500],
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
+    <Dialog open={gameOver() && !dismissed} onOpenChange={setDismissed}>
       {match(contextValues().status)
         .with(GameStatus.CHECKMATE, () => (
           <>
             <Typography variant="h4">{winner()} Wins!</Typography>
-            <Typography variant="body1" textAlign="center">
+            <Typography variant="body1" class="text-center">
               {/* TODO: By timeout, by resignation */}
               by Checkmate
             </Typography>
@@ -59,7 +40,7 @@ export const GameOverDialog = () => {
         .with(GameStatus.STALEMATE, () => (
           <>
             <Typography variant="h4">Draw!</Typography>
-            <Typography variant="body1" textAlign="center">
+            <Typography variant="body1" class="text-center">
               by Stalemate
             </Typography>
           </>
@@ -67,7 +48,7 @@ export const GameOverDialog = () => {
         .with(GameStatus.THREE_MOVE_REPETITION, () => (
           <>
             <Typography variant="h4">Draw!</Typography>
-            <Typography variant="body1" textAlign="center">
+            <Typography variant="body1" class="text-center">
               by Three Move Repetition
             </Typography>
           </>
@@ -75,7 +56,7 @@ export const GameOverDialog = () => {
         .with(GameStatus.INSUFFICIENT_MATERIAL, () => (
           <>
             <Typography variant="h4">Draw!</Typography>
-            <Typography variant="body1" textAlign="center">
+            <Typography variant="body1" class="text-center">
               by Insufficient Material
             </Typography>
           </>
@@ -83,32 +64,22 @@ export const GameOverDialog = () => {
         .with(GameStatus.FIFTY_MOVE_RULE, () => (
           <>
             <Typography variant="h4">Draw!</Typography>
-            <Typography variant="body1" textAlign="center">
+            <Typography variant="body1" class="text-center">
               by Fifty Move Rule
             </Typography>
           </>
         ))
         .otherwise(() => "Game Over")}
-      <Stack spacing={2} justifyContent="center">
-        <Stack spacing={2} direction="row" justifyContent="center">
-          <Button
-            variant="contained"
-            component={A}
-            href={`/games/${gameId}/review`}
-            style={{ flex: 1 }}
-          >
+      <Stack gap={2} justifyContent="center">
+        <Stack gap={2} direction="row" justifyContent="center">
+          <Button as={A} href={`/games/${gameId}/review`} style={{ flex: 1 }}>
             Review
           </Button>
-          <Button
-            variant="contained"
-            component={A}
-            href="/games"
-            style={{ flex: 1 }}
-          >
+          <Button as={A} href="/games" style={{ flex: 1 }}>
             My Games
           </Button>
         </Stack>
-        <Button variant="contained" component={A} href="/games/join">
+        <Button as={A} href="/games/join">
           New Game
         </Button>
       </Stack>
