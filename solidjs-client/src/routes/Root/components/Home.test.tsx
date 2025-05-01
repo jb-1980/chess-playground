@@ -19,7 +19,7 @@ describe("Home", () => {
 
     const welcomeText = screen.getByText(`Welcome ${user.username}!`)
     const bodyText = screen.getByText("Want to play a game?")
-    const button = screen.getByRole("button", { name: "Start Game" })
+    const button = screen.getByRole("link", { name: "Start Game" })
 
     expect(welcomeText).toBeInTheDocument()
     expect(bodyText).toBeInTheDocument()

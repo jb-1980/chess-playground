@@ -1,74 +1,57 @@
-import { createSignal } from "solid-js"
 import { useUserContext } from "../context"
+import { A } from "@solidjs/router"
 import {
   AppBar,
   Button,
-  Menu,
-  MenuItem,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Stack,
   Toolbar,
   Typography,
-} from "@suid/material"
-import AccountCircle from "@suid/icons-material/AccountCircle"
-import { A } from "@solidjs/router"
+} from "@/ui"
+import { CircleUserRound } from "lucide-solid"
 
 export const Navbar = () => {
   const user = useUserContext()
 
-  const [anchorEl, setAnchorEl] = createSignal<null | HTMLElement>(null)
-  const open = () => Boolean(anchorEl())
-  const handleMenu = (event: { currentTarget: HTMLButtonElement }) => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
   return (
     <AppBar position="static">
       <Toolbar>
-        <Stack direction="row" spacing={2}>
-          <Button variant="text" color="inherit" component={A} href="/">
+        <Stack direction="row" gap={2}>
+          <Button variant="ghost" color="inherit" as={A} href="/">
             Home
           </Button>
-          <Button variant="text" color="inherit" component={A} href="/games">
+          <Button variant="ghost" color="inherit" as={A} href="/games">
             Games
           </Button>
         </Stack>
-        <div style={{ "margin-left": "auto" }}>
-          <Button
-            size="small"
+        <DropdownMenu sameWidth>
+          <DropdownMenuTrigger
             aria-label="account of current user"
             aria-controls="menu-appbar"
             aria-haspopup="true"
-            onClick={handleMenu}
             color="inherit"
+            style={{
+              "margin-left": "auto",
+              display: "flex",
+              "align-items": "center",
+              gap: "0.5rem",
+            }}
           >
-            <AccountCircle />
+            <CircleUserRound />
             <Typography variant="h6">{user.username}</Typography>
-          </Button>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl()}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            open={open()}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleClose} component={A} href="/profile">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem as={A} href="/profile">
               Profile
-            </MenuItem>
-            <MenuItem onClick={handleClose} component={A} href="/logout">
+            </DropdownMenuItem>
+            <DropdownMenuItem as={A} href="/logout">
               Logout
-            </MenuItem>
-          </Menu>
-        </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Toolbar>
     </AppBar>
   )

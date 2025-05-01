@@ -1,9 +1,9 @@
 import { useGameContext } from "../context/useContext"
 import { GameOverDialog } from "../components/game-over-dialog"
 import { GameBoard } from "../../../components/GameBoard"
-import { Stack } from "@suid/material"
 import { Key } from "chessground/types"
 import { Show } from "solid-js"
+import { Stack } from "@/ui"
 
 export const Board = () => {
   const gameContext = useGameContext()
@@ -21,15 +21,16 @@ export const Board = () => {
   return (
     <Show when={gameContext().fen} fallback={<div>Loading...</div>}>
       <Stack
-        sx={{
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        style={{
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          maxHeight: "100vw",
+          height: "calc(100vh - 96px)",
+          "max-height": "100vw",
           width: "100%",
-          maxWidth: 800,
-          boxSizing: "border-box",
+          "max-width": "800px",
+          "box-sizing": "border-box",
         }}
       >
         <GameOverDialog />

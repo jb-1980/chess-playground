@@ -1,8 +1,9 @@
 import { useUserContext } from "../Root/context"
 import { Loader } from "../../components/Loader"
 import { useGetGames } from "./data/useGetGames"
+import { A } from "@solidjs/router"
+import { For, Match, Switch } from "solid-js"
 import {
-  Box,
   Container,
   Paper,
   Stack,
@@ -13,9 +14,7 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@suid/material"
-import { A } from "@solidjs/router"
-import { For, Match, Switch } from "solid-js"
+} from "@/ui"
 
 function getResultFromPGN(pgn: string) {
   const regex = /\[Result "(.*)"\]/
@@ -33,28 +32,28 @@ const Games = () => {
   return (
     <Switch>
       <Match when={gamesResult.isLoading}>
-        <Box
-          sx={{
+        <div
+          style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
+            "flex-direction": "column",
+            "align-items": "center",
+            "justify-content": "center",
             height: "calc(100vh - 96px)",
           }}
         >
-          <Stack spacing={2} justifyContent="center" alignItems="center">
+          <Stack gap={2} justifyContent="center" alignItems="center">
             <Loader />
             <Typography variant="h6">Loading games...</Typography>
           </Stack>
-        </Box>
+        </div>
       </Match>
       <Match when={gamesResult.isError}>
         <div>Error: {gamesResult.error?.message}</div>
       </Match>
       <Match when={gamesResult.isSuccess}>
-        <Container sx={{ padding: 0 }}>
+        <Container style={{ padding: 0 }}>
           <Typography variant="h3">Games</Typography>
-          <TableContainer component={Paper}>
+          <TableContainer as={Paper}>
             <Table>
               <TableHead>
                 <TableRow>

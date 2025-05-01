@@ -29,7 +29,7 @@ describe("Repository::MongoDB: Game", () => {
       const gameLoader = new MongoDBGameLoader()
       const game = await seedGame()
       // act
-      const result = await gameLoader.batchGames.load(game._id.toHexString())
+      const result = await gameLoader.batchGames.load(game._id.toString())
       // assert
 
       const expectedGame = makeGameDTO(game)
@@ -58,18 +58,14 @@ describe("Repository::MongoDB: Game", () => {
     it("should get all games for a player", async () => {
       // arrange
       const gameLoader = new MongoDBGameLoader()
-      const game1 = await seedGame({
-        whitePlayer: { _id: new ObjectId() },
-      })
+      const game1 = await seedGame()
       const game2 = await seedGame({
         blackPlayer: { _id: game1.whitePlayer._id },
       })
-      await seedGame({
-        whitePlayer: { _id: new ObjectId() },
-      })
+      await seedGame()
       // act
       const result = await gameLoader.batchGamesForPlayer.load(
-        game1.whitePlayer._id.toHexString(),
+        game1.whitePlayer._id.toString(),
       )
       // assert
       expect(result).toContainAllValues([
@@ -111,7 +107,7 @@ describe("Repository::MongoDB: Game", () => {
       const { move, pgn, status } = getTestMoveValues()
       // act
       const result = await gameMutator.addMoveToGame({
-        gameId: game._id.toHexString(),
+        gameId: game._id,
         move,
         status,
         pgn,
@@ -123,9 +119,7 @@ describe("Repository::MongoDB: Game", () => {
       expect(wasGameUpdated).toBeTrue()
 
       const gameLoader = new MongoDBGameLoader()
-      const updatedGame = await gameLoader.batchGames.load(
-        game._id.toHexString(),
-      )
+      const updatedGame = await gameLoader.batchGames.load(game._id)
       // @ts-expect-error, it is safe to assume that moves is not empty
       const { createdAt, ...lastMove } = updatedGame?.moves.at(-1) as Move
       expect(updatedGame).not.toBeNull()
@@ -146,7 +140,7 @@ describe("Repository::MongoDB: Game", () => {
       }
       // act
       const result = await gameMutator.setOutcome(
-        game._id.toHexString(),
+        game._id,
         outcome.winner,
         outcome.draw,
       )

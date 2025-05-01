@@ -1,4 +1,4 @@
-import { render, userEvent, screen } from "@test-utils"
+import { userEvent, screen, renderWithMemoryRouter } from "@test-utils"
 import { Signup } from "./Signup"
 import { describe, it, expect, vi } from "vitest"
 
@@ -37,7 +37,11 @@ describe("Signup Component", () => {
       }
     })
     const user = userEvent.setup()
-    render(() => <Signup />)
+
+    renderWithMemoryRouter({
+      initialPath: "/signup",
+      routes: { path: "/signup", component: Signup },
+    })
 
     const usernameInput = screen.getByLabelText(/username/i)
     const passwordInput = screen.getByLabelText(/password/i)

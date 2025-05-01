@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@suid/material"
+import { Button, Stack, Typography } from "@/ui"
 import { useUserContext } from "../context"
 import { A } from "@solidjs/router"
 
@@ -9,15 +9,15 @@ const Home = () => {
     <Stack
       alignItems="center"
       justifyContent="center"
-      sx={{
-        textAlign: "center",
-        minHeight: "calc(100vh - 56px - 32px)", // full-height - header - padding,
-        boxSizing: "border-box",
+      style={{
+        "text-align": "center",
+        "min-height": "calc(100vh - 56px - 32px)", // full-height - header - padding,
+        "box-sizing": "border-box",
       }}
     >
       <Typography variant="h4">Welcome {username}!</Typography>
       <Typography variant="body1">Want to play a game?</Typography>
-      <Button component={A} href="/games/join" variant="contained">
+      <Button as={A} href="/games/join">
         Start Game
       </Button>
     </Stack>
